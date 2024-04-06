@@ -1,0 +1,11 @@
+[package]
+name = "perf-event-open"
+version = "0.0.0"
+edition = "2021"
+license = "MIT"
+homepage = "https://github.com/Thaumy/perf-event-open"
+keywords = ["perf_event_open", "performance"]
+repository = "https://github.com/Thaumy/perf-event-open"
+description = "High-level wrapper for the perf_event_open system call"
+
+[dependencies]
