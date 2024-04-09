@@ -1,3 +1,5 @@
+pub mod hw;
+
 #[derive(Clone, Debug)]
 pub struct Event(pub(super) EventConfig);
 
