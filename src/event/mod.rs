@@ -1,5 +1,6 @@
 pub mod hw;
 pub mod sw;
+pub mod tp;
 
 #[derive(Clone, Debug)]
 pub struct Event(pub(super) EventConfig);
