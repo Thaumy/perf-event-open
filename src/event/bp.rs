@@ -1,5 +1,6 @@
 use std::io::Result;
 
+use super::EventConfig;
 use crate::ffi::bindings as b;
 
 #[derive(Clone, Debug)]
@@ -43,3 +44,21 @@ impl Len {
         Ok(bp_len as _)
     }
 }
+
+super::try_from!(Breakpoint, value, {
+    let (bp_type, bp_len) = match &value.ty {
+        Type::R(l) => (b::HW_BREAKPOINT_R, l.as_bp_len()?),
+        Type::W(l) => (b::HW_BREAKPOINT_W, l.as_bp_len()?),
+        Type::Rw(l) => (b::HW_BREAKPOINT_RW, l.as_bp_len()?),
+        Type::X => (b::HW_BREAKPOINT_X, 0),
+    };
+    let event_cfg = EventConfig {
+        ty: b::PERF_TYPE_BREAKPOINT,
+        config: 0,
+        config1: 0,
+        config2: bp_len,
+        config3: 0,
+        bp_type,
+    };
+    Ok(Self(event_cfg))
+});
