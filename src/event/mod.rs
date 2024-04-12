@@ -1,5 +1,6 @@
 pub mod bp;
 pub mod hw;
+pub mod raw;
 pub mod sw;
 pub mod tp;
 
