@@ -49,6 +49,7 @@ default = ["latest"]
 "linux-4.0" = []
 
 [dependencies]
+thiserror = "2.0"
 
 [build-dependencies]
 anyhow = "1.0"
