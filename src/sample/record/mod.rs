@@ -1,5 +1,7 @@
 use crate::ffi::{bindings as b, deref_offset};
 
+pub mod comm;
+
 #[derive(Clone, Debug)]
 pub struct Task {
     pub pid: u32,
