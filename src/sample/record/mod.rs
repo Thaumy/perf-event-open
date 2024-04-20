@@ -3,6 +3,7 @@ use crate::ffi::{bindings as b, deref_offset};
 pub mod cgroup;
 pub mod comm;
 pub mod read;
+pub mod text_poke;
 
 #[derive(Clone, Debug)]
 pub struct Task {
