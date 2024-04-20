@@ -2,6 +2,7 @@ use crate::ffi::{bindings as b, deref_offset};
 
 pub mod cgroup;
 pub mod comm;
+pub mod itrace;
 pub mod read;
 pub mod text_poke;
 
