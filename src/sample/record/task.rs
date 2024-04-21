@@ -1,0 +1,46 @@
+use super::{RecordId, SampleType, Task};
+use crate::ffi::deref_offset;
+
+#[derive(Clone)]
+pub struct Exit {
+    pub record_id: Option<RecordId>,
+
+    pub task: Task,
+    pub parent_task: Task,
+    pub time: u64,
+}
+
+impl Exit {
+    pub(crate) unsafe fn from_ptr(mut ptr: *const u8, sample_id_all: Option<SampleType>) -> Self {
+        // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L912
+        // struct {
+        //     struct perf_event_header header;
+        //     u32 pid, ppid;
+        //     u32 tid, ptid;
+        //     u64 time;
+        //     struct sample_id sample_id;
+        // };
+
+        let pid = deref_offset(&mut ptr);
+        let ppid = deref_offset(&mut ptr);
+        let tid = deref_offset(&mut ptr);
+        let ptid = deref_offset(&mut ptr);
+
+        // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8428
+        let time = deref_offset(&mut ptr);
+        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+
+        let task = Task { pid, tid };
+        let parent_task = Task {
+            pid: ppid,
+            tid: ptid,
+        };
+
+        Self {
+            record_id,
+            task,
+            parent_task,
+            time,
+        }
+    }
+}

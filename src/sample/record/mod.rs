@@ -4,6 +4,7 @@ pub mod cgroup;
 pub mod comm;
 pub mod itrace;
 pub mod read;
+pub mod task;
 pub mod text_poke;
 
 #[derive(Clone, Debug)]
