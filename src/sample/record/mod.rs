@@ -6,6 +6,7 @@ pub mod itrace;
 pub mod read;
 pub mod task;
 pub mod text_poke;
+pub mod throttle;
 
 #[derive(Clone, Debug)]
 pub struct Task {
