@@ -4,6 +4,7 @@ pub mod cgroup;
 pub mod comm;
 pub mod ctx;
 pub mod itrace;
+pub mod ksymbol;
 pub mod lost;
 pub mod read;
 pub mod task;
