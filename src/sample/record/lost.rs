@@ -42,3 +42,29 @@ impl LostRecords {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct LostSamples {
+    pub record_id: Option<RecordId>,
+
+    pub lost_samples: u64,
+}
+
+impl LostSamples {
+    pub(crate) unsafe fn from_ptr(mut ptr: *const u8, sample_id_all: Option<SampleType>) -> Self {
+        // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1105
+        // struct {
+        //     struct perf_event_header header;
+        //     u64 lost;
+        //     struct sample_id sample_id;
+        // };
+
+        let lost_samples = deref_offset(&mut ptr);
+        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+
+        Self {
+            record_id,
+            lost_samples,
+        }
+    }
+}
