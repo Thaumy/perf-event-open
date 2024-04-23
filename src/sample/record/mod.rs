@@ -7,6 +7,7 @@ pub mod ctx;
 pub mod itrace;
 pub mod ksymbol;
 pub mod lost;
+pub mod mmap;
 pub mod ns;
 pub mod read;
 pub mod task;
