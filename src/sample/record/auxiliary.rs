@@ -73,3 +73,31 @@ impl Aux {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct AuxOutputHwId {
+    pub record_id: Option<RecordId>,
+
+    pub hw_id: u64,
+}
+
+impl AuxOutputHwId {
+    pub(crate) unsafe fn from_ptr(
+        mut ptr: *const u8,
+        sample_id_all: Option<super::SampleType>,
+    ) -> Self {
+        use crate::ffi::deref_offset;
+
+        // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1221
+        // struct {
+        //     struct perf_event_header header;
+        //     u64 hw_id;
+        //     struct sample_id sample_id;
+        // };
+
+        let hw_id = deref_offset(&mut ptr);
+        let record_id = sample_id_all.map(|super::SampleType(ty)| RecordId::from_ptr(ptr, ty));
+
+        Self { record_id, hw_id }
+    }
+}
