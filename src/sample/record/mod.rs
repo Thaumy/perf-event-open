@@ -1,3 +1,19 @@
+use auxiliary::{Aux, AuxOutputHwId};
+use bpf::BpfEvent;
+use cgroup::Cgroup;
+use comm::Comm;
+use ctx::CtxSwitch;
+use itrace::ItraceStart;
+use ksymbol::Ksymbol;
+use lost::{LostRecords, LostSamples};
+use mmap::Mmap;
+use ns::Namespaces;
+use read::Read;
+use sample::Sample;
+use task::{Exit, Fork};
+use text_poke::TextPoke;
+use throttle::{Throttle, Unthrottle};
+
 use crate::ffi::{bindings as b, deref_offset};
 
 pub mod auxiliary;
@@ -15,6 +31,56 @@ pub mod sample;
 pub mod task;
 pub mod text_poke;
 pub mod throttle;
+
+// https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L847
+#[derive(Clone)]
+pub enum Record {
+    // PERF_RECORD_SAMPLE
+    Sample(Box<Sample>),
+
+    // PERF_RECORD_MMAP | PERF_RECORD_MMAP2
+    Mmap(Box<Mmap>),
+    // PERF_RECORD_READ
+    Read(Box<Read>),
+    // PERF_RECORD_CGROUP
+    Cgroup(Box<Cgroup>),
+    // PERF_RECORD_KSYMBOL
+    Ksymbol(Box<Ksymbol>),
+    // PERF_RECORD_TEXT_POKE
+    TextPoke(Box<TextPoke>),
+    // PERF_RECORD_BPF_EVENT
+    BpfEvent(Box<BpfEvent>),
+    // PERF_RECORD_SWITCH | PERF_RECORD_SWITCH_CPU_WIDE
+    CtxSwitch(Box<CtxSwitch>),
+    // PERF_RECORD_NAMESPACES
+    Namespaces(Box<Namespaces>),
+    // PERF_RECORD_ITRACE_START
+    ItraceStart(Box<ItraceStart>),
+
+    // PERF_RECORD_AUX
+    Aux(Box<Aux>),
+    // PERF_RECORD_AUX_OUTPUT_HW_ID
+    AuxOutputHwId(Box<AuxOutputHwId>),
+
+    // PERF_RECORD_COMM
+    Comm(Box<Comm>),
+    // PERF_RECORD_EXIT
+    Exit(Box<Exit>),
+    // PERF_RECORD_FORK
+    Fork(Box<Fork>),
+
+    // PERF_RECORD_THROTTLE
+    Throttle(Box<Throttle>),
+    // PERF_RECORD_UNTHROTTLE
+    Unthrottle(Box<Unthrottle>),
+
+    // PERF_RECORD_LOST
+    LostRecords(Box<LostRecords>),
+    // PERF_RECORD_LOST_SAMPLES
+    LostSamples(Box<LostSamples>),
+
+    Unknown(Vec<u8>),
+}
 
 #[derive(Clone, Debug)]
 pub struct Task {
