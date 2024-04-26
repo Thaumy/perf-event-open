@@ -1,4 +1,5 @@
 use crate::ffi::{bindings as b, deref_offset};
+use crate::sample::record::debug;
 
 #[derive(Clone)]
 pub struct Stat {
@@ -88,9 +89,24 @@ impl Stat {
     }
 }
 
+debug!(Stat {
+    {count},
+    {id?},
+    {time_enabled?},
+    {time_running?},
+    {lost_records?},
+    {siblings},
+});
+
 #[derive(Clone)]
 pub struct SiblingStat {
     pub count: u64,
     pub id: Option<u64>,
     pub lost_records: Option<u64>,
 }
+
+debug!(SiblingStat {
+    {count},
+    {id?},
+    {lost_records?},
+});
