@@ -69,6 +69,8 @@ impl Namespaces {
     }
 }
 
+super::from!(Namespaces);
+
 // Naming: https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8590
 #[derive(Clone, Debug)]
 pub struct LinkInfo {

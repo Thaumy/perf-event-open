@@ -162,6 +162,8 @@ impl Mmap {
     }
 }
 
+super::from!(Mmap);
+
 #[derive(Clone, Debug)]
 pub struct Ext {
     pub prot: u32,

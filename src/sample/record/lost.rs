@@ -43,6 +43,8 @@ impl LostRecords {
     }
 }
 
+super::from!(LostRecords);
+
 #[derive(Clone)]
 pub struct LostSamples {
     pub record_id: Option<RecordId>,
@@ -68,3 +70,5 @@ impl LostSamples {
         }
     }
 }
+
+super::from!(LostSamples);

@@ -52,3 +52,5 @@ impl TextPoke {
         }
     }
 }
+
+super::from!(TextPoke);

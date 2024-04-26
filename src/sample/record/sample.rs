@@ -272,6 +272,8 @@ impl Sample {
     }
 }
 
+super::from!(Sample);
+
 unsafe fn parse_regs(ptr: &mut *const u8, len: usize) -> Option<(Vec<u64>, Abi)> {
     let abi = deref_offset::<u64>(ptr) as u32;
 

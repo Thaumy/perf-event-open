@@ -45,3 +45,5 @@ impl Cgroup {
         }
     }
 }
+
+super::from!(Cgroup);

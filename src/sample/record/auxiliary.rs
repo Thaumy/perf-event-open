@@ -74,6 +74,8 @@ impl Aux {
     }
 }
 
+super::from!(Aux);
+
 #[derive(Clone)]
 pub struct AuxOutputHwId {
     pub record_id: Option<RecordId>,
@@ -101,3 +103,5 @@ impl AuxOutputHwId {
         Self { record_id, hw_id }
     }
 }
+
+super::from!(AuxOutputHwId);

@@ -38,3 +38,5 @@ impl Read {
         }
     }
 }
+
+super::from!(Read);

@@ -31,3 +31,5 @@ impl ItraceStart {
         Self { record_id, task }
     }
 }
+
+super::from!(ItraceStart);

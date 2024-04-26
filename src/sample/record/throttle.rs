@@ -35,6 +35,8 @@ impl Throttle {
     }
 }
 
+super::from!(Throttle);
+
 #[derive(Clone)]
 pub struct Unthrottle {
     pub record_id: Option<RecordId>,
@@ -57,3 +59,5 @@ impl Unthrottle {
         }
     }
 }
+
+super::from!(Unthrottle);

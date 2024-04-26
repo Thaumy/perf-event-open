@@ -45,6 +45,8 @@ impl Exit {
     }
 }
 
+super::from!(Exit);
+
 #[derive(Clone)]
 pub struct Fork {
     pub record_id: Option<RecordId>,
@@ -67,3 +69,5 @@ impl Fork {
         }
     }
 }
+
+super::from!(Fork);

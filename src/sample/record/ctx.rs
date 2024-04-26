@@ -49,6 +49,8 @@ impl CtxSwitch {
     }
 }
 
+super::from!(CtxSwitch);
+
 // Some(task) if PERF_RECORD_SWITCH_CPU_WIDE
 #[derive(Clone, Debug)]
 pub enum Switch {

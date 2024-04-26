@@ -49,3 +49,5 @@ impl Comm {
         }
     }
 }
+
+super::from!(Comm);

@@ -70,6 +70,8 @@ impl Ksymbol {
     }
 }
 
+super::from!(Ksymbol);
+
 #[derive(Clone, Debug)]
 pub enum State {
     Reg,
