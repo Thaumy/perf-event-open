@@ -180,3 +180,14 @@ impl RecordId {
         }
     }
 }
+
+macro_rules! from {
+    ($ty:ident) => {
+        impl From<Box<$ty>> for super::Record {
+            fn from(value: Box<$ty>) -> Self {
+                Self::$ty(value)
+            }
+        }
+    };
+}
+use from;
