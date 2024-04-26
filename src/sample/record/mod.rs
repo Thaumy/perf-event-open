@@ -191,3 +191,74 @@ macro_rules! from {
     };
 }
 use from;
+
+macro_rules! debug {
+    ($ty:ty { $first_field:tt, $($field:tt,)* }) => {
+        impl std::fmt::Debug for $ty {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                use crate::sample::record::debug;
+
+                // `{:-?}` formatter, ignores `None` fields.
+                if f.sign_minus() {
+                    let has_none = debug!(is_none, self, $first_field) $(|| debug!(is_none, self, $field))+;
+                    write!(f, "{} {{ ", stringify!($ty))?;
+                    if has_none {
+                        debug!({:-?}, self, f, "{}: {:-?}, ", $first_field);
+                        $(debug!({:-?}, self, f, "{}: {:-?}, ", $field);)+
+                        write!(f, "..")?;
+                    } else {
+                        debug!({:-?}, self, f, "{}: {:-?}", $first_field);
+                        $(debug!({:-?}, self, f, ", {}: {:-?}", $field);)+
+                    }
+                    return write!(f, " }}")
+                }
+
+                // `{:#?}` formatter, same as `{:-?}`, but with indentation.
+                if f.alternate() {
+                    let has_none = debug!(is_none, self, $first_field) $(|| debug!(is_none, self, $field))+;
+                    let mut ds = f.debug_struct(stringify!($ty));
+                    debug!({:#?}, self, ds, $first_field);
+                    $(debug!({:#?}, self, ds, $field);)*
+                    return if has_none {
+                        ds.finish_non_exhaustive()
+                    } else {
+                        ds.finish()
+                    }
+                }
+
+                // `{:?}` formatter, same as `#[derive(Debug)]`.
+                let mut ds = f.debug_struct(stringify!($ty));
+                debug!({:?}, self, ds, $first_field);
+                $(debug!({:?}, self, ds, $field);)*
+                ds.finish()
+            }
+        }
+    };
+    // internal switches
+    (is_none, $self:ident, {$field:ident}) => {
+        false
+    };
+    (is_none, $self:ident, {$field:ident?}) => {
+        $self.$field.is_none()
+    };
+    ({:?}, $self:ident, $ds:ident, {$field:ident$(?)?}) => {
+        $ds.field(stringify!($field), &$self.$field);
+    };
+    ({:#?}, $self:ident, $ds:ident, {$field:ident}) => {
+        $ds.field(stringify!($field), &$self.$field);
+    };
+    ({:#?}, $self:ident, $ds:ident, {$field:ident?}) => {
+        if let Some(it) = &$self.$field {
+            $ds.field(stringify!($field), it);
+        }
+    };
+    ({:-?}, $self:ident, $f:ident, $fmt:literal, {$field:ident}) => {
+        write!($f, $fmt, stringify!($field), &$self.$field)?;
+    };
+    ({:-?}, $self:ident, $f:ident, $fmt:literal, {$field:ident?}) => {
+        if let Some(it) = &$self.$field {
+            write!($f, $fmt, stringify!($field), it)?;
+        }
+    };
+}
+pub(crate) use debug;
