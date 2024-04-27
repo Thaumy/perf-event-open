@@ -128,6 +128,14 @@ pub struct RecordId {
     pub time: Option<u64>,
 }
 
+debug!(RecordId {
+    {id?},
+    {stream_id?},
+    {cpu?},
+    {task?},
+    {time?},
+});
+
 pub(crate) struct SampleType(pub u64);
 
 impl RecordId {
