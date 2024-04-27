@@ -51,6 +51,11 @@ impl CtxSwitch {
 
 super::from!(CtxSwitch);
 
+super::debug!(CtxSwitch {
+    {record_id?},
+    {info},
+});
+
 // Some(task) if PERF_RECORD_SWITCH_CPU_WIDE
 #[derive(Clone, Debug)]
 pub enum Switch {

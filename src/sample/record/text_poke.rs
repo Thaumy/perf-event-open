@@ -54,3 +54,10 @@ impl TextPoke {
 }
 
 super::from!(TextPoke);
+
+super::debug!(TextPoke {
+    {record_id?},
+    {addr},
+    {old_bytes},
+    {new_bytes},
+});

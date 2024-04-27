@@ -45,6 +45,12 @@ impl LostRecords {
 
 super::from!(LostRecords);
 
+super::debug!(LostRecords {
+    {record_id?},
+    {id},
+    {lost_records},
+});
+
 #[derive(Clone)]
 pub struct LostSamples {
     pub record_id: Option<RecordId>,
@@ -72,3 +78,8 @@ impl LostSamples {
 }
 
 super::from!(LostSamples);
+
+super::debug!(LostSamples {
+    {record_id?},
+    {lost_samples},
+});

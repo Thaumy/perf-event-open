@@ -164,6 +164,17 @@ impl Mmap {
 
 super::from!(Mmap);
 
+super::debug!(Mmap {
+    {record_id?},
+    {executable},
+    {task},
+    {addr},
+    {len},
+    {file},
+    {page_offset},
+    {ext?},
+});
+
 #[derive(Clone, Debug)]
 pub struct Ext {
     pub prot: u32,

@@ -71,6 +71,18 @@ impl Namespaces {
 
 super::from!(Namespaces);
 
+super::debug!(Namespaces {
+    {record_id?},
+    {task},
+    {ns_net},
+    {ns_uts},
+    {ns_ipc},
+    {ns_pid},
+    {ns_user},
+    {ns_mnt},
+    {ns_cgroup},
+});
+
 // Naming: https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8590
 #[derive(Clone, Debug)]
 pub struct LinkInfo {

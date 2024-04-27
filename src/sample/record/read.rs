@@ -40,3 +40,9 @@ impl Read {
 }
 
 super::from!(Read);
+
+super::debug!(Read {
+    {record_id?},
+    {task},
+    {stat},
+});

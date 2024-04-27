@@ -47,6 +47,13 @@ impl Exit {
 
 super::from!(Exit);
 
+super::debug!(Exit {
+    {record_id?},
+    {task},
+    {parent_task},
+    {time},
+});
+
 #[derive(Clone)]
 pub struct Fork {
     pub record_id: Option<RecordId>,
@@ -71,3 +78,10 @@ impl Fork {
 }
 
 super::from!(Fork);
+
+super::debug!(Fork {
+    {record_id?},
+    {task},
+    {parent_task},
+    {time},
+});

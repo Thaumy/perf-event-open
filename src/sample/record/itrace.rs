@@ -33,3 +33,8 @@ impl ItraceStart {
 }
 
 super::from!(ItraceStart);
+
+super::debug!(ItraceStart {
+    {record_id?},
+    {task},
+});

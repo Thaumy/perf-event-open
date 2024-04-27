@@ -72,6 +72,15 @@ impl Ksymbol {
 
 super::from!(Ksymbol);
 
+super::debug!(Ksymbol {
+    {record_id?},
+    {ty},
+    {name},
+    {state},
+    {addr},
+    {len},
+});
+
 #[derive(Clone, Debug)]
 pub enum State {
     Reg,

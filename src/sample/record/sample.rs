@@ -274,6 +274,28 @@ impl Sample {
 
 super::from!(Sample);
 
+super::debug!(Sample {
+    {record_id},
+    {stat?},
+    {period?},
+    {cgroup?},
+    {call_chain?},
+    {user_stack?},
+    {data_source?},
+    {data_addr?},
+    {data_phys_addr?},
+    {data_page_size?},
+    {code_addr?},
+    {code_page_size?},
+    {user_regs?},
+    {intr_regs?},
+    {raw?},
+    {lbr?},
+    {aux?},
+    {txn?},
+    {weight?},
+});
+
 unsafe fn parse_regs(ptr: &mut *const u8, len: usize) -> Option<(Vec<u64>, Abi)> {
     let abi = deref_offset::<u64>(ptr) as u32;
 
@@ -564,6 +586,11 @@ pub struct Lbr {
     pub hw_index: Option<u64>,
     pub entries: Vec<Entry>,
 }
+
+super::debug!(Lbr {
+    {hw_index?},
+    {entries},
+});
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1436
 #[derive(Clone, Debug)]

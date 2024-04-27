@@ -51,3 +51,10 @@ impl Comm {
 }
 
 super::from!(Comm);
+
+super::debug!(Comm {
+    {record_id?},
+    {by_execve},
+    {task},
+    {comm},
+});

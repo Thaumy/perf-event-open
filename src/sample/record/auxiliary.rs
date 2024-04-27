@@ -76,6 +76,17 @@ impl Aux {
 
 super::from!(Aux);
 
+super::debug!(Aux {
+    {record_id?},
+    {offset},
+    {size},
+    {truncated},
+    {overwrite},
+    {partial},
+    {collision},
+    {pmu_format_type},
+});
+
 #[derive(Clone)]
 pub struct AuxOutputHwId {
     pub record_id: Option<RecordId>,
@@ -105,3 +116,8 @@ impl AuxOutputHwId {
 }
 
 super::from!(AuxOutputHwId);
+
+super::debug!(AuxOutputHwId {
+    {record_id?},
+    {hw_id},
+});

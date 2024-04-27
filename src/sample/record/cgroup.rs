@@ -47,3 +47,9 @@ impl Cgroup {
 }
 
 super::from!(Cgroup);
+
+super::debug!(Cgroup {
+    {record_id?},
+    {id},
+    {path},
+});

@@ -37,6 +37,13 @@ impl Throttle {
 
 super::from!(Throttle);
 
+super::debug!(Throttle {
+    {record_id?},
+    {time},
+    {id},
+    {stream_id},
+});
+
 #[derive(Clone)]
 pub struct Unthrottle {
     pub record_id: Option<RecordId>,
@@ -61,3 +68,10 @@ impl Unthrottle {
 }
 
 super::from!(Unthrottle);
+
+super::debug!(Unthrottle {
+    {record_id?},
+    {time},
+    {id},
+    {stream_id},
+});

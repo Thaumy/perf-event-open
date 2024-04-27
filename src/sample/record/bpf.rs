@@ -53,6 +53,14 @@ impl BpfEvent {
 
 super::from!(BpfEvent);
 
+super::debug!(BpfEvent {
+    {record_id?},
+    {ty},
+    {id},
+    {tag},
+    {flags},
+});
+
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1245
 #[derive(Clone, Debug)]
 pub enum Type {
