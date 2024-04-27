@@ -1,3 +1,6 @@
+use std::fmt;
+use std::fmt::{Debug, Formatter};
+
 use auxiliary::{Aux, AuxOutputHwId};
 use bpf::BpfEvent;
 use cgroup::Cgroup;
@@ -80,6 +83,49 @@ pub enum Record {
     LostSamples(Box<LostSamples>),
 
     Unknown(Vec<u8>),
+}
+
+impl Debug for Record {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        macro_rules! debug {
+            ($($varient:ident,)+) => {
+                match self {
+                    $(Self::$varient(it) => {
+                        if f.alternate() {
+                            return write!(f, "{:#?}", it)
+                        }
+                        if f.sign_minus(){
+                            return write!(f, "{:-?}", it)
+                        }
+                        write!(f, "{:?}", it)
+                    })+
+                }
+            };
+        }
+
+        debug![
+            Sample,
+            Mmap,
+            Read,
+            Cgroup,
+            Ksymbol,
+            TextPoke,
+            BpfEvent,
+            CtxSwitch,
+            Namespaces,
+            ItraceStart,
+            Aux,
+            AuxOutputHwId,
+            Comm,
+            Exit,
+            Fork,
+            Throttle,
+            Unthrottle,
+            LostRecords,
+            LostSamples,
+            Unknown,
+        ]
+    }
 }
 
 #[derive(Clone, Debug)]
