@@ -87,6 +87,10 @@ impl Stat {
             }
         }
     }
+
+    pub(crate) unsafe fn from_ptr(mut ptr: *const u8, read_format: u64) -> Self {
+        Self::from_ptr_offset(&mut ptr, read_format)
+    }
 }
 
 debug!(Stat {
