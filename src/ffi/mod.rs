@@ -8,3 +8,5 @@ pub unsafe fn deref_offset<T: Copy>(ptr: &mut *const u8) -> T {
     *ptr = ptr.add(size_of::<T>());
     val
 }
+
+pub type Attr = bindings::perf_event_attr;
