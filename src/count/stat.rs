@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+
 use crate::ffi::{bindings as b, deref_offset};
 use crate::sample::record::debug;
 
@@ -90,6 +92,30 @@ impl Stat {
 
     pub(crate) unsafe fn from_ptr(mut ptr: *const u8, read_format: u64) -> Self {
         Self::from_ptr_offset(&mut ptr, read_format)
+    }
+
+    pub(crate) fn alloc_read_buf(
+        base: &mut Vec<MaybeUninit<u8>>,
+        group_size: usize,
+        read_format: u64,
+    ) {
+        let mut size = size_of::<u64>();
+
+        macro_rules! when {
+            ($flag:ident, $size:expr) => {
+                if read_format & b::$flag as u64 > 0 {
+                    size += $size;
+                }
+            };
+        }
+
+        when!(PERF_FORMAT_TOTAL_TIME_ENABLED, size_of::<u64>());
+        when!(PERF_FORMAT_TOTAL_TIME_RUNNING, size_of::<u64>());
+        when!(PERF_FORMAT_GROUP, group_size * size_of::<u64>());
+        when!(PERF_FORMAT_ID, group_size * size_of::<u64>());
+        when!(PERF_FORMAT_LOST, group_size * size_of::<u64>());
+
+        base.resize(size, MaybeUninit::uninit());
     }
 }
 
