@@ -2,6 +2,7 @@ use std::io::Result;
 
 use crate::ffi::bindings as b;
 
+pub(super) mod attr;
 mod target;
 
 pub use target::*;
