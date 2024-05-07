@@ -13,6 +13,7 @@ use crate::event::Event;
 use crate::ffi::syscall::{ioctl, ioctl_arg, ioctl_argp, perf_event_open, read_uninit};
 use crate::ffi::{bindings as b, Attr};
 
+pub mod group;
 mod stat;
 
 pub use stat::*;
