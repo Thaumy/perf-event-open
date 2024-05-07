@@ -6,6 +6,8 @@ use super::{
 };
 use crate::ffi::bindings as b;
 
+pub(crate) mod attr;
+
 #[derive(Clone, Debug, Default)]
 pub struct Opts {
     pub exclude: Priv,
