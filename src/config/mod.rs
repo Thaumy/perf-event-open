@@ -3,6 +3,7 @@ use std::io::Result;
 use crate::ffi::bindings as b;
 
 pub(super) mod attr;
+pub mod sibling;
 mod target;
 
 pub use target::*;
