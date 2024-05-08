@@ -7,6 +7,7 @@ use std::mem::{transmute, MaybeUninit};
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
 
+use super::sample::Sampler;
 use crate::config::attr::from;
 use crate::config::{Opts, Target};
 use crate::event::Event;
@@ -49,6 +50,10 @@ impl Counter {
                 UnsafeCell::new(base)
             },
         })
+    }
+
+    pub fn sampler(&self, exp: u8) -> Result<Sampler> {
+        Sampler::new(self, exp)
     }
 
     pub fn file(&self) -> &File {
