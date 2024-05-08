@@ -19,3 +19,4 @@ pub static PAGE_SIZE: LazyLock<usize> = LazyLock::new(|| {
 });
 
 pub type Attr = bindings::perf_event_attr;
+pub type Metadata = bindings::perf_event_mmap_page;
