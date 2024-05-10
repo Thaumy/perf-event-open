@@ -3,6 +3,8 @@ use std::io::{Error, Result};
 use std::mem::{transmute, MaybeUninit};
 use std::os::fd::{AsRawFd, FromRawFd};
 
+use libc::epoll_event;
+
 use super::Attr;
 
 pub fn perf_event_open(attr: &Attr, pid: i32, cpu: i32, group_fd: i32, flags: u64) -> Result<File> {
@@ -82,6 +84,44 @@ pub unsafe fn munmap<T>(ptr: *mut T, len: usize) -> Result<()> {
     let result = libc::munmap(ptr as _, len);
     if result != -1 {
         Ok(())
+    } else {
+        Err(Error::last_os_error())
+    }
+}
+
+pub fn epoll_create1(flags: i32) -> Result<File> {
+    let fd = unsafe { libc::epoll_create1(flags) };
+    if fd != -1 {
+        Ok(unsafe { File::from_raw_fd(fd as _) })
+    } else {
+        Err(Error::last_os_error())
+    }
+}
+
+pub fn epoll_ctl(epoll: &File, op: i32, file: &File, event: &mut epoll_event) -> Result<()> {
+    let result = unsafe { libc::epoll_ctl(epoll.as_raw_fd(), op, file.as_raw_fd(), event as _) };
+    if result != -1 {
+        Ok(())
+    } else {
+        Err(Error::last_os_error())
+    }
+}
+
+pub fn epoll_wait<'a>(
+    epoll: &File,
+    events: &'a mut [epoll_event],
+    timeout: i32,
+) -> Result<&'a [epoll_event]> {
+    let len = unsafe {
+        libc::epoll_wait(
+            epoll.as_raw_fd(),
+            events.as_mut_ptr(),
+            events.len() as _,
+            timeout,
+        )
+    };
+    if len != -1 {
+        Ok(&events[..len as _])
     } else {
         Err(Error::last_os_error())
     }
