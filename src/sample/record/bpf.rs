@@ -3,6 +3,7 @@ use super::RecordId;
 const BPF_TAG_SIZE: u32 = crate::ffi::bindings::BPF_TAG_SIZE;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BpfEvent {
     pub record_id: Option<RecordId>,
 
@@ -63,6 +64,7 @@ super::debug!(BpfEvent {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1245
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     // PERF_BPF_EVENT_PROG_LOAD
     ProgLoad,

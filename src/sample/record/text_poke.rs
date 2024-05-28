@@ -1,6 +1,7 @@
 use super::RecordId;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TextPoke {
     pub record_id: Option<RecordId>,
 

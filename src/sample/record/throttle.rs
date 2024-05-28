@@ -2,6 +2,7 @@ use super::{RecordId, SampleType};
 use crate::ffi::deref_offset;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Throttle {
     pub record_id: Option<RecordId>,
 
@@ -45,6 +46,7 @@ super::debug!(Throttle {
 });
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Unthrottle {
     pub record_id: Option<RecordId>,
 

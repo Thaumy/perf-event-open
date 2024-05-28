@@ -1,6 +1,7 @@
 use super::{RecordId, Task};
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CtxSwitch {
     pub record_id: Option<RecordId>,
 
@@ -58,6 +59,7 @@ super::debug!(CtxSwitch {
 
 // Some(task) if PERF_RECORD_SWITCH_CPU_WIDE
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Switch {
     // PERF_RECORD_MISC_SWITCH_OUT
     OutTo {

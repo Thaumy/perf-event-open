@@ -4,6 +4,7 @@ use crate::ffi::{bindings as b, deref_offset};
 use crate::sample::record::debug;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Stat {
     pub count: u64,
     pub id: Option<u64>,
@@ -129,6 +130,7 @@ debug!(Stat {
 });
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SiblingStat {
     pub count: u64,
     pub id: Option<u64>,

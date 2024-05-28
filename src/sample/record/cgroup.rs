@@ -3,6 +3,7 @@ use std::ffi::CString;
 use super::RecordId;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Cgroup {
     pub record_id: Option<RecordId>,
 

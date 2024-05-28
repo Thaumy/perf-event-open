@@ -10,6 +10,7 @@ use crate::ffi::{bindings as b, deref_offset};
 const BUILD_ID_SIZE_MAX: usize = 20;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Mmap {
     pub record_id: Option<RecordId>,
 
@@ -176,6 +177,7 @@ super::debug!(Mmap {
 });
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Ext {
     pub prot: u32,
     pub flags: u32,
@@ -183,6 +185,7 @@ pub struct Ext {
 }
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Info {
     Device {
         major: u32,

@@ -1,6 +1,7 @@
 use super::{RecordId, Task};
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Namespaces {
     pub record_id: Option<RecordId>,
 
@@ -85,6 +86,7 @@ super::debug!(Namespaces {
 
 // Naming: https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8590
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LinkInfo {
     pub dev: u64,
     pub inode: u64,

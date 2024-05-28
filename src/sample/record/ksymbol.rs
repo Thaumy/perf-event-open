@@ -3,6 +3,7 @@ use std::ffi::CString;
 use super::RecordId;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Ksymbol {
     pub record_id: Option<RecordId>,
 
@@ -82,6 +83,7 @@ super::debug!(Ksymbol {
 });
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum State {
     Reg,
     Unreg,
@@ -89,6 +91,7 @@ pub enum State {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1232
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     // PERF_RECORD_KSYMBOL_TYPE_BPF
     Bpf,

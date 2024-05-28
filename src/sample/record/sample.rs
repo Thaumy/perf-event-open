@@ -6,6 +6,7 @@ use crate::count::Stat;
 use crate::ffi::{bindings as b, deref_offset};
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Sample {
     pub record_id: RecordId,
 
@@ -582,6 +583,7 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
 }
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lbr {
     pub hw_index: Option<u64>,
     pub entries: Vec<Entry>,
@@ -594,6 +596,7 @@ super::debug!(Lbr {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1436
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Entry {
     pub from: u64,
     pub to: u64,
@@ -613,6 +616,7 @@ pub struct Entry {
 }
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchType {
     // PERF_BR_*
     // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L248
@@ -672,6 +676,7 @@ pub enum BranchType {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L271
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchSpec {
     // PERF_BR_SPEC_NA
     Na,
@@ -685,6 +690,7 @@ pub enum BranchSpec {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L291
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchPriv {
     // PERF_BR_PRIV_UNKNOWN
     Unknown,
@@ -697,6 +703,7 @@ pub enum BranchPriv {
 }
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Weight {
     Full(u64),
     Vars { var1: u32, var2: u16, var3: u16 },
@@ -704,6 +711,7 @@ pub enum Weight {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L322
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Txn {
     // PERF_TXN_ELISION
     pub elision: bool,
@@ -727,6 +735,7 @@ pub struct Txn {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1286
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DataSource {
     pub op: MemOp,
     pub level: MemLevel,
@@ -741,6 +750,7 @@ pub struct DataSource {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1324
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemOp {
     // PERF_MEM_OP_NA
     pub na: bool,
@@ -756,6 +766,7 @@ pub struct MemOp {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1338
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemLevel {
     // PERF_MEM_LVL_NA
     pub na: bool,
@@ -789,6 +800,7 @@ pub struct MemLevel {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1376
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemSnoop {
     // PERF_MEM_SNOOP_NA
     pub na: bool,
@@ -808,6 +820,7 @@ pub struct MemSnoop {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1388
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemLock {
     // PERF_MEM_LOCK_NA
     pub na: bool,
@@ -817,6 +830,7 @@ pub struct MemLock {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1393
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemTlb {
     // PERF_MEM_TLB_NA
     pub na: bool,
@@ -836,6 +850,7 @@ pub struct MemTlb {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1357
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemLevel2 {
     // PERF_MEM_LVLNUM_L1
     L1,
@@ -870,6 +885,7 @@ pub enum MemLevel2 {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1403
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemBlock {
     // PERF_MEM_BLK_NA
     pub na: bool,
@@ -882,6 +898,7 @@ pub struct MemBlock {
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1409
 // https://github.com/torvalds/linux/blob/v6.13/tools/perf/util/mem-events.c#L385
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemHop {
     // PERF_MEM_HOPS_0
     Core,
@@ -895,6 +912,7 @@ pub enum MemHop {
 }
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Abi {
     _32,
     _64,

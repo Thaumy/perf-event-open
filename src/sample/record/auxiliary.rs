@@ -1,6 +1,7 @@
 use super::RecordId;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Aux {
     pub record_id: Option<RecordId>,
 
@@ -88,6 +89,7 @@ super::debug!(Aux {
 });
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AuxOutputHwId {
     pub record_id: Option<RecordId>,
 

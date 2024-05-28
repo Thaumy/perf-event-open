@@ -3,6 +3,7 @@ use crate::count::Stat;
 use crate::ffi::deref_offset;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Read {
     pub record_id: Option<RecordId>,
 

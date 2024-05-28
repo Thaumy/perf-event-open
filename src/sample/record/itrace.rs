@@ -1,6 +1,7 @@
 use super::{RecordId, Task};
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ItraceStart {
     pub record_id: Option<RecordId>,
 

@@ -5,6 +5,7 @@ use super::{RecordId, SampleType, Task};
 use crate::ffi::{bindings as b, deref_offset};
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Comm {
     pub record_id: Option<RecordId>,
 

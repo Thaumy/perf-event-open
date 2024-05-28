@@ -2,6 +2,7 @@ use super::{RecordId, SampleType, Task};
 use crate::ffi::deref_offset;
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Exit {
     pub record_id: Option<RecordId>,
 
@@ -55,6 +56,7 @@ super::debug!(Exit {
 });
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Fork {
     pub record_id: Option<RecordId>,
 

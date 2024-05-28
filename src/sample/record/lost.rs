@@ -14,6 +14,7 @@ use crate::ffi::deref_offset;
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L5764
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7373
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LostRecords {
     pub record_id: Option<RecordId>,
 
@@ -52,6 +53,7 @@ super::debug!(LostRecords {
 });
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LostSamples {
     pub record_id: Option<RecordId>,
 

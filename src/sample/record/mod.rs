@@ -39,6 +39,7 @@ pub mod throttle;
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L847
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Record {
     // PERF_RECORD_SAMPLE
     Sample(Box<Sample>),
@@ -131,12 +132,14 @@ impl Debug for Record {
 }
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Task {
     pub pid: u32,
     pub tid: u32,
 }
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Priv {
     // PERF_RECORD_MISC_USER
     User,
@@ -168,6 +171,7 @@ impl Priv {
 }
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RecordId {
     pub id: Option<u64>,
     pub stream_id: Option<u64>,
@@ -320,6 +324,7 @@ macro_rules! debug {
 pub(crate) use debug;
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UnsafeParser {
     pub sample_id_all: bool,
     pub sample_type: u64,
