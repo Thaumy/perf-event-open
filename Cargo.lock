@@ -161,6 +161,7 @@ dependencies = [
  "bindgen",
  "itertools 0.14.0",
  "libc",
+ "serde",
  "thiserror",
 ]
 

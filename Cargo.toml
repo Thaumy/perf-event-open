@@ -50,6 +50,7 @@ default = ["latest"]
 
 [dependencies]
 libc = "0.2"
+serde = { version = "1.0", features = ["derive"] }
 arrayvec = { version = "0.7", features = ["serde"] }
 thiserror = "2.0"
 
