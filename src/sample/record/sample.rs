@@ -535,7 +535,9 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         b::PERF_MEM_LVLNUM_L2        => MemLevel2::L2,
         b::PERF_MEM_LVLNUM_L3        => MemLevel2::L3,
         b::PERF_MEM_LVLNUM_L4        => MemLevel2::L4,
+        #[cfg(feature="linux-6.11")]
         b::PERF_MEM_LVLNUM_L2_MHB    => MemLevel2::L2Mhb,
+        #[cfg(feature="linux-6.11")]
         b::PERF_MEM_LVLNUM_MSC       => MemLevel2::Msc,
         b::PERF_MEM_LVLNUM_UNC       => MemLevel2::Unc,
         b::PERF_MEM_LVLNUM_CXL       => MemLevel2::Cxl,
@@ -861,8 +863,10 @@ pub enum MemLevel2 {
     // PERF_MEM_LVLNUM_L4
     L4,
     // PERF_MEM_LVLNUM_L2_MHB
+    /// Since `linux-6.11`: <https://github.com/torvalds/linux/commit/608f6976c309793ceea37292c54b057dab091944>
     L2Mhb,
     // PERF_MEM_LVLNUM_MSC
+    /// Since `linux-6.11`: <https://github.com/torvalds/linux/commit/608f6976c309793ceea37292c54b057dab091944>
     Msc,
     // PERF_MEM_LVLNUM_UNC
     Unc,
