@@ -13,6 +13,7 @@ build = "build/main.rs"
 
 [features]
 default = ["latest"]
+"serde" = []
 "latest" = ["linux-6.13"]
 "legacy" = ["linux-5.4"]
 "linux-6.13" = ["linux-6.11"]
