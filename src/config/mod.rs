@@ -238,6 +238,7 @@ pub struct EntryFormat {
     // PERF_SAMPLE_BRANCH_NO_CYCLES
     pub cycles: bool,
     // PERF_SAMPLE_BRANCH_COUNTERS
+    /// Since `linux-6.8`: <https://github.com/torvalds/linux/commit/571d91dcadfa3cef499010b4eddb9b58b0da4d24>
     pub counter: bool,
 
     // PERF_SAMPLE_BRANCH_TYPE_SAVE

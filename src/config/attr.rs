@@ -190,7 +190,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
         if !it.entry_format.cycles {
             attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_NO_CYCLES as u64;
         }
-        when!(counter, PERF_SAMPLE_BRANCH_COUNTERS);
+        when!("linux-6.8", counter, PERF_SAMPLE_BRANCH_COUNTERS);
         when!(branch_type, PERF_SAMPLE_BRANCH_TYPE_SAVE);
         when!(branch_priv, PERF_SAMPLE_BRANCH_PRIV_SAVE);
 
