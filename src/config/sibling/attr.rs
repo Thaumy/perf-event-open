@@ -192,7 +192,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
         }
         when!("linux-6.8", counter, PERF_SAMPLE_BRANCH_COUNTERS);
         when!(branch_type, PERF_SAMPLE_BRANCH_TYPE_SAVE);
-        when!(branch_priv, PERF_SAMPLE_BRANCH_PRIV_SAVE);
+        when!("linux-6.1", branch_priv, PERF_SAMPLE_BRANCH_PRIV_SAVE);
 
         sample_type |= b::PERF_SAMPLE_BRANCH_STACK;
     });

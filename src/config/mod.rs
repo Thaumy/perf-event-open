@@ -244,6 +244,7 @@ pub struct EntryFormat {
     // PERF_SAMPLE_BRANCH_TYPE_SAVE
     pub branch_type: bool,
     // PERF_SAMPLE_BRANCH_PRIV_SAVE
+    /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/5402d25aa5710d240040f73fb13d7d5c303ef071>
     pub branch_priv: bool,
 }
 

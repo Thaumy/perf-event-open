@@ -370,8 +370,11 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
                 b::PERF_BR_COND_RET => BranchType::CondRet,
                 b::PERF_BR_ERET => BranchType::Eret,
                 b::PERF_BR_IRQ => BranchType::Irq,
+                #[cfg(feature = "linux-6.1")]
                 b::PERF_BR_SERROR => BranchType::SysErr,
+                #[cfg(feature = "linux-6.1")]
                 b::PERF_BR_NO_TX => BranchType::NoTx,
+                #[cfg(feature = "linux-6.1")]
                 // match new_type
                 // https://github.com/torvalds/linux/blob/v6.13/tools/perf/util/branch.c#L106
                 b::PERF_BR_EXTEND_ABI => match ((bits >> 26) & 0b1111) as _ {
@@ -389,6 +392,7 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
                 // For compatibility, not ABI.
                 _ => BranchType::Unknown,
             },
+            #[cfg(feature = "linux-6.1")]
             // 24-25, 2 bits
             branch_spec: match ((bits >> 24) & 0b11) as _ {
                 b::PERF_BR_SPEC_NA => BranchSpec::Na,
@@ -397,7 +401,10 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
                 b::PERF_BR_SPEC_CORRECT_PATH => BranchSpec::Correct,
                 _ => unreachable!(),
             },
+            #[cfg(not(feature = "linux-6.1"))]
+            branch_spec: BranchSpec::Na,
             // new_type: 26-29, 4 bits
+            #[cfg(feature = "linux-6.1")]
             // 30-32, 3 bits
             branch_priv: match ((bits >> 30) & 0b111) as _ {
                 b::PERF_BR_PRIV_UNKNOWN => BranchPriv::Unknown,
@@ -407,6 +414,8 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
                 // For compatibility, not ABI.
                 _ => BranchPriv::Unknown,
             },
+            #[cfg(not(feature = "linux-6.1"))]
+            branch_priv: BranchPriv::Unknown,
             // reserved: 33-63, 31 bits
         }
     }
@@ -510,7 +519,10 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         miss:  when!(shifted1, PERF_MEM_SNOOP_MISS),
         hit_m: when!(shifted1, PERF_MEM_SNOOP_HITM),
         fwd:   when!(shifted2, PERF_MEM_SNOOPX_FWD),
+        #[cfg(feature = "linux-6.1")]
         peer:  when!(shifted2, PERF_MEM_SNOOPX_PEER),
+        #[cfg(not(feature = "linux-6.1"))]
+        peer:  false
     };
 
     let shifted = bits >> b::PERF_MEM_LOCK_SHIFT;
@@ -545,7 +557,9 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         b::PERF_MEM_LVLNUM_MSC       => MemLevel2::Msc,
         #[cfg(feature="linux-6.6")]
         b::PERF_MEM_LVLNUM_UNC       => MemLevel2::Unc,
+        #[cfg(feature="linux-6.1")]
         b::PERF_MEM_LVLNUM_CXL       => MemLevel2::Cxl,
+        #[cfg(feature="linux-6.1")]
         b::PERF_MEM_LVLNUM_IO        => MemLevel2::Io,
         b::PERF_MEM_LVLNUM_ANY_CACHE => MemLevel2::AnyCache,
         b::PERF_MEM_LVLNUM_LFB       => MemLevel2::Lfb,
@@ -615,7 +629,9 @@ pub struct Entry {
     pub cycles: u16,
 
     pub branch_type: BranchType,
+    /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/93315e46b000fc80fff5d53c3f444417fb3df6de>
     pub branch_spec: BranchSpec,
+    /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/5402d25aa5710d240040f73fb13d7d5c303ef071>
     pub branch_priv: BranchPriv,
 
     // https://github.com/torvalds/linux/commit/571d91dcadfa3cef499010b4eddb9b58b0da4d24
@@ -656,8 +672,10 @@ pub enum BranchType {
     // PERF_BR_IRQ
     Irq,
     // PERF_BR_SERROR
+    /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/a724ec82966d57e4b5d36341d3e3dc1a3c011564>
     SysErr,
     // PERF_BR_NO_TX
+    /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/a724ec82966d57e4b5d36341d3e3dc1a3c011564>
     NoTx,
 
     // PERF_BR_NEW_*
@@ -683,6 +701,7 @@ pub enum BranchType {
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L271
+/// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/93315e46b000fc80fff5d53c3f444417fb3df6de>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchSpec {
@@ -697,6 +716,7 @@ pub enum BranchSpec {
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L291
+/// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/5402d25aa5710d240040f73fb13d7d5c303ef071>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchPriv {
@@ -823,6 +843,11 @@ pub struct MemSnoop {
     // PERF_MEM_SNOOPX_FWD
     pub fwd: bool,
     // PERF_MEM_SNOOPX_PEER
+    /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/cfef80bad4cf79cdc964a53c98254dfa462be83f>
+    ///
+    /// NOTE: This feature was first available in the perf tool in Linux 6.0,
+    /// so it seems we should enable it in feature `linux-6.0`:
+    /// <https://github.com/torvalds/linux/commit/2e21bcf0514a3623b41962bf424dec061c02ebc6>
     pub peer: bool,
 }
 
@@ -878,8 +903,12 @@ pub enum MemLevel2 {
     /// Since `linux-6.6`: <https://github.com/torvalds/linux/commit/526fffabc5fb63e80eb890c74b6570df2570c87f>
     Unc,
     // PERF_MEM_LVLNUM_CXL
+    /// Since `linux-6.1`:
+    /// <https://github.com/torvalds/linux/commit/cb6c18b5a41622c7a439508f7421f8766a91cb87>
+    /// <https://github.com/torvalds/linux/commit/ee3e88dfec23153d0675b5d00522297b9adf657c>
     Cxl,
     // PERF_MEM_LVLNUM_IO
+    /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/ee3e88dfec23153d0675b5d00522297b9adf657c>
     Io,
     // PERF_MEM_LVLNUM_ANY_CACHE
     AnyCache,
