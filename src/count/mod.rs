@@ -182,7 +182,8 @@ impl Counter {
         attr.config = event_cfg.config;
         attr.__bindgen_anon_3.config1 = event_cfg.config1;
         attr.__bindgen_anon_4.config2 = event_cfg.config2;
-        attr.config3 = event_cfg.config3;
+        #[cfg(feature = "linux-6.3")]
+        (attr.config3 = event_cfg.config3);
         attr.bp_type = event_cfg.bp_type;
 
         ioctl_argp(&self.perf, b::PERF_IOC_OP_MODIFY_ATTRS as _, attr)?;

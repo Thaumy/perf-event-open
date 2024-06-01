@@ -6,6 +6,7 @@ pub struct Raw {
     pub config: u64,
     pub config1: u64,
     pub config2: u64,
+    /// Since `linux-6.3`: <https://github.com/torvalds/linux/commit/09519ec3b19e4144b5f6e269c54fbb9c294a9fcb>
     pub config3: u64,
 }
 
