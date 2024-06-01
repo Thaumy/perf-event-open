@@ -8,6 +8,18 @@ mod target;
 
 pub use target::*;
 
+macro_rules! unsupported {
+    () => {
+        Err(std::io::ErrorKind::Unsupported)?
+    };
+    ($bool:expr) => {
+        if $bool {
+            Err(std::io::ErrorKind::Unsupported)?
+        }
+    };
+}
+pub(super) use unsupported;
+
 #[derive(Clone, Debug, Default)]
 pub struct Opts {
     pub exclude: Priv,
