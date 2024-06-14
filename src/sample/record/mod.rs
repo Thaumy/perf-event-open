@@ -66,6 +66,7 @@ pub enum Record {
     // PERF_RECORD_AUX
     Aux(Box<Aux>),
     // PERF_RECORD_AUX_OUTPUT_HW_ID
+    /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/8b8ff8cc3b8155c18162e8b1f70e1230db176862>
     AuxOutputHwId(Box<AuxOutputHwId>),
 
     // PERF_RECORD_COMM
@@ -398,6 +399,7 @@ impl UnsafeParser {
             b::PERF_RECORD_NAMESPACES => from(Namespaces::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_ITRACE_START => from(ItraceStart::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_AUX => from(Aux::from_ptr(ptr, sample_id_all)),
+            #[cfg(feature = "linux-5.16")]
             b::PERF_RECORD_AUX_OUTPUT_HW_ID => from(AuxOutputHwId::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_COMM => from(Comm::from_ptr(ptr, misc, sample_id_all)),
             b::PERF_RECORD_EXIT => from(Exit::from_ptr(ptr, sample_id_all)),

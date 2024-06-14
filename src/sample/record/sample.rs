@@ -582,7 +582,9 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         addr: when!(shifted, PERF_MEM_BLK_ADDR),
     };
 
+    #[cfg(feature = "linux-5.16")]
     let shifted = bits >> b::PERF_MEM_HOPS_SHIFT;
+    #[cfg(feature = "linux-5.16")]
     let hops = match (shifted & 0b111) as u32 {
         b::PERF_MEM_HOPS_0 => MemHop::Core,
         #[cfg(feature = "linux-5.17")]
@@ -594,6 +596,8 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         // For compatibility, not ABI.
         _ => MemHop::Unknown,
     };
+    #[cfg(not(feature = "linux-5.16"))]
+    let hops = MemHop::Unknown;
 
     DataSource {
         op,
@@ -780,6 +784,7 @@ pub struct DataSource {
     pub level2: MemLevel2,
     pub remote: bool,
     pub block: MemBlock,
+    /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/fec9cc6175d0ec1e13efe12be491d9bd4de62f80>
     pub hops: MemHop,
 }
 
@@ -944,6 +949,7 @@ pub struct MemBlock {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1409
 // https://github.com/torvalds/linux/blob/v6.13/tools/perf/util/mem-events.c#L385
+/// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/fec9cc6175d0ec1e13efe12be491d9bd4de62f80>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemHop {

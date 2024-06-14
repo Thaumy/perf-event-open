@@ -88,6 +88,7 @@ super::debug!(Aux {
     {pmu_format_type},
 });
 
+/// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/8b8ff8cc3b8155c18162e8b1f70e1230db176862>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AuxOutputHwId {
@@ -97,6 +98,7 @@ pub struct AuxOutputHwId {
 }
 
 impl AuxOutputHwId {
+    #[cfg(feature = "linux-5.16")]
     pub(crate) unsafe fn from_ptr(
         mut ptr: *const u8,
         sample_id_all: Option<super::SampleType>,
