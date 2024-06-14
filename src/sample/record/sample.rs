@@ -585,8 +585,11 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
     let shifted = bits >> b::PERF_MEM_HOPS_SHIFT;
     let hops = match (shifted & 0b111) as u32 {
         b::PERF_MEM_HOPS_0 => MemHop::Core,
+        #[cfg(feature = "linux-5.17")]
         b::PERF_MEM_HOPS_1 => MemHop::Node,
+        #[cfg(feature = "linux-5.17")]
         b::PERF_MEM_HOPS_2 => MemHop::Socket,
+        #[cfg(feature = "linux-5.17")]
         b::PERF_MEM_HOPS_3 => MemHop::Board,
         // For compatibility, not ABI.
         _ => MemHop::Unknown,
@@ -947,10 +950,13 @@ pub enum MemHop {
     // PERF_MEM_HOPS_0
     Core,
     // PERF_MEM_HOPS_1
+    /// Since `linux-5.17`: <https://github.com/torvalds/linux/commit/cb1c4aba055f928ffae0c868e8dfe08eeab302e7>
     Node,
     // PERF_MEM_HOPS_2
+    /// Since `linux-5.17`: <https://github.com/torvalds/linux/commit/cb1c4aba055f928ffae0c868e8dfe08eeab302e7>
     Socket,
     // PERF_MEM_HOPS_3
+    /// Since `linux-5.17`: <https://github.com/torvalds/linux/commit/cb1c4aba055f928ffae0c868e8dfe08eeab302e7>
     Board,
     Unknown,
 }
