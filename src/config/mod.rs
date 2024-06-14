@@ -76,6 +76,7 @@ pub struct StatFormat {
     pub id: bool,
     pub time_enabled: bool,
     pub time_running: bool,
+    /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: bool,
     pub siblings: bool,
 }
@@ -93,7 +94,10 @@ impl StatFormat {
         when!(id, PERF_FORMAT_ID);
         when!(time_enabled, PERF_FORMAT_TOTAL_TIME_ENABLED);
         when!(time_running, PERF_FORMAT_TOTAL_TIME_RUNNING);
+        #[cfg(feature = "linux-6.0")]
         when!(lost_records, PERF_FORMAT_LOST);
+        #[cfg(not(feature = "linux-6.0"))]
+        unsupported!(self.lost_records);
         when!(siblings, PERF_FORMAT_GROUP);
         Ok(val as _)
     }

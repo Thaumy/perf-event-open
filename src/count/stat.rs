@@ -10,6 +10,7 @@ pub struct Stat {
     pub id: Option<u64>,
     pub time_enabled: Option<u64>,
     pub time_running: Option<u64>,
+    /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: Option<u64>,
     pub siblings: Vec<SiblingStat>,
 }
@@ -47,7 +48,10 @@ impl Stat {
             let time_enabled = when!(PERF_FORMAT_TOTAL_TIME_ENABLED, u64);
             let time_running = when!(PERF_FORMAT_TOTAL_TIME_RUNNING, u64);
             let id = when!(PERF_FORMAT_ID, u64);
+            #[cfg(feature = "linux-6.0")]
             let lost_records = when!(PERF_FORMAT_LOST, u64);
+            #[cfg(not(feature = "linux-6.0"))]
+            let lost_records = None;
 
             Self {
                 count,
@@ -64,13 +68,19 @@ impl Stat {
 
             let count = deref_offset(ptr);
             let id = when!(PERF_FORMAT_ID, u64);
+            #[cfg(feature = "linux-6.0")]
             let lost_records = when!(PERF_FORMAT_LOST, u64);
+            #[cfg(not(feature = "linux-6.0"))]
+            let lost_records = None;
 
             let siblings = (1..nr)
                 .map(|_| {
                     let count = deref_offset(ptr);
                     let id = when!(PERF_FORMAT_ID, u64);
+                    #[cfg(feature = "linux-6.0")]
                     let lost_records = when!(PERF_FORMAT_LOST, u64);
+                    #[cfg(not(feature = "linux-6.0"))]
+                    let lost_records = None;
 
                     SiblingStat {
                         count,
@@ -114,6 +124,7 @@ impl Stat {
         when!(PERF_FORMAT_TOTAL_TIME_RUNNING, size_of::<u64>());
         when!(PERF_FORMAT_GROUP, group_size * size_of::<u64>());
         when!(PERF_FORMAT_ID, group_size * size_of::<u64>());
+        #[cfg(feature = "linux-6.0")]
         when!(PERF_FORMAT_LOST, group_size * size_of::<u64>());
 
         base.resize(size, MaybeUninit::uninit());
@@ -134,6 +145,7 @@ debug!(Stat {
 pub struct SiblingStat {
     pub count: u64,
     pub id: Option<u64>,
+    /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: Option<u64>,
 }
 
