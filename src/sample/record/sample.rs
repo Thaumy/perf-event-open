@@ -368,7 +368,9 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
                 b::PERF_BR_SYSRET => BranchType::Sysret,
                 b::PERF_BR_COND_CALL => BranchType::CondCall,
                 b::PERF_BR_COND_RET => BranchType::CondRet,
+                #[cfg(feature = "linux-5.18")]
                 b::PERF_BR_ERET => BranchType::Eret,
+                #[cfg(feature = "linux-5.18")]
                 b::PERF_BR_IRQ => BranchType::Irq,
                 #[cfg(feature = "linux-6.1")]
                 b::PERF_BR_SERROR => BranchType::SysErr,
@@ -668,8 +670,10 @@ pub enum BranchType {
     // PERF_BR_COND_RET
     CondRet,
     // PERF_BR_ERET
+    /// Since `linux-5.18`: <https://github.com/torvalds/linux/commit/cedd3614e5d9c80908099c19f8716714ce0610b1>
     Eret,
     // PERF_BR_IRQ
+    /// Since `linux-5.18`: <https://github.com/torvalds/linux/commit/cedd3614e5d9c80908099c19f8716714ce0610b1>
     Irq,
     // PERF_BR_SERROR
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/a724ec82966d57e4b5d36341d3e3dc1a3c011564>
