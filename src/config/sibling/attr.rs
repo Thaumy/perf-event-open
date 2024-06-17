@@ -48,16 +48,22 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
         Some(Inherit::NewChild) => {
             then!(set_inherit);
         }
+        #[cfg(feature = "linux-5.13")]
         Some(Inherit::NewThread) => {
             then!(set_inherit);
             then!(set_inherit_thread);
         }
+        #[cfg(not(feature = "linux-5.13"))]
+        Some(Inherit::NewThread) => crate::config::unsupported!(),
         None => (),
     }
 
     match opts.on_execve {
         Some(OnExecve::Enable) => then!(set_enable_on_exec),
+        #[cfg(feature = "linux-5.13")]
         Some(OnExecve::Remove) => then!(set_remove_on_exec),
+        #[cfg(not(feature = "linux-5.13"))]
+        Some(OnExecve::Remove) => crate::config::unsupported!(),
         None => (),
     }
 
@@ -290,10 +296,13 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     #[cfg(not(feature = "linux-6.13"))]
     crate::config::unsupported!(opts.on_sample.aux.is_some());
 
+    #[cfg(feature = "linux-5.13")]
     if let Some(crate::config::SigData(data)) = opts.on_sample.sigtrap.as_ref() {
         then!(set_sigtrap);
         attr.sig_data = *data;
     }
+    #[cfg(not(feature = "linux-5.13"))]
+    crate::config::unsupported!(opts.on_sample.sigtrap.is_some());
 
     Ok(attr)
 }

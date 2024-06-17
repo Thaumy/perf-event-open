@@ -14,6 +14,7 @@ pub enum Software {
     AlignFault,
 
     CtxSwitch,
+    /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/d0d1dd628527c77db2391ce0293c1ed344b2365f>
     CgroupSwitch,
 
     Dummy,
@@ -35,11 +36,15 @@ super::try_from!(Software, value, {
         Software::AlignFault => b::PERF_COUNT_SW_ALIGNMENT_FAULTS,
 
         Software::CtxSwitch      => b::PERF_COUNT_SW_CONTEXT_SWITCHES,
+        #[cfg(feature="linux-5.13")]
         Software::CgroupSwitch   => b::PERF_COUNT_SW_CGROUP_SWITCHES,
 
         Software::Dummy          => b::PERF_COUNT_SW_DUMMY,
         Software::BpfOutput      => b::PERF_COUNT_SW_BPF_OUTPUT,
         Software::CpuMigration   => b::PERF_COUNT_SW_CPU_MIGRATIONS,
+
+        #[cfg(not(feature="linux-5.13"))]
+        _  => crate::config::unsupported!(),
     };
     let event_config = EventConfig {
         ty: b::PERF_TYPE_SOFTWARE,

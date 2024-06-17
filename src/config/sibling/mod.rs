@@ -66,6 +66,7 @@ pub struct OnSample {
 
     // Must be used together with `remove_on_exec`:
     // https://github.com/torvalds/linux/blob/2408a807bfc3f738850ef5ad5e3fd59d66168996/kernel/events/core.c#L12582
+    /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/97ba62b278674293762c3d91f724f1bb922f04e0>
     pub sigtrap: Option<SigData>,
 }
 

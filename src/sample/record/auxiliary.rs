@@ -17,6 +17,7 @@ pub struct Aux {
     // PERF_AUX_FLAG_COLLISION
     pub collision: bool,
     // `flags` masked with `PERF_AUX_FLAG_PMU_FORMAT_TYPE_MASK`
+    /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/547b60988e631f74ed025cf1ec50cfc17f49fd13>
     pub pmu_format_type: u8,
 }
 
@@ -55,10 +56,13 @@ impl Aux {
         let overwrite = when!(PERF_AUX_FLAG_OVERWRITE);
         let partial = when!(PERF_AUX_FLAG_PARTIAL);
         let collision = when!(PERF_AUX_FLAG_COLLISION);
+        #[cfg(feature = "linux-5.13")]
         let pmu_format_type = {
             let masked = flags & b::PERF_AUX_FLAG_PMU_FORMAT_TYPE_MASK as u64;
             (masked >> 8) as _
         };
+        #[cfg(not(feature = "linux-5.13"))]
+        let pmu_format_type = 0;
 
         let record_id = sample_id_all.map(|super::SampleType(ty)| RecordId::from_ptr(ptr, ty));
 

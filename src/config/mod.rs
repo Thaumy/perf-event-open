@@ -42,6 +42,7 @@ pub struct Opts {
     pub wake_up: WakeUp,
     // Must be used together with `remove_on_exec`:
     // https://github.com/torvalds/linux/blob/2408a807bfc3f738850ef5ad5e3fd59d66168996/kernel/events/core.c#L12582
+    /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/97ba62b278674293762c3d91f724f1bb922f04e0>
     pub sigtrap_on_sample: Option<SigData>,
     pub timer: Option<Clock>,
     /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
@@ -61,6 +62,7 @@ pub struct Priv {
 #[derive(Clone, Debug)]
 pub enum Inherit {
     NewChild,
+    /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/2b26f0aa004995f49f7b6f4100dd0e4c39a9ed5f>
     NewThread,
 }
 
@@ -68,6 +70,7 @@ pub enum Inherit {
 #[derive(Clone, Debug)]
 pub enum OnExecve {
     Enable,
+    /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/2e498d0a74e5b88a6689ae1b811f247f91ff188e>
     Remove,
 }
 
@@ -333,6 +336,7 @@ impl Default for WakeUpOn {
     }
 }
 
+/// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/97ba62b278674293762c3d91f724f1bb922f04e0>
 #[derive(Clone, Debug)]
 pub struct SigData(pub u64);
 
