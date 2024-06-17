@@ -130,10 +130,10 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     });
     when!(data_addr, PERF_SAMPLE_ADDR);
     when!(data_phys_addr, PERF_SAMPLE_PHYS_ADDR);
-    when!(data_page_size, PERF_SAMPLE_DATA_PAGE_SIZE);
+    when!("linux-5.11", data_page_size, PERF_SAMPLE_DATA_PAGE_SIZE);
     when!(data_source, PERF_SAMPLE_DATA_SRC);
     when!(code_addr, PERF_SAMPLE_IP);
-    when!(code_page_size, PERF_SAMPLE_CODE_PAGE_SIZE);
+    when!("linux-5.11", code_page_size, PERF_SAMPLE_CODE_PAGE_SIZE);
     when!(user_regs, it, {
         attr.sample_regs_user = it.0;
         sample_type |= b::PERF_SAMPLE_REGS_USER;

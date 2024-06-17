@@ -165,6 +165,7 @@ pub struct SampleFormat {
     // PERF_SAMPLE_PHYS_ADDR
     pub data_phys_addr: bool,
     // PERF_SAMPLE_DATA_PAGE_SIZE
+    /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/8d97e71811aaafe4abf611dc24822fd6e73df1a1>
     pub data_page_size: bool,
     // PERF_SAMPLE_DATA_SRC
     pub data_source: bool,
@@ -172,6 +173,7 @@ pub struct SampleFormat {
     // PERF_SAMPLE_IP
     pub code_addr: bool,
     // PERF_SAMPLE_CODE_PAGE_SIZE
+    /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/995f088efebe1eba0282a6ffa12411b37f8990c2>
     pub code_page_size: bool,
 
     // PERF_SAMPLE_REGS_USER

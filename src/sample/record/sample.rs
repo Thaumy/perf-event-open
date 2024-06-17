@@ -18,10 +18,12 @@ pub struct Sample {
 
     pub data_addr: Option<u64>,
     pub data_phys_addr: Option<u64>,
+    /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/8d97e71811aaafe4abf611dc24822fd6e73df1a1>
     pub data_page_size: Option<u64>,
     pub data_source: Option<DataSource>,
 
     pub code_addr: Option<(u64, bool)>,
+    /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/995f088efebe1eba0282a6ffa12411b37f8990c2>
     pub code_page_size: Option<u64>,
 
     pub user_regs: Option<(Vec<u64>, Abi)>,
@@ -233,8 +235,8 @@ impl Sample {
         let intr_regs = when!(PERF_SAMPLE_REGS_INTR, { parse_regs(&mut ptr, intr_regs) }).flatten();
         let data_phys_addr = when!(PERF_SAMPLE_PHYS_ADDR, u64);
         let cgroup = when!(PERF_SAMPLE_CGROUP, u64);
-        let data_page_size = when!(PERF_SAMPLE_DATA_PAGE_SIZE, u64);
-        let code_page_size = when!(PERF_SAMPLE_CODE_PAGE_SIZE, u64);
+        let data_page_size = when!("linux-5.11", PERF_SAMPLE_DATA_PAGE_SIZE, u64);
+        let code_page_size = when!("linux-5.11", PERF_SAMPLE_CODE_PAGE_SIZE, u64);
         let aux = when!(PERF_SAMPLE_AUX, {
             let len = deref_offset::<u64>(&mut ptr) as usize;
             let bytes = slice::from_raw_parts(ptr, len as _);
