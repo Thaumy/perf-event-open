@@ -210,7 +210,10 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     when!(weight, it, {
         sample_type |= match it {
             Repr::Full => b::PERF_SAMPLE_WEIGHT,
+            #[cfg(feature = "linux-5.12")]
             Repr::Vars => b::PERF_SAMPLE_WEIGHT_STRUCT,
+            #[cfg(not(feature = "linux-5.12"))]
+            Repr::Vars => crate::config::unsupported!(),
         };
     });
     macro_rules! when {
@@ -248,7 +251,10 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     if let Some(UseBuildId(b)) = &mmap.ext {
         then!(set_mmap);
         then!(set_mmap2);
+        #[cfg(feature = "linux-5.12")]
         attr.set_build_id(*b as _);
+        #[cfg(not(feature = "linux-5.12"))]
+        crate::config::unsupported!(*b);
     }
     when!(cgroup, set_cgroup);
     when!(ksymbol, set_ksymbol);

@@ -205,6 +205,7 @@ impl Sample {
             };
             bytes[..dyn_len].to_vec()
         });
+        #[cfg(feature = "linux-5.12")]
         let weight = if when!(PERF_SAMPLE_WEIGHT) {
             let full = Weight::Full(deref_offset(&mut ptr));
             Some(full)
@@ -225,6 +226,8 @@ impl Sample {
         } else {
             None
         };
+        #[cfg(not(feature = "linux-5.12"))]
+        let weight = when!(PERF_SAMPLE_WEIGHT, { Weight::Full(deref_offset(&mut ptr)) });
         let data_source = when!(PERF_SAMPLE_DATA_SRC, { parse_data_source(&mut ptr) });
         let txn = when!(PERF_SAMPLE_TRANSACTION, { parse_txn(&mut ptr) });
         let intr_regs = when!(PERF_SAMPLE_REGS_INTR, { parse_regs(&mut ptr, intr_regs) }).flatten();
@@ -574,12 +577,20 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
 
     let remote = (bits >> b::PERF_MEM_REMOTE_SHIFT) & 1 > 0;
 
+    #[cfg(feature = "linux-5.12")]
     let shifted = bits >> b::PERF_MEM_BLK_SHIFT;
+    #[cfg(feature = "linux-5.12")]
     #[rustfmt::skip]
     let block = MemBlock {
         na:   when!(shifted, PERF_MEM_BLK_NA),
         data: when!(shifted, PERF_MEM_BLK_DATA),
         addr: when!(shifted, PERF_MEM_BLK_ADDR),
+    };
+    #[cfg(not(feature = "linux-5.12"))]
+    let block = MemBlock {
+        na: false,
+        data: false,
+        addr: false,
     };
 
     #[cfg(feature = "linux-5.16")]
@@ -783,6 +794,7 @@ pub struct DataSource {
     pub tlb: MemTlb,
     pub level2: MemLevel2,
     pub remote: bool,
+    /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/61b985e3e775a3a75fda04ce7ef1b1aefc4758bc>
     pub block: MemBlock,
     /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/fec9cc6175d0ec1e13efe12be491d9bd4de62f80>
     pub hops: MemHop,
@@ -936,6 +948,7 @@ pub enum MemLevel2 {
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1403
+/// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/61b985e3e775a3a75fda04ce7ef1b1aefc4758bc>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemBlock {

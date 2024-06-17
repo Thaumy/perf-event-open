@@ -116,6 +116,7 @@ impl Mmap {
         let page_offset = deref_offset(&mut ptr);
 
         let ext = v2.then(|| {
+            #[cfg(feature = "linux-5.12")]
             let info = if misc as u32 & b::PERF_RECORD_MISC_MMAP_BUILD_ID > 0 {
                 let len = deref_offset::<u8>(&mut ptr) as usize;
                 ptr = ptr.add(3); // Skip reserved bits.
@@ -134,6 +135,13 @@ impl Mmap {
                     inode: deref_offset(&mut ptr),
                     inode_gen: deref_offset(&mut ptr),
                 }
+            };
+            #[cfg(not(feature = "linux-5.12"))]
+            let info = Info::Device {
+                major: deref_offset(&mut ptr),
+                minor: deref_offset(&mut ptr),
+                inode: deref_offset(&mut ptr),
+                inode_gen: deref_offset(&mut ptr),
             };
             let prot = deref_offset(&mut ptr);
             let flags = deref_offset(&mut ptr);
@@ -193,5 +201,6 @@ pub enum Info {
         inode: u64,
         inode_gen: u64,
     },
+    /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/88a16a1309333e43d328621ece3e9fa37027e8eb>
     BuildId(ArrayVec<u8, BUILD_ID_SIZE_MAX>),
 }

@@ -275,6 +275,7 @@ pub enum Repr {
     // PERF_SAMPLE_WEIGHT
     Full,
     // PERF_SAMPLE_WEIGHT_STRUCT
+    /// Since`linux-5.12`: <https://github.com/torvalds/linux/commit/2a6c6b7d7ad346f0679d0963cb19b3f0ea7ef32c>
     Vars,
 }
 
@@ -369,6 +370,7 @@ pub struct Mmap {
     pub ext: Option<UseBuildId>,
 }
 
+/// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/88a16a1309333e43d328621ece3e9fa37027e8eb>
 #[derive(Clone, Debug, Default)]
 pub struct UseBuildId(pub bool);
 
