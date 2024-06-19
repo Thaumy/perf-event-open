@@ -302,6 +302,7 @@ pub struct ExtraRecord {
     pub cgroup: bool,
     pub ksymbol: bool,
     pub bpf_event: bool,
+    /// Since `linux-5.9`: <https://github.com/torvalds/linux/commit/e17d43b93e544f5016c0251d2074c15568d5d963>
     pub text_poke: bool,
     pub ctx_switch: bool,
     pub namespaces: bool,

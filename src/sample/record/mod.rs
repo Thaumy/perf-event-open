@@ -53,6 +53,7 @@ pub enum Record {
     // PERF_RECORD_KSYMBOL
     Ksymbol(Box<Ksymbol>),
     // PERF_RECORD_TEXT_POKE
+    /// Since `linux-5.9`: <https://github.com/torvalds/linux/commit/e17d43b93e544f5016c0251d2074c15568d5d963>
     TextPoke(Box<TextPoke>),
     // PERF_RECORD_BPF_EVENT
     BpfEvent(Box<BpfEvent>),
@@ -390,6 +391,7 @@ impl UnsafeParser {
             b::PERF_RECORD_READ => from(Read::from_ptr(ptr, self.read_format, sample_id_all)),
             b::PERF_RECORD_CGROUP => from(Cgroup::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_KSYMBOL => from(Ksymbol::from_ptr(ptr, sample_id_all)),
+            #[cfg(feature = "linux-5.9")]
             b::PERF_RECORD_TEXT_POKE => from(TextPoke::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_BPF_EVENT => from(BpfEvent::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_SWITCH => from(CtxSwitch::from_ptr(ptr, false, misc, sample_id_all)),

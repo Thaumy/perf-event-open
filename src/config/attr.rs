@@ -262,7 +262,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
     when!(cgroup, set_cgroup);
     when!(ksymbol, set_ksymbol);
     when!(bpf_event, set_bpf_event);
-    when!(text_poke, set_text_poke);
+    when!("linux-5.9", text_poke, set_text_poke);
     when!(ctx_switch, set_context_switch);
     when!(namespaces, set_namespaces);
 

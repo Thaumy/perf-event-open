@@ -1,5 +1,6 @@
 use super::RecordId;
 
+/// Since `linux-5.9`: <https://github.com/torvalds/linux/commit/e17d43b93e544f5016c0251d2074c15568d5d963>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TextPoke {
@@ -11,6 +12,7 @@ pub struct TextPoke {
 }
 
 impl TextPoke {
+    #[cfg(feature = "linux-5.9")]
     pub(crate) unsafe fn from_ptr(
         mut ptr: *const u8,
         sample_id_all: Option<super::SampleType>,

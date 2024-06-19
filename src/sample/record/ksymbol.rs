@@ -40,6 +40,7 @@ impl Ksymbol {
         let len = deref_offset(&mut ptr);
         let ty = match deref_offset::<u16>(&mut ptr) as _ {
             b::PERF_RECORD_KSYMBOL_TYPE_BPF => Type::Bpf,
+            #[cfg(feature = "linux-5.9")]
             b::PERF_RECORD_KSYMBOL_TYPE_OOL => Type::OutOfLine,
             b::PERF_RECORD_KSYMBOL_TYPE_UNKNOWN => Type::Unknown,
             _ => Type::Unknown, // For compatibility, not ABI.
@@ -96,6 +97,7 @@ pub enum Type {
     // PERF_RECORD_KSYMBOL_TYPE_BPF
     Bpf,
     // PERF_RECORD_KSYMBOL_TYPE_OOL
+    /// Since `linux-5.9`: <https://github.com/torvalds/linux/commit/69e49088692899d25dedfa22f00dfb9761e86ed7>
     OutOfLine,
     // PERF_RECORD_KSYMBOL_TYPE_UNKNOWN
     Unknown,
