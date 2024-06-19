@@ -289,7 +289,10 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     attr.set_use_clockid(leader_attr.use_clockid());
     attr.clockid = leader_attr.clockid;
 
+    #[cfg(feature = "linux-5.4")]
     attr.set_aux_output(opts.aux_output as _);
+    #[cfg(not(feature = "linux-5.4"))]
+    crate::config::unsupported!(opts.aux_output);
 
     #[cfg(feature = "linux-6.13")]
     {

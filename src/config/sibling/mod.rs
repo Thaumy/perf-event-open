@@ -25,6 +25,7 @@ pub struct Opts {
     pub wake_up: WakeUp,
     // https://github.com/torvalds/linux/commit/ab43762ef010967e4ccd53627f70a2eecbeafefb
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L2152
+    /// Since `linux-5.4`: <https://github.com/torvalds/linux/commit/ab43762ef010967e4ccd53627f70a2eecbeafefb>
     pub aux_output: bool,
     pub on_sample: OnSample,
 }
