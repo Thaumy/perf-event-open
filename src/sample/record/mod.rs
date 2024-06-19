@@ -49,6 +49,7 @@ pub enum Record {
     // PERF_RECORD_READ
     Read(Box<Read>),
     // PERF_RECORD_CGROUP
+    /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/96aaab686505c449e24d76e76507290dcc30e008>
     Cgroup(Box<Cgroup>),
     // PERF_RECORD_KSYMBOL
     Ksymbol(Box<Ksymbol>),
@@ -389,6 +390,7 @@ impl UnsafeParser {
             b::PERF_RECORD_MMAP => from(Mmap::from_ptr(ptr, misc, false, sample_id_all)),
             b::PERF_RECORD_MMAP2 => from(Mmap::from_ptr(ptr, misc, true, sample_id_all)),
             b::PERF_RECORD_READ => from(Read::from_ptr(ptr, self.read_format, sample_id_all)),
+            #[cfg(feature = "linux-5.7")]
             b::PERF_RECORD_CGROUP => from(Cgroup::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_KSYMBOL => from(Ksymbol::from_ptr(ptr, sample_id_all)),
             #[cfg(feature = "linux-5.9")]

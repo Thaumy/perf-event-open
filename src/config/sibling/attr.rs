@@ -117,7 +117,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     }
     when!(stat, PERF_SAMPLE_READ);
     when!(period, PERF_SAMPLE_PERIOD);
-    when!(cgroup, PERF_SAMPLE_CGROUP);
+    when!("linux-5.7", cgroup, PERF_SAMPLE_CGROUP);
     when!(user_stack, it, {
         attr.sample_stack_user = it.0;
         sample_type |= b::PERF_SAMPLE_STACK_USER;
@@ -175,7 +175,10 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
         when!(abort_tx, PERF_SAMPLE_BRANCH_ABORT_TX);
 
         if it.hw_index {
-            attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_HW_INDEX as u64;
+            #[cfg(feature = "linux-5.7")]
+            (attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_HW_INDEX as u64);
+            #[cfg(not(feature = "linux-5.7"))]
+            crate::config::unsupported!();
         }
 
         macro_rules! when {
@@ -256,7 +259,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
         #[cfg(not(feature = "linux-5.12"))]
         crate::config::unsupported!(*b);
     }
-    when!(cgroup, set_cgroup);
+    when!("linux-5.7", cgroup, set_cgroup);
     when!(ksymbol, set_ksymbol);
     when!(bpf_event, set_bpf_event);
     when!("linux-5.9", text_poke, set_text_poke);

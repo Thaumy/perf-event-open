@@ -234,7 +234,7 @@ impl Sample {
         let txn = when!(PERF_SAMPLE_TRANSACTION, { parse_txn(&mut ptr) });
         let intr_regs = when!(PERF_SAMPLE_REGS_INTR, { parse_regs(&mut ptr, intr_regs) }).flatten();
         let data_phys_addr = when!(PERF_SAMPLE_PHYS_ADDR, u64);
-        let cgroup = when!(PERF_SAMPLE_CGROUP, u64);
+        let cgroup = when!("linux-5.7", PERF_SAMPLE_CGROUP, u64);
         let data_page_size = when!("linux-5.11", PERF_SAMPLE_DATA_PAGE_SIZE, u64);
         let code_page_size = when!("linux-5.11", PERF_SAMPLE_CODE_PAGE_SIZE, u64);
         let aux = when!(PERF_SAMPLE_AUX, {
@@ -330,8 +330,13 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
     }
 
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7560
+    #[cfg(feature = "linux-5.7")]
     let hw_index = (branch_sample_type & b::PERF_SAMPLE_BRANCH_HW_INDEX as u64 > 0)
         .then(|| deref_offset::<u64>(ptr));
+    #[cfg(not(feature = "linux-5.7"))]
+    let _ = branch_sample_type;
+    #[cfg(not(feature = "linux-5.7"))]
+    let hw_index = None;
 
     #[repr(C)]
     struct Layout {
@@ -628,6 +633,7 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lbr {
+    /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/bbfd5e4fab63703375eafaf241a0c696024a59e1>
     pub hw_index: Option<u64>,
     pub entries: Vec<Entry>,
 }

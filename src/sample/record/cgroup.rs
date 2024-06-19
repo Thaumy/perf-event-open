@@ -2,6 +2,7 @@ use std::ffi::CString;
 
 use super::RecordId;
 
+/// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/96aaab686505c449e24d76e76507290dcc30e008>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Cgroup {
@@ -12,6 +13,7 @@ pub struct Cgroup {
 }
 
 impl Cgroup {
+    #[cfg(feature = "linux-5.7")]
     pub(crate) unsafe fn from_ptr(
         mut ptr: *const u8,
         sample_id_all: Option<super::SampleType>,

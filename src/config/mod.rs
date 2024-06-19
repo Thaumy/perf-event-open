@@ -154,6 +154,7 @@ pub struct SampleFormat {
     // PERF_SAMPLE_PERIOD
     pub period: bool,
     // PERF_SAMPLE_CGROUP
+    /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/6546b19f95acc986807de981402bbac6b3a94b0f>
     pub cgroup: bool,
     // PERF_SAMPLE_CALLCHAIN
     pub call_chain: Option<CallChain>,
@@ -200,6 +201,7 @@ pub struct Lbr {
     pub target_priv: Option<TargetPriv>,
     pub branch_type: BranchType,
     // PERF_SAMPLE_BRANCH_HW_INDEX
+    /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/bbfd5e4fab63703375eafaf241a0c696024a59e1>
     pub hw_index: bool,
     pub entry_format: EntryFormat,
 }
@@ -299,6 +301,7 @@ pub struct ExtraRecord {
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8389
     pub comm: bool,
     pub mmap: Mmap,
+    /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/96aaab686505c449e24d76e76507290dcc30e008>
     pub cgroup: bool,
     pub ksymbol: bool,
     pub bpf_event: bool,
