@@ -205,7 +205,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
 
         sample_type |= b::PERF_SAMPLE_BRANCH_STACK;
     });
-    when!(aux, it, {
+    when!("linux-5.5", aux, it, {
         attr.aux_sample_size = it.0;
         sample_type |= b::PERF_SAMPLE_AUX;
     });

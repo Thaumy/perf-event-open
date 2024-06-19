@@ -187,6 +187,7 @@ pub struct SampleFormat {
     // PERF_SAMPLE_BRANCH_STACK
     pub lbr: Option<Lbr>,
     // PERF_SAMPLE_AUX
+    /// Since `linux-5.5`: <https://github.com/torvalds/linux/commit/a4faf00d994c40e64f656805ac375c65e324eefb>
     pub aux: Option<Size>,
     // PERF_SAMPLE_TRANSACTION
     pub txn: bool,

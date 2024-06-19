@@ -237,7 +237,7 @@ impl Sample {
         let cgroup = when!("linux-5.7", PERF_SAMPLE_CGROUP, u64);
         let data_page_size = when!("linux-5.11", PERF_SAMPLE_DATA_PAGE_SIZE, u64);
         let code_page_size = when!("linux-5.11", PERF_SAMPLE_CODE_PAGE_SIZE, u64);
-        let aux = when!(PERF_SAMPLE_AUX, {
+        let aux = when!("linux-5.5", PERF_SAMPLE_AUX, {
             let len = deref_offset::<u64>(&mut ptr) as usize;
             let bytes = slice::from_raw_parts(ptr, len as _);
             bytes.to_vec()
