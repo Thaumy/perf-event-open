@@ -263,8 +263,8 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
         crate::config::unsupported!(*b);
     }
     when!("linux-5.7", cgroup, set_cgroup);
-    when!(ksymbol, set_ksymbol);
-    when!(bpf_event, set_bpf_event);
+    when!("linux-5.1", ksymbol, set_ksymbol);
+    when!("linux-5.1", bpf_event, set_bpf_event);
     when!("linux-5.9", text_poke, set_text_poke);
     when!(ctx_switch, set_context_switch);
     when!(namespaces, set_namespaces);

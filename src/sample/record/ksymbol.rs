@@ -2,6 +2,7 @@ use std::ffi::CString;
 
 use super::RecordId;
 
+/// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/76193a94522f1d4edf2447a536f3f796ce56343b>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Ksymbol {
@@ -15,6 +16,7 @@ pub struct Ksymbol {
 }
 
 impl Ksymbol {
+    #[cfg(feature = "linux-5.1")]
     pub(crate) unsafe fn from_ptr(
         mut ptr: *const u8,
         sample_id_all: Option<super::SampleType>,

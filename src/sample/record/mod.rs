@@ -52,11 +52,13 @@ pub enum Record {
     /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/96aaab686505c449e24d76e76507290dcc30e008>
     Cgroup(Box<Cgroup>),
     // PERF_RECORD_KSYMBOL
+    /// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/76193a94522f1d4edf2447a536f3f796ce56343b>
     Ksymbol(Box<Ksymbol>),
     // PERF_RECORD_TEXT_POKE
     /// Since `linux-5.9`: <https://github.com/torvalds/linux/commit/e17d43b93e544f5016c0251d2074c15568d5d963>
     TextPoke(Box<TextPoke>),
     // PERF_RECORD_BPF_EVENT
+    /// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/6ee52e2a3fe4ea35520720736e6791df1fb67106>
     BpfEvent(Box<BpfEvent>),
     // PERF_RECORD_SWITCH | PERF_RECORD_SWITCH_CPU_WIDE
     CtxSwitch(Box<CtxSwitch>),
@@ -392,9 +394,11 @@ impl UnsafeParser {
             b::PERF_RECORD_READ => from(Read::from_ptr(ptr, self.read_format, sample_id_all)),
             #[cfg(feature = "linux-5.7")]
             b::PERF_RECORD_CGROUP => from(Cgroup::from_ptr(ptr, sample_id_all)),
+            #[cfg(feature = "linux-5.1")]
             b::PERF_RECORD_KSYMBOL => from(Ksymbol::from_ptr(ptr, sample_id_all)),
             #[cfg(feature = "linux-5.9")]
             b::PERF_RECORD_TEXT_POKE => from(TextPoke::from_ptr(ptr, sample_id_all)),
+            #[cfg(feature = "linux-5.1")]
             b::PERF_RECORD_BPF_EVENT => from(BpfEvent::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_SWITCH => from(CtxSwitch::from_ptr(ptr, false, misc, sample_id_all)),
             b::PERF_RECORD_SWITCH_CPU_WIDE => {
