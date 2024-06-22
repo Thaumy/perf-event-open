@@ -39,7 +39,10 @@ impl CtxSwitch {
             tid: deref_offset(&mut ptr),
         });
         let info = if misc as u32 & b::PERF_RECORD_MISC_SWITCH_OUT > 0 {
+            #[cfg(feature = "linux-4.17")]
             let preempt = misc as u32 & b::PERF_RECORD_MISC_SWITCH_OUT_PREEMPT > 0;
+            #[cfg(not(feature = "linux-4.17"))]
+            let preempt = false;
             Switch::OutTo { task, preempt }
         } else {
             Switch::InFrom(task)
@@ -67,6 +70,7 @@ pub enum Switch {
         // PERF_RECORD_MISC_SWITCH_OUT_PREEMPT
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L9298
         // https://github.com/torvalds/linux/blob/v6.13/tools/perf/util/scripting-engines/trace-event-python.c#L1571
+        /// Since `linux-4.17`: <https://github.com/torvalds/linux/commit/101592b4904ecf6b8ed2a4784d41d180319d95a1>
         preempt: bool,
     },
     // !PERF_RECORD_MISC_SWITCH_OUT

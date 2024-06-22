@@ -162,6 +162,8 @@ impl Counter {
         Ok(())
     }
 
+    /// Since `linux-4.17`: <https://github.com/torvalds/linux/commit/32ff77e8cc9e66cc4fb38098f64fd54cc8f54573>
+    #[cfg(feature = "linux-4.17")]
     pub fn switch_to<E>(&self, event: E) -> Result<()>
     where
         E: TryInto<Event, Error = io::Error>,
@@ -189,5 +191,14 @@ impl Counter {
         ioctl_argp(&self.perf, b::PERF_IOC_OP_MODIFY_ATTRS as _, attr)?;
 
         Ok(())
+    }
+
+    #[cfg(not(feature = "linux-4.17"))]
+    pub fn switch_to<E>(&self, event: E) -> Result<()>
+    where
+        E: TryInto<Event, Error = io::Error>,
+    {
+        let _ = event;
+        crate::config::unsupported!()
     }
 }
