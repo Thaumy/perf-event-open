@@ -108,6 +108,8 @@ impl Counter {
         Ok(())
     }
 
+    /// Since `linux-4.16`: <https://github.com/torvalds/linux/commit/f371b304f12e31fe30207c41ca7754564e0ea4dc>
+    #[cfg(feature = "linux-4.16")]
     pub fn query_bpf(&self, buf_len: u32) -> Result<(Vec<u32>, Option<u32>)> {
         // struct perf_event_query_bpf {
         //     u32 ids_len;
@@ -149,6 +151,12 @@ impl Counter {
                 Err(e)
             }
         }
+    }
+
+    #[cfg(not(feature = "linux-4.16"))]
+    pub fn query_bpf(&self, len: u32) -> Result<(Vec<u32>, Option<u32>)> {
+        let _ = len;
+        crate::config::unsupported!()
     }
 
     pub fn with_ftrace_filter(&self, filter: &CStr) -> Result<()> {
