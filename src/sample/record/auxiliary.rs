@@ -15,6 +15,7 @@ pub struct Aux {
     // PERF_AUX_FLAG_PARTIAL
     pub partial: bool,
     // PERF_AUX_FLAG_COLLISION
+    /// Since `linux-4.15`: <https://github.com/torvalds/linux/commit/085b30625e39df67d7320f22269796276c6b0c11>
     pub collision: bool,
     // `flags` masked with `PERF_AUX_FLAG_PMU_FORMAT_TYPE_MASK`
     /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/547b60988e631f74ed025cf1ec50cfc17f49fd13>
@@ -55,7 +56,7 @@ impl Aux {
         let truncated = when!(PERF_AUX_FLAG_TRUNCATED);
         let overwrite = when!(PERF_AUX_FLAG_OVERWRITE);
         let partial = when!(PERF_AUX_FLAG_PARTIAL);
-        let collision = when!(PERF_AUX_FLAG_COLLISION);
+        let collision = when!("linux-4.15", PERF_AUX_FLAG_COLLISION);
         #[cfg(feature = "linux-5.13")]
         let pmu_format_type = {
             let masked = flags & b::PERF_AUX_FLAG_PMU_FORMAT_TYPE_MASK as u64;
