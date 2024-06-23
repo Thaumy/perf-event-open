@@ -34,6 +34,8 @@
         nativeBuildInputs = [
           (rust-toolchain "stable" "1.80.0")
         ];
+
+        checkPhase = "./check.sh";
       };
     });
 }
