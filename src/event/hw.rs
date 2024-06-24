@@ -1,46 +1,86 @@
 use super::EventConfig;
 use crate::ffi::bindings as b;
 
+/// Generalized hardware CPU events.
+///
+/// Not all of these are available on all platforms.
 #[derive(Clone, Debug)]
 pub enum Hardware {
+    /// Total CPU cycles, affected by CPU frequency scaling.
     CpuCycle,
+    /// Bus cycles, which can be different from total cycles.
     BusCycle,
+    /// Reference CPU cycles, not affected by CPU frequency scaling.
     RefCpuCycle,
 
+    /// Hardware CPU cache event.
     Cache(Type, Op, OpResult),
+    /// Cache misses.
+    ///
+    /// Usually this indicates Last Level Cache misses; this is intended to be used
+    /// in conjunction with the `CacheAccess` event to calculate cache miss rates
+    /// ([cache miss][Self::CacheMiss] / [cache access][Self::CacheAccess]).
     CacheMiss,
+    /// Cache accesses.
+    ///
+    /// Usually this indicates Last Level Cache accesses but this may vary
+    /// depending on your CPU. This may include prefetches and coherency messages;
+    /// again this depends on the design of your CPU.
     CacheAccess,
 
+    /// Mispredicted branch instructions.
     BranchMiss,
+    /// Branch instructions retired.
     BranchInstr,
 
+    /// Stalled cycles during issue.
     BackendStalledCycle,
+    /// Stalled cycles during retirement.
     FrontendStalledCycle,
 
+    /// Retired instructions.
+    ///
+    /// Be careful, these can be affected by various issues, most notably
+    /// hardware interrupt counts.
     Instr,
 }
 
+/// Type of cache
 #[derive(Clone, Debug)]
 pub enum Type {
+    /// L1 data cache.
     L1d,
+    /// L1 instruction cache.
     L1i,
+    /// Last-level cache.
     Ll,
+    /// Data TLB.
     Dtlb,
+    /// Instruction TLB.
     Itlb,
+    /// Branch prediction unit.
     Bpu,
+    /// Local memory accesses.
     Node,
 }
 
+/// Cache operations
 #[derive(Clone, Debug)]
 pub enum Op {
+    /// Read accesses.
     Read,
+    /// Write accesses.
     Write,
+    /// Prefetch accesses.
     Prefetch,
 }
 
+/// Cache operation results.
 #[derive(Clone, Debug)]
 pub enum OpResult {
+    /// Operation misses.
     Miss,
+    /// Operation accesses.
     Access,
 }
 
