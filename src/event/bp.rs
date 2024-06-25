@@ -3,33 +3,57 @@ use std::io::Result;
 use super::EventConfig;
 use crate::ffi::bindings as b;
 
+/// Hardware breakpoint event provided by the CPU.
+///
+/// Breakpoints can be read/write accesses to an address as well as
+/// execution of an instruction address.
 #[derive(Clone, Debug)]
 pub struct Breakpoint {
+    /// Breakpoint type.
     pub ty: Type,
+    /// Breakpoint address.
     pub addr: u64,
 }
 
+/// Breakpoint type.
 #[derive(Clone, Debug)]
 pub enum Type {
+    /// Count when we read the memory location.
     R(Len),
+    /// Count when we write the memory location.
     W(Len),
+    /// Count when we read or write the memory location.
     Rw(Len),
+    /// Count when we execute code at the memory location.
     X,
 }
 
+/// Breakpoint size (in bytes).
 #[derive(Clone, Debug)]
 pub enum Len {
+    /// 1 byte.
     _1,
+    /// 2 bytes.
     _2,
+    /// 3 bytes.
+    ///
     /// Since `linux-4.10`: <https://github.com/torvalds/linux/commit/651be3cb085341a21847e47c694c249c3e1e4e5b>
     _3,
+    /// 4 bytes.
     _4,
+    /// 5 bytes.
+    ///
     /// Since `linux-4.10`: <https://github.com/torvalds/linux/commit/651be3cb085341a21847e47c694c249c3e1e4e5b>
     _5,
+    /// 6 bytes.
+    ///
     /// Since `linux-4.10`: <https://github.com/torvalds/linux/commit/651be3cb085341a21847e47c694c249c3e1e4e5b>
     _6,
+    /// 7 bytes.
+    ///
     /// Since `linux-4.10`: <https://github.com/torvalds/linux/commit/651be3cb085341a21847e47c694c249c3e1e4e5b>
     _7,
+    /// 8 bytes.
     _8,
 }
 
