@@ -1,11 +1,17 @@
 use super::EventConfig;
 use crate::ffi::bindings as b;
 
+/// A "raw" implementation-specific event.
 #[derive(Clone, Debug)]
 pub struct Raw {
+    /// Event config.
     pub config: u64,
+    /// Event config1.
     pub config1: u64,
+    /// Event config2.
     pub config2: u64,
+    /// Event config3.
+    ///
     /// Since `linux-6.3`: <https://github.com/torvalds/linux/commit/09519ec3b19e4144b5f6e269c54fbb9c294a9fcb>
     pub config3: u64,
 }
