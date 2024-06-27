@@ -1,8 +1,10 @@
 use super::EventConfig;
 use crate::ffi::bindings as b;
 
+/// Tracepoint event provided by the kernel tracepoint infrastructure.
 #[derive(Clone, Debug)]
 pub struct Tracepoint {
+    /// Tracepoint ID from under debugfs `tracing/events/*/*/id` if ftrace is enabled in the kernel.
     pub id: u64,
 }
 
