@@ -123,11 +123,24 @@ impl Default for SampleOn {
     }
 }
 
+/// Controls the amount of sample skid.
+///
+/// Skid is how many instructions execute between an event of interest happening and
+/// the kernel being able to stop and record the event.
+///
+/// Smaller skid is better and allows more accurate reporting of which events correspond
+/// to which instructions, but hardware is often limited with how small this can be.
+///
+/// This affects the precision of [`code_addr`][crate::sample::record::sample::Sample::code_addr].
 #[derive(Clone, Debug)]
 pub enum SampleSkid {
+    /// Can have arbitrary skid.
     Arbitrary,
+    /// Must have constant skid.
     Const,
+    /// Requested to have 0 skid.
     ReqZero,
+    /// Must have 0 skid.
     Zero,
 }
 
