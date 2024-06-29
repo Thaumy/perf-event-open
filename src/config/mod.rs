@@ -377,17 +377,51 @@ impl Default for WakeUpOn {
 #[derive(Clone, Debug)]
 pub struct SigData(pub u64);
 
+/// Available internal Linux timers.
 #[derive(Clone, Debug)]
 pub enum Clock {
     // CLOCK_TAI
+    /// A nonsettable system-wide clock derived from wall-clock time but ignoring leap seconds.
+    ///
+    /// This clock does not experience discontinuities and backwards jumps caused by
+    /// NTP inserting leap seconds as [`RealTime`][Self::RealTime] does.
+    ///
+    /// This is International Atomic Time (TAI).
     Tai,
+
     // CLOCK_REALTIME
+    /// A settable system-wide clock that measures real (i.e., wall-clock) time.
+    ///
+    /// This clock is affected by discontinuous jumps in the system time
+    /// (e.g., if the system administrator manually changes the clock),
+    /// and by the incremental adjustments performed by
+    /// [`adjtime`](https://www.man7.org/linux/man-pages/man3/adjtime.3.html) and NTP.
     RealTime,
+
     // CLOCK_BOOTTIME
+    /// Similar to [`Monotonic`][Self::Monotonic], but it also includes
+    /// any time that the system is suspended.
     BootTime,
+
     // CLOCK_MONOTONIC
+    /// A nonsettable system-wide clock that represents monotonic time since
+    /// the system booted.
+    ///
+    /// This clock is not affected by discontinuous jumps in the system time
+    /// (e.g., if the system administrator manually changes the clock), but
+    /// is affected by the incremental adjustments performed by
+    /// [`adjtime`](https://www.man7.org/linux/man-pages/man3/adjtime.3.html) and NTP.
+    ///
+    /// This time never go backwards, but successive calls may return identical
+    /// (not-increased) time values.
+    ///
+    /// This clock does not count time that the system is suspended.
     Monotonic,
+
     // CLOCK_MONOTONIC_RAW
+    /// Similar to [`Monotonic`][Self::Monotonic], but provides access to a
+    /// raw hardware-based time that is not subject to NTP adjustments or the
+    /// incremental adjustments performed by [`adjtime`](https://www.man7.org/linux/man-pages/man3/adjtime.3.html).
     MonotonicRaw,
 }
 
