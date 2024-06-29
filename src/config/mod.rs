@@ -75,13 +75,24 @@ pub enum OnExecve {
     Remove,
 }
 
+/// Controls the format of [`Stat`][crate::count::Stat].
 #[derive(Clone, Debug, Default)]
 pub struct StatFormat {
+    /// Contains the [event ID][crate::count::SiblingStat::id].
     pub id: bool,
+
+    /// Contains the [enabled time][crate::count::Stat::time_enabled] of the counter.
     pub time_enabled: bool,
+
+    /// Contains the [running time][crate::count::Stat::time_running] of the counter.
     pub time_running: bool,
+
+    /// Contains the [number of lost records][crate::count::SiblingStat::lost_records].
+    ///
     /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: bool,
+
+    /// Contains [sibling event counts][crate::count::Stat::siblings].
     pub siblings: bool,
 }
 

@@ -30,11 +30,22 @@ pub struct Opts {
     pub on_sample: OnSample,
 }
 
+/// Controls the format of [`Stat`][crate::count::Stat].
 #[derive(Clone, Debug, Default)]
 pub struct StatFormat {
+    /// Contains the event ID ([`Stat::id`][crate::count::Stat::id]
+    /// and [`SiblingStat::id`][crate::count::SiblingStat::id]).
     pub id: bool,
+
+    /// Contains the [enabled time][crate::count::Stat::time_enabled] of the counter.
     pub time_enabled: bool,
+
+    /// Contains the [running time][crate::count::Stat::time_running] of the counter.
     pub time_running: bool,
+
+    /// Contains the number of lost records ([`Stat::lost_records`][crate::count::Stat::lost_records].
+    /// and [`SiblingStat::lost_records`][crate::count::SiblingStat::lost_records]).
+    ///
     /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: bool,
 }
