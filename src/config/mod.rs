@@ -318,10 +318,19 @@ pub enum Repr {
     Vars,
 }
 
+/// Call chain options.
 #[derive(Clone, Debug)]
 pub struct CallChain {
+    /// Exclude user call chains.
     pub exclude_user: bool,
+
+    /// Exclude kernel call chains.
     pub exclude_kernel: bool,
+
+    /// How many stack frames to report when generating the call chain.
+    ///
+    /// The maximum frames is specified in `/proc/sys/kernel/perf_event_max_stack`.
+    ///
     /// Since `linux-4.8`: <https://github.com/torvalds/linux/commit/97c79a38cd454602645f0470ffb444b3b75ce574>
     pub max_stack_frames: u16,
 }
