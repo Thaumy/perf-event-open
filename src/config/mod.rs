@@ -60,9 +60,21 @@ pub struct Priv {
     pub idle: bool,
 }
 
+/// Controls the inherit behavior.
 #[derive(Clone, Debug)]
 pub enum Inherit {
+    /// New child tasks will inherit the counter.
+    ///
+    /// This indicates if the process we monitoring creates new tasks
+    /// (child process or thread), the counter will count events that
+    /// happens in these tasks.
+    ///
+    /// This applies only to new children, not to any existing children at the time
+    /// the counter is created (nor to any new children of existing children).
     NewChild,
+
+    /// Same as [`NewChild`][Self::NewChild], but only new threads will inherit the counter.
+    ///
     /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/2b26f0aa004995f49f7b6f4100dd0e4c39a9ed5f>
     NewThread,
 }
