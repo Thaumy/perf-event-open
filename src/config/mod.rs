@@ -369,6 +369,10 @@ pub struct CallChain {
     pub max_stack_frames: u16,
 }
 
+/// Register mask that defines the set of CPU registers to dump on samples.
+///
+/// The layout of the register mask is architecture-specific and is described
+/// in the kernel header file `arch/<arch>/include/uapi/asm/perf_regs.h`.
 #[derive(Clone, Debug)]
 pub struct RegsMask(pub u64);
 
