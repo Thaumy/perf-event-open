@@ -92,9 +92,14 @@ pub enum Inherit {
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12535
+/// Counter behavior when calling [`execve`](https://man7.org/linux/man-pages/man2/execve.2.html).
 #[derive(Clone, Debug)]
 pub enum OnExecve {
+    /// Enable counter.
     Enable,
+
+    /// Remove counter.
+    ///
     /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/2e498d0a74e5b88a6689ae1b811f247f91ff188e>
     Remove,
 }
