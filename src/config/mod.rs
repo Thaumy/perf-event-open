@@ -50,13 +50,25 @@ pub struct Opts {
     pub pause_aux: bool,
 }
 
+/// Privilege levels.
 #[derive(Clone, Debug, Default)]
 pub struct Priv {
+    /// User space.
     pub user: bool,
+
+    /// Kernel space.
     pub kernel: bool,
+
+    /// Hypervisor.
     pub hv: bool,
+
+    /// Host mode.
     pub host: bool,
+
+    /// Guest mode.
     pub guest: bool,
+
+    /// Idle task.
     pub idle: bool,
 }
 
