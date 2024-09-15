@@ -151,9 +151,122 @@ impl StatFormat {
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L9958
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L5944
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L10036
+/// Controls when to generate a [sample record][crate::sample::record::sample::Sample].
+///
+/// Defaults to `Count(0)` (no sample mode in `perf record` command),
+/// set it to the desired rate to generate sample records.
+///
+/// The maximum sample rate is specified in `/proc/sys/kernel/perf_event_max_sample_rate`,
+/// [`Throttle`][crate::sample::record::throttle::Throttle] record will be generated if
+/// the limit has been reached.
+///
+/// Meanwhile, `/proc/sys/kernel/perf_cpu_time_max_percent` limits the CPU time allowed
+/// to handle sampling (0 means unlimited). Sampling also will be throttled if this limit
+/// has been reached.
+///
+/// # Event overflow
+///
+/// The kernel maintains an unsigned counter with an appropriate negative initial value,
+/// which will finally overflows since every event increase it by one. Then sampling will
+/// be triggered and that counter will be reset to prepare for the next overflow. This is
+/// what this option actually controls.
+///
+/// In addition to asynchronous iterators with [wake up][WakeUp] option, overflow can
+/// also be captured by enabling I/O signaling from the perf event fd, which indicates
+/// `POLL_IN` on each overflow.
+///
+/// Here is an example:
+///
+/// ```rust
+/// // Fork to avoid signal handler conflicts.
+/// # unsafe {
+/// #     let child = libc::fork();
+/// #     if child > 0 {
+/// #         let mut code = 0;
+/// #         libc::waitpid(child, &mut code as _, 0);
+/// #         assert_eq!(code, 0);
+/// #         return;
+/// #     }
+/// # }
+/// #
+/// # unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) };
+/// #
+/// # let result = std::panic::catch_unwind(|| {
+/// use std::mem::MaybeUninit;
+/// use std::os::fd::AsRawFd;
+/// use std::ptr::null_mut;
+/// use std::sync::atomic::AtomicBool;
+/// use std::sync::atomic::Ordering;
+///
+/// use perf_event_open::config::{Cpu, Opts, Proc, SampleOn};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::sw::Software;
+///
+/// static IN: AtomicBool = AtomicBool::new(false);
+///
+/// let event = Software::TaskClock;
+/// let target = (Proc::CURRENT, Cpu::ALL);
+/// let mut opts = Opts::default();
+/// opts.sample_on = SampleOn::Count(1_000_000); // 1ms
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+///
+/// // Enable I/O signals from perf event fd to the current process.
+/// let fd = counter.file().as_raw_fd();
+/// unsafe {
+///     libc::fcntl(fd, libc::F_SETFL, libc::O_ASYNC);
+///     // The value of `F_SETSIG` is 10, and libc crate does not have
+///     // that binding (same as `POLL_IN` below).
+///     libc::fcntl(fd, 10, libc::SIGIO);
+///     libc::fcntl(fd, libc::F_SETOWN, libc::getpid());
+/// }
+///
+/// fn handler(num: i32, info: *const libc::siginfo_t) {
+///     assert_eq!(num, libc::SIGIO);
+///     let si_code = unsafe { *info }.si_code;
+///     assert_eq!(si_code, 1); // POLL_IN
+///     IN.store(true, Ordering::Relaxed);
+/// }
+/// let act = libc::sigaction {
+///     sa_sigaction: handler as _,
+///     sa_mask: unsafe { MaybeUninit::zeroed().assume_init() },
+///     sa_flags: libc::SA_SIGINFO,
+///     sa_restorer: None,
+/// };
+/// unsafe { libc::sigaction(libc::SIGIO, &act as _, null_mut()) };
+///
+/// let sampler = counter.sampler(5).unwrap();
+/// counter.enable().unwrap();
+///
+/// while !IN.load(Ordering::Relaxed) {
+///     std::hint::spin_loop();
+/// }
+///
+/// println!("{:-?}", sampler.iter().next());
+/// # });
+/// # if result.is_err() {
+/// #     unsafe { libc::abort() };
+/// # }
+///
+/// # unsafe { libc::exit(0) };
+/// ```
+///
+/// For more information on I/O signals, see also
+/// [`Sampler::enable_counter_with`][crate::sample::Sampler::enable_counter_with].
 #[derive(Clone, Debug)]
 pub enum SampleOn {
+    /// Sample on frequency (Hz).
+    ///
+    /// The kernel will adjust the sampling period to try and achieve the desired rate.
+    ///
+    /// `Freq(0)` means no overflow, i.e., sample records will never be generated.
     Freq(u64),
+
+    /// Sample on every N event counts.
+    ///
+    /// It is referred to sample period.
+    ///
+    /// `Count(0)` is the default value for `SampleOn`, it has the same meaning as `Freq(0)`.
     Count(u64),
 }
 
