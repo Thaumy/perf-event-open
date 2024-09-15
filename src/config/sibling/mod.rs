@@ -71,6 +71,8 @@ impl StatFormat {
     }
 }
 
+/// The action to perform when generating the [sample record][crate::sample::record::sample::Sample].
+///
 #[derive(Clone, Debug, Default)]
 pub struct OnSample {
     /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
@@ -78,13 +80,22 @@ pub struct OnSample {
 
     // Must be used together with `remove_on_exec`:
     // https://github.com/torvalds/linux/blob/2408a807bfc3f738850ef5ad5e3fd59d66168996/kernel/events/core.c#L12582
+    /// Enables synchronous signal delivery of `SIGTRAP` to the target
+    /// process on event overflow.
+    ///
+    /// Same as [`Opts::sigtrap_on_sample`][super::Opts::sigtrap_on_sample],
+    /// but for sibling events.
+    ///
     /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/97ba62b278674293762c3d91f724f1bb922f04e0>
     pub sigtrap: Option<SigData>,
 }
 
+/// AUX tracer action.
 /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
 #[derive(Clone, Debug)]
 pub enum AuxTracer {
+    /// Pause [AUX tracer][crate::sample::auxiliary::AuxTracer].
     Pause,
+    /// Resume [AUX tracer][crate::sample::auxiliary::AuxTracer].
     Resume,
 }
