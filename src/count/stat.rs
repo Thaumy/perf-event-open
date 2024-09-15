@@ -3,15 +3,36 @@ use std::mem::MaybeUninit;
 use crate::ffi::{bindings as b, deref_offset};
 use crate::sample::record::debug;
 
+/// Event statistics.
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Stat {
+    /// Event count.
     pub count: u64,
+
+    /// Event ID.
     pub id: Option<u64>,
+
+    /// The enabled time of the counter.
+    ///
+    /// This can be used to calculate estimated totals if the PMU is overcommitted and multiplexing is happening,
+    /// the raw count can be scaled by `raw / (time_running / time_enabled)` to estimate the totals.
     pub time_enabled: Option<u64>,
+
+    /// The running time of the counter.
+    ///
+    /// Usually used together with [`time_enabled`][Self::time_enabled].
     pub time_running: Option<u64>,
+
+    /// The number of lost records.
+    ///
+    /// If the sampler ring-buffer has no more space to hold the new records
+    /// or the ring-buffer output is paused, the records are considered lost.
+    ///
     /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: Option<u64>,
+
+    /// Sibling event statistics.
     pub siblings: Vec<SiblingStat>,
 }
 
@@ -140,11 +161,21 @@ debug!(Stat {
     {siblings},
 });
 
+/// Sibling event statistics.
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SiblingStat {
+    /// Event count.
     pub count: u64,
+
+    /// Event ID.
     pub id: Option<u64>,
+
+    /// The number of lost records.
+    ///
+    /// If the sampler ring-buffer has no more space to hold the new records
+    /// or the ring-buffer output is paused, the records are considered lost.
+    ///
     /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: Option<u64>,
 }
