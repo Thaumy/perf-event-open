@@ -489,24 +489,55 @@ pub struct CallChain {
 #[derive(Clone, Debug)]
 pub struct RegsMask(pub u64);
 
+/// Generate extra record types.
 #[derive(Clone, Debug, Default)]
 pub struct ExtraRecord {
+    /// Generate [`Fork`][crate::sample::record::task::Fork]
+    /// and [`Exit`][crate::sample::record::task::Exit] records.
     pub task: bool,
+
+    /// Generate [`Read`][crate::sample::record::read::Read] records.
+    ///
+    /// Only meaningful if [`inherit`][Opts::inherit] is enabled.
     pub read: bool,
+
     // This also enables `task`:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8389
+    /// Generate [`Comm`][crate::sample::record::comm::Comm] records.
+    ///
+    /// This also enables [`Self::task`].
     pub comm: bool,
+
+    /// [`Mmap`][crate::sample::record::mmap::Mmap] record options.
     pub mmap: Mmap,
+
+    /// Generate [`Cgroup`][crate::sample::record::cgroup::Cgroup] records.
+    ///
     /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/96aaab686505c449e24d76e76507290dcc30e008>
     pub cgroup: bool,
+
+    /// Generate [`Ksymbol`][crate::sample::record::ksymbol::Ksymbol] records.
+    ///
     /// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/76193a94522f1d4edf2447a536f3f796ce56343b>
     pub ksymbol: bool,
+
+    /// Generate [`BpfEvent`][crate::sample::record::bpf::BpfEvent] records.
+    ///
     /// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/6ee52e2a3fe4ea35520720736e6791df1fb67106>
     pub bpf_event: bool,
+
+    /// Generate [`TextPoke`][crate::sample::record::text_poke::TextPoke] records.
+    ///
     /// Since `linux-5.9`: <https://github.com/torvalds/linux/commit/e17d43b93e544f5016c0251d2074c15568d5d963>
     pub text_poke: bool,
+
+    /// Generate [`CtxSwitch`][crate::sample::record::ctx::CtxSwitch] records.
+    ///
     /// Since `linux-4.3`: <https://github.com/torvalds/linux/commit/45ac1403f564f411c6a383a2448688ba8dd705a4>
     pub ctx_switch: bool,
+
+    /// Generate [`Namespaces`][crate::sample::record::ns::Namespaces] records.
+    ///
     /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/e422267322cd319e2695a535e47c5b1feeac45eb>
     pub namespaces: bool,
 }
