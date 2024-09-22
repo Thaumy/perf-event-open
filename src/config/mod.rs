@@ -566,17 +566,27 @@ pub struct ExtraRecord {
     pub namespaces: bool,
 }
 
+/// Controls the format of [`RecordId`][crate::sample::record::RecordId].
 #[derive(Clone, Debug, Default)]
 pub struct RecordIdFormat {
     // PERF_SAMPLE_ID
+    /// Contains [event ID][crate::sample::record::RecordId::id].
     pub id: bool,
+
     // PERF_SAMPLE_STREAM_ID
+    /// Contains [event stream ID][crate::sample::record::RecordId::stream_id].
     pub stream_id: bool,
+
     // PERF_SAMPLE_CPU
+    /// Contains [CPU number][crate::sample::record::RecordId::cpu].
     pub cpu: bool,
+
     // PERF_SAMPLE_TID
+    /// Contains [task info][crate::sample::record::RecordId::task].
     pub task: bool,
+
     // PERF_SAMPLE_TIME
+    /// Contains [timestamp][crate::sample::record::RecordId::time].
     pub time: bool,
 }
 
