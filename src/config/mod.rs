@@ -314,52 +314,76 @@ impl Default for SampleSkid {
     }
 }
 
+/// Controls the format of [sample record][crate::sample::record::sample::Sample].
 #[derive(Clone, Debug, Default)]
 pub struct SampleFormat {
     // PERF_SAMPLE_READ
+    /// Contains [counter statistics][crate::sample::record::sample::Sample::stat].
     pub stat: bool,
     // PERF_SAMPLE_PERIOD
+    /// Contains [sample period][crate::sample::record::sample::Sample::period].
     pub period: bool,
     // PERF_SAMPLE_CGROUP
+    /// Contains [cgroup info][crate::sample::record::sample::Sample::cgroup].
+    ///
     /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/6546b19f95acc986807de981402bbac6b3a94b0f>
     pub cgroup: bool,
     // PERF_SAMPLE_CALLCHAIN
+    /// Contains [call chain][crate::sample::record::sample::Sample::call_chain].
     pub call_chain: Option<CallChain>,
     // PERF_SAMPLE_STACK_USER
+    /// Contains [user stack][crate::sample::record::sample::Sample::user_stack].
     pub user_stack: Option<Size>,
 
     // PERF_SAMPLE_ADDR
+    /// Contains [data address][crate::sample::record::sample::Sample::data_addr].
     pub data_addr: bool,
     // PERF_SAMPLE_PHYS_ADDR
+    /// Contains [physical data address][crate::sample::record::sample::Sample::data_phys_addr].
+    ///
     /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/fc7ce9c74c3ad232b084d80148654f926d01ece7>
     pub data_phys_addr: bool,
     // PERF_SAMPLE_DATA_PAGE_SIZE
+    /// Contains [data page size][crate::sample::record::sample::Sample::data_page_size].
+    ///
     /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/8d97e71811aaafe4abf611dc24822fd6e73df1a1>
     pub data_page_size: bool,
     // PERF_SAMPLE_DATA_SRC
+    /// Contains [data source][crate::sample::record::sample::Sample::data_source].
     pub data_source: bool,
 
     // PERF_SAMPLE_IP
+    /// Contains [code address][crate::sample::record::sample::Sample::code_addr].
     pub code_addr: bool,
     // PERF_SAMPLE_CODE_PAGE_SIZE
+    /// Contains [code page size][crate::sample::record::sample::Sample::code_page_size].
+    ///
     /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/995f088efebe1eba0282a6ffa12411b37f8990c2>
     pub code_page_size: bool,
 
     // PERF_SAMPLE_REGS_USER
+    /// Contains [user level registers][crate::sample::record::sample::Sample::user_regs].
     pub user_regs: Option<RegsMask>,
     // PERF_SAMPLE_REGS_INTR
+    /// Contains [registers on interrupt][crate::sample::record::sample::Sample::intr_regs].
     pub intr_regs: Option<RegsMask>,
 
     // PERF_SAMPLE_RAW
+    /// Contains [raw data][crate::sample::record::sample::Sample::raw].
     pub raw: bool,
     // PERF_SAMPLE_BRANCH_STACK
+    /// Contains [LBR data][crate::sample::record::sample::Sample::lbr].
     pub lbr: Option<Lbr>,
     // PERF_SAMPLE_AUX
+    /// Contains [AUX area snapshot][crate::sample::record::sample::Sample::aux].
+    ///
     /// Since `linux-5.5`: <https://github.com/torvalds/linux/commit/a4faf00d994c40e64f656805ac375c65e324eefb>
     pub aux: Option<Size>,
     // PERF_SAMPLE_TRANSACTION
+    /// Contains [the sources of any transactional memory aborts][crate::sample::record::sample::Sample::txn].
     pub txn: bool,
     // PERF_SAMPLE_WEIGHT / PERF_SAMPLE_WEIGHT_STRUCT
+    /// Contains [sample weight][crate::sample::record::sample::Sample::weight].
     pub weight: Option<Repr>,
 }
 
