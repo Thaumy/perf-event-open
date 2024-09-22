@@ -627,21 +627,38 @@ pub enum Clock {
     MonotonicRaw,
 }
 
+/// [`Mmap`][crate::sample::record::mmap::Mmap] record options.
 #[derive(Clone, Debug, Default)]
 pub struct Mmap {
     // This also enables `task`:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8389
+    /// Generate [`Mmap`] record when mmap is executable (with `PROT_EXEC`).
+    ///
+    /// This also enables [`ExtraRecord::task`].
     pub code: bool,
 
     // This also enables `task`:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8389
+    /// Generate [`Mmap`] record when mmap is non-executable (without `PROT_EXEC`).
+    ///
+    /// This also enables [`ExtraRecord::task`].
     pub data: bool,
 
     // This also enables `task`:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8389
+    /// Enable [extension fields][crate::sample::record::mmap::Mmap::ext].
+    ///
+    /// This also enables [`Self::code`] and [`ExtraRecord::task`].
     pub ext: Option<UseBuildId>,
 }
 
+/// Carry [`BuildId`][crate::sample::record::mmap::Info::BuildId] instead of
+/// [`Device`][crate::sample::record::mmap::Info::Device] in [`Mmap`][crate::sample::record::mmap::Mmap] records
+/// if possible.
+///
+/// The Build ID is carried if memory is mapped to an ELF file containing
+/// a Build ID. Otherwise, device info is used as a fallback.
+///
 /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/88a16a1309333e43d328621ece3e9fa37027e8eb>
 #[derive(Clone, Debug, Default)]
 pub struct UseBuildId(pub bool);
