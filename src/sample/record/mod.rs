@@ -6,6 +6,37 @@ pub struct Task {
     pub tid: u32,
 }
 
+#[derive(Clone, Debug)]
+pub enum Priv {
+    // PERF_RECORD_MISC_USER
+    User,
+    // PERF_RECORD_MISC_KERNEL
+    Kernel,
+    // PERF_RECORD_MISC_HYPERVISOR
+    Hv,
+    // PERF_RECORD_MISC_GUEST_USER
+    GuestUser,
+    // PERF_RECORD_MISC_GUEST_KERNEL
+    GuestKernel,
+    // PERF_RECORD_MISC_CPUMODE_UNKNOWN
+    Unknown,
+}
+
+impl Priv {
+    pub(crate) fn from_misc(misc: u16) -> Self {
+        // 3 bits
+        match misc as u32 & b::PERF_RECORD_MISC_CPUMODE_MASK {
+            b::PERF_RECORD_MISC_USER => Self::User,
+            b::PERF_RECORD_MISC_KERNEL => Self::Kernel,
+            b::PERF_RECORD_MISC_HYPERVISOR => Self::Hv,
+            b::PERF_RECORD_MISC_GUEST_USER => Self::GuestUser,
+            b::PERF_RECORD_MISC_GUEST_KERNEL => Self::GuestKernel,
+            b::PERF_RECORD_MISC_CPUMODE_UNKNOWN => Self::Unknown,
+            _ => Self::Unknown, // For compatibility, not ABI.
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct RecordId {
     pub id: Option<u64>,
