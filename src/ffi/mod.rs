@@ -1,4 +1,5 @@
 pub mod bindings;
+pub mod syscall;
 
 // Dereferences the pointer and offsets by the size of the
 // pointee type, then returns the dereferenced value.
