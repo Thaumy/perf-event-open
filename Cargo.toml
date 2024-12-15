@@ -10,3 +10,8 @@ description = "High-level wrapper for the perf_event_open system call"
 rust-version = "1.80.0"
 
 [dependencies]
+
+[build-dependencies]
+anyhow = "1.0"
+bindgen = "0.71"
+itertools = "0.14"
