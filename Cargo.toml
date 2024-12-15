@@ -9,6 +9,8 @@ repository = "https://github.com/Thaumy/perf-event-open"
 description = "High-level wrapper for the perf_event_open system call"
 rust-version = "1.80.0"
 
+build = "build/main.rs"
+
 [features]
 default = ["latest"]
 "latest" = ["linux-6.13"]
