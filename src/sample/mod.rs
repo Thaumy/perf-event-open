@@ -13,6 +13,7 @@ use crate::ffi::syscall::ioctl_arg;
 use crate::ffi::{bindings as b, Metadata, PAGE_SIZE};
 
 mod arena;
+pub mod auxiliary;
 pub mod iter;
 pub mod rb;
 pub mod record;
