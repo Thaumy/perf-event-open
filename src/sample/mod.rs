@@ -4,6 +4,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 use arena::Arena;
+use auxiliary::AuxTracer;
 use iter::{CowIter, Iter};
 use rb::Rb;
 use record::{Parser, UnsafeParser};
@@ -59,6 +60,12 @@ impl Sampler {
 
     pub fn parser(&self) -> &UnsafeParser {
         &self.parser.0
+    }
+
+    pub fn aux_tracer(&self, exp: u8) -> Result<AuxTracer<'_>> {
+        let alloc = self.arena.as_slice();
+        let metadata = unsafe { &mut *(alloc.as_ptr() as *mut Metadata) };
+        AuxTracer::new(&self.perf, metadata, exp)
     }
 
     pub fn pause(&self) -> Result<()> {
