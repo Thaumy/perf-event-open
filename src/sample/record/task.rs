@@ -44,3 +44,26 @@ impl Exit {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct Fork {
+    pub record_id: Option<RecordId>,
+
+    pub task: Task,
+    pub parent_task: Task,
+    pub time: u64,
+}
+
+impl Fork {
+    pub(crate) unsafe fn from_ptr(ptr: *const u8, sample_id_all: Option<SampleType>) -> Self {
+        // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8423
+        let layout = Exit::from_ptr(ptr, sample_id_all);
+
+        Self {
+            record_id: layout.record_id,
+            task: layout.task,
+            parent_task: layout.parent_task,
+            time: layout.time,
+        }
+    }
+}
