@@ -259,8 +259,12 @@ pub struct BranchType {
 #[derive(Clone, Debug, Default)]
 pub struct EntryFormat {
     // PERF_SAMPLE_BRANCH_NO_FLAGS
+    /// Must be enabled before `linux-4.5`:
+    /// <https://github.com/torvalds/linux/commit/b16a5b52eb90d92b597257778e51e1fdc6423e64>
     pub flags: bool,
     // PERF_SAMPLE_BRANCH_NO_CYCLES
+    /// Must be enabled before `linux-4.5`:
+    /// <https://github.com/torvalds/linux/commit/b16a5b52eb90d92b597257778e51e1fdc6423e64>
     pub cycles: bool,
     // PERF_SAMPLE_BRANCH_COUNTERS
     /// Since `linux-6.8`: <https://github.com/torvalds/linux/commit/571d91dcadfa3cef499010b4eddb9b58b0da4d24>

@@ -197,10 +197,16 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
             };
         }
         if !it.entry_format.flags {
-            attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_NO_FLAGS as u64;
+            #[cfg(feature = "linux-4.5")]
+            (attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_NO_FLAGS as u64);
+            #[cfg(not(feature = "linux-4.5"))]
+            crate::config::unsupported!();
         }
         if !it.entry_format.cycles {
-            attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_NO_CYCLES as u64;
+            #[cfg(feature = "linux-4.5")]
+            (attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_NO_CYCLES as u64);
+            #[cfg(not(feature = "linux-4.5"))]
+            crate::config::unsupported!();
         }
         when!("linux-6.8", counter, PERF_SAMPLE_BRANCH_COUNTERS);
         when!("linux-4.14", branch_type, PERF_SAMPLE_BRANCH_TYPE_SAVE);
