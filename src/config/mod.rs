@@ -318,6 +318,7 @@ pub struct ExtraRecord {
     pub bpf_event: bool,
     /// Since `linux-5.9`: <https://github.com/torvalds/linux/commit/e17d43b93e544f5016c0251d2074c15568d5d963>
     pub text_poke: bool,
+    /// Since `linux-4.3`: <https://github.com/torvalds/linux/commit/45ac1403f564f411c6a383a2448688ba8dd705a4>
     pub ctx_switch: bool,
     /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/e422267322cd319e2695a535e47c5b1feeac45eb>
     pub namespaces: bool,

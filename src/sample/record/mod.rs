@@ -61,6 +61,7 @@ pub enum Record {
     /// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/6ee52e2a3fe4ea35520720736e6791df1fb67106>
     BpfEvent(Box<BpfEvent>),
     // PERF_RECORD_SWITCH | PERF_RECORD_SWITCH_CPU_WIDE
+    /// Since `linux-4.3`: <https://github.com/torvalds/linux/commit/45ac1403f564f411c6a383a2448688ba8dd705a4>
     CtxSwitch(Box<CtxSwitch>),
     // PERF_RECORD_NAMESPACES
     /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/e422267322cd319e2695a535e47c5b1feeac45eb>
@@ -401,7 +402,9 @@ impl UnsafeParser {
             b::PERF_RECORD_TEXT_POKE => from(TextPoke::from_ptr(ptr, sample_id_all)),
             #[cfg(feature = "linux-5.1")]
             b::PERF_RECORD_BPF_EVENT => from(BpfEvent::from_ptr(ptr, sample_id_all)),
+            #[cfg(feature = "linux-4.3")]
             b::PERF_RECORD_SWITCH => from(CtxSwitch::from_ptr(ptr, false, misc, sample_id_all)),
+            #[cfg(feature = "linux-4.3")]
             b::PERF_RECORD_SWITCH_CPU_WIDE => {
                 from(CtxSwitch::from_ptr(ptr, true, misc, sample_id_all))
             }

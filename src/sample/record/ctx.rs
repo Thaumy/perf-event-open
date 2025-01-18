@@ -1,5 +1,6 @@
 use super::{RecordId, Task};
 
+/// Since `linux-4.3`: <https://github.com/torvalds/linux/commit/45ac1403f564f411c6a383a2448688ba8dd705a4>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CtxSwitch {
@@ -9,6 +10,7 @@ pub struct CtxSwitch {
 }
 
 impl CtxSwitch {
+    #[cfg(feature = "linux-4.3")]
     pub(crate) unsafe fn from_ptr(
         mut ptr: *const u8,
         cpu_wide: bool,

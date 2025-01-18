@@ -272,7 +272,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     when!("linux-5.1", ksymbol, set_ksymbol);
     when!("linux-5.1", bpf_event, set_bpf_event);
     when!("linux-5.9", text_poke, set_text_poke);
-    when!(ctx_switch, set_context_switch);
+    when!("linux-4.3", ctx_switch, set_context_switch);
     when!("linux-4.12", namespaces, set_namespaces);
 
     attr.set_sample_id_all(opts.record_id_all as _);
