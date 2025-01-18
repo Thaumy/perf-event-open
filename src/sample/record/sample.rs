@@ -17,6 +17,7 @@ pub struct Sample {
     pub user_stack: Option<Vec<u8>>,
 
     pub data_addr: Option<u64>,
+    /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/fc7ce9c74c3ad232b084d80148654f926d01ece7>
     pub data_phys_addr: Option<u64>,
     /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/8d97e71811aaafe4abf611dc24822fd6e73df1a1>
     pub data_page_size: Option<u64>,
@@ -233,7 +234,7 @@ impl Sample {
         let data_source = when!(PERF_SAMPLE_DATA_SRC, { parse_data_source(&mut ptr) });
         let txn = when!(PERF_SAMPLE_TRANSACTION, { parse_txn(&mut ptr) });
         let intr_regs = when!(PERF_SAMPLE_REGS_INTR, { parse_regs(&mut ptr, intr_regs) }).flatten();
-        let data_phys_addr = when!(PERF_SAMPLE_PHYS_ADDR, u64);
+        let data_phys_addr = when!("linux-4.14", PERF_SAMPLE_PHYS_ADDR, u64);
         let cgroup = when!("linux-5.7", PERF_SAMPLE_CGROUP, u64);
         let data_page_size = when!("linux-5.11", PERF_SAMPLE_DATA_PAGE_SIZE, u64);
         let code_page_size = when!("linux-5.11", PERF_SAMPLE_CODE_PAGE_SIZE, u64);
@@ -365,6 +366,7 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
             in_tx: when!(0b100),      // 2, 1 bit
             abort: when!(0b1000),     // 3, 1 bit
             cycles: (bits >> 4) as _, // 4-19, 16 bits
+            #[cfg(feature = "linux-4.14")]
             // 20-23, 4 bits
             branch_type: match ((bits >> 20) & 0b1111) as _ {
                 b::PERF_BR_UNKNOWN => BranchType::Unknown,
@@ -404,6 +406,8 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
                 // For compatibility, not ABI.
                 _ => BranchType::Unknown,
             },
+            #[cfg(not(feature = "linux-4.14"))]
+            branch_type: BranchType::Unknown,
             #[cfg(feature = "linux-6.1")]
             // 24-25, 2 bits
             branch_spec: match ((bits >> 24) & 0b11) as _ {
@@ -522,6 +526,7 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
     };
 
     let shifted1 = bits >> b::PERF_MEM_SNOOP_SHIFT;
+    #[cfg(feature = "linux-4.14")]
     let shifted2 = bits >> b::PERF_MEM_SNOOPX_SHIFT;
     #[rustfmt::skip]
     let snoop = MemSnoop {
@@ -530,7 +535,10 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         hit:   when!(shifted1, PERF_MEM_SNOOP_HIT),
         miss:  when!(shifted1, PERF_MEM_SNOOP_MISS),
         hit_m: when!(shifted1, PERF_MEM_SNOOP_HITM),
+        #[cfg(feature = "linux-4.14")]
         fwd:   when!(shifted2, PERF_MEM_SNOOPX_FWD),
+        #[cfg(not(feature = "linux-4.14"))]
+        fwd:   false,
         #[cfg(feature = "linux-6.1")]
         peer:  when!(shifted2, PERF_MEM_SNOOPX_PEER),
         #[cfg(not(feature = "linux-6.1"))]
@@ -556,7 +564,9 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         fault:  when!(shifted, PERF_MEM_TLB_OS),
     };
 
+    #[cfg(feature = "linux-4.14")]
     let shifted = bits >> b::PERF_MEM_LVLNUM_SHIFT;
+    #[cfg(feature = "linux-4.14")]
     #[rustfmt::skip]
     let level2 = match (shifted & 0b1111) as u32 {
         b::PERF_MEM_LVLNUM_L1        => MemLevel2::L1,
@@ -581,8 +591,13 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         // For compatibility, not ABI.
         _ => MemLevel2::Unknown,
     };
+    #[cfg(not(feature = "linux-4.14"))]
+    let level2 = MemLevel2::Unknown;
 
+    #[cfg(feature = "linux-4.14")]
     let remote = (bits >> b::PERF_MEM_REMOTE_SHIFT) & 1 > 0;
+    #[cfg(not(feature = "linux-4.14"))]
+    let remote = false;
 
     #[cfg(feature = "linux-5.12")]
     let shifted = bits >> b::PERF_MEM_BLK_SHIFT;
@@ -656,6 +671,7 @@ pub struct Entry {
     pub abort: bool,
     pub cycles: u16,
 
+    /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/eb0baf8a0d9259d168523b8e7c436b55ade7c546>
     pub branch_type: BranchType,
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/93315e46b000fc80fff5d53c3f444417fb3df6de>
     pub branch_spec: BranchSpec,
@@ -667,6 +683,7 @@ pub struct Entry {
     pub counter: Option<u64>,
 }
 
+/// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/eb0baf8a0d9259d168523b8e7c436b55ade7c546>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchType {
@@ -800,7 +817,9 @@ pub struct DataSource {
     pub snoop: MemSnoop,
     pub lock: MemLock,
     pub tlb: MemTlb,
+    /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
     pub level2: MemLevel2,
+    /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
     pub remote: bool,
     /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/61b985e3e775a3a75fda04ce7ef1b1aefc4758bc>
     pub block: MemBlock,
@@ -873,6 +892,7 @@ pub struct MemSnoop {
     // PERF_MEM_SNOOP_HITM
     pub hit_m: bool,
     // PERF_MEM_SNOOPX_FWD
+    /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
     pub fwd: bool,
     // PERF_MEM_SNOOPX_PEER
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/cfef80bad4cf79cdc964a53c98254dfa462be83f>
@@ -914,6 +934,7 @@ pub struct MemTlb {
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1357
+/// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemLevel2 {

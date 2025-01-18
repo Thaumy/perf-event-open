@@ -132,7 +132,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
         sample_type |= b::PERF_SAMPLE_CALLCHAIN;
     });
     when!(data_addr, PERF_SAMPLE_ADDR);
-    when!(data_phys_addr, PERF_SAMPLE_PHYS_ADDR);
+    when!("linux-4.14", data_phys_addr, PERF_SAMPLE_PHYS_ADDR);
     when!("linux-5.11", data_page_size, PERF_SAMPLE_DATA_PAGE_SIZE);
     when!(data_source, PERF_SAMPLE_DATA_SRC);
     when!(code_addr, PERF_SAMPLE_IP);
@@ -203,7 +203,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
             attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_NO_CYCLES as u64;
         }
         when!("linux-6.8", counter, PERF_SAMPLE_BRANCH_COUNTERS);
-        when!(branch_type, PERF_SAMPLE_BRANCH_TYPE_SAVE);
+        when!("linux-4.14", branch_type, PERF_SAMPLE_BRANCH_TYPE_SAVE);
         when!("linux-6.1", branch_priv, PERF_SAMPLE_BRANCH_PRIV_SAVE);
 
         sample_type |= b::PERF_SAMPLE_BRANCH_STACK;

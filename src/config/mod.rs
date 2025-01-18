@@ -164,6 +164,7 @@ pub struct SampleFormat {
     // PERF_SAMPLE_ADDR
     pub data_addr: bool,
     // PERF_SAMPLE_PHYS_ADDR
+    /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/fc7ce9c74c3ad232b084d80148654f926d01ece7>
     pub data_phys_addr: bool,
     // PERF_SAMPLE_DATA_PAGE_SIZE
     /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/8d97e71811aaafe4abf611dc24822fd6e73df1a1>
@@ -266,6 +267,7 @@ pub struct EntryFormat {
     pub counter: bool,
 
     // PERF_SAMPLE_BRANCH_TYPE_SAVE
+    /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/eb0baf8a0d9259d168523b8e7c436b55ade7c546>
     pub branch_type: bool,
     // PERF_SAMPLE_BRANCH_PRIV_SAVE
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/5402d25aa5710d240040f73fb13d7d5c303ef071>
