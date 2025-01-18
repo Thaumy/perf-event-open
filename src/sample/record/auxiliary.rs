@@ -13,6 +13,7 @@ pub struct Aux {
     // PERF_AUX_FLAG_OVERWRITE
     pub overwrite: bool,
     // PERF_AUX_FLAG_PARTIAL
+    /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/ae0c2d995d648d5165545d5e05e2869642009b38>
     pub partial: bool,
     // PERF_AUX_FLAG_COLLISION
     /// Since `linux-4.15`: <https://github.com/torvalds/linux/commit/085b30625e39df67d7320f22269796276c6b0c11>
@@ -55,7 +56,7 @@ impl Aux {
         }
         let truncated = when!(PERF_AUX_FLAG_TRUNCATED);
         let overwrite = when!(PERF_AUX_FLAG_OVERWRITE);
-        let partial = when!(PERF_AUX_FLAG_PARTIAL);
+        let partial = when!("linux-4.12", PERF_AUX_FLAG_PARTIAL);
         let collision = when!("linux-4.15", PERF_AUX_FLAG_COLLISION);
         #[cfg(feature = "linux-5.13")]
         let pmu_format_type = {

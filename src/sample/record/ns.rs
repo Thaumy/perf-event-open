@@ -1,5 +1,6 @@
 use super::{RecordId, Task};
 
+/// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/e422267322cd319e2695a535e47c5b1feeac45eb>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Namespaces {
@@ -16,6 +17,7 @@ pub struct Namespaces {
 }
 
 impl Namespaces {
+    #[cfg(feature = "linux-4.12")]
     pub(crate) unsafe fn from_ptr(
         mut ptr: *const u8,
         sample_id_all: Option<super::SampleType>,

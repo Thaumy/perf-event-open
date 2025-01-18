@@ -63,6 +63,7 @@ pub enum Record {
     // PERF_RECORD_SWITCH | PERF_RECORD_SWITCH_CPU_WIDE
     CtxSwitch(Box<CtxSwitch>),
     // PERF_RECORD_NAMESPACES
+    /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/e422267322cd319e2695a535e47c5b1feeac45eb>
     Namespaces(Box<Namespaces>),
     // PERF_RECORD_ITRACE_START
     ItraceStart(Box<ItraceStart>),
@@ -404,6 +405,7 @@ impl UnsafeParser {
             b::PERF_RECORD_SWITCH_CPU_WIDE => {
                 from(CtxSwitch::from_ptr(ptr, true, misc, sample_id_all))
             }
+            #[cfg(feature = "linux-4.12")]
             b::PERF_RECORD_NAMESPACES => from(Namespaces::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_ITRACE_START => from(ItraceStart::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_AUX => from(Aux::from_ptr(ptr, sample_id_all)),
