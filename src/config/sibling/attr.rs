@@ -168,7 +168,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
         when!(any, PERF_SAMPLE_BRANCH_ANY);
         when!(any_return, PERF_SAMPLE_BRANCH_ANY_RETURN);
         when!(cond, PERF_SAMPLE_BRANCH_COND);
-        when!(ind_jump, PERF_SAMPLE_BRANCH_IND_JUMP);
+        when!("linux-4.2", ind_jump, PERF_SAMPLE_BRANCH_IND_JUMP);
         when!(call_stack, PERF_SAMPLE_BRANCH_CALL_STACK);
         when!("linux-4.4", call, PERF_SAMPLE_BRANCH_CALL);
         when!(any_call, PERF_SAMPLE_BRANCH_ANY_CALL);

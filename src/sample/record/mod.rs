@@ -90,6 +90,7 @@ pub enum Record {
     // PERF_RECORD_LOST
     LostRecords(Box<LostRecords>),
     // PERF_RECORD_LOST_SAMPLES
+    /// Since `linux-4.2`: <https://github.com/torvalds/linux/commit/f38b0dbb491a6987e198aa6b428db8692a6480f8>
     LostSamples(Box<LostSamples>),
 
     Unknown(Vec<u8>),
@@ -420,6 +421,7 @@ impl UnsafeParser {
             b::PERF_RECORD_THROTTLE => from(Throttle::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_UNTHROTTLE => from(Unthrottle::from_ptr(ptr, sample_id_all)),
             b::PERF_RECORD_LOST => from(LostRecords::from_ptr(ptr, sample_id_all)),
+            #[cfg(feature = "linux-4.2")]
             b::PERF_RECORD_LOST_SAMPLES => from(LostSamples::from_ptr(ptr, sample_id_all)),
             _ => Record::Unknown(bytes.to_vec()), // For compatibility, not ABI.
         };

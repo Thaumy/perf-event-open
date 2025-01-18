@@ -52,6 +52,7 @@ super::debug!(LostRecords {
     {lost_records},
 });
 
+/// Since `linux-4.2`: <https://github.com/torvalds/linux/commit/f38b0dbb491a6987e198aa6b428db8692a6480f8>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LostSamples {
@@ -61,6 +62,7 @@ pub struct LostSamples {
 }
 
 impl LostSamples {
+    #[cfg(feature = "linux-4.2")]
     pub(crate) unsafe fn from_ptr(mut ptr: *const u8, sample_id_all: Option<SampleType>) -> Self {
         // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1105
         // struct {

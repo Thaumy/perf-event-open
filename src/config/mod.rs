@@ -237,6 +237,7 @@ pub struct BranchType {
     // PERF_SAMPLE_BRANCH_COND
     pub cond: bool,
     // PERF_SAMPLE_BRANCH_IND_JUMP
+    /// Since `linux-4.2`: <https://github.com/torvalds/linux/commit/c9fdfa14c3792c0160849c484e83aa57afd80ccc>
     pub ind_jump: bool,
     // PERF_SAMPLE_BRANCH_CALL_STACK
     pub call_stack: bool,
