@@ -21,15 +21,20 @@ pub enum Type {
 pub enum Len {
     _1,
     _2,
+    /// Since `linux-4.10`: <https://github.com/torvalds/linux/commit/651be3cb085341a21847e47c694c249c3e1e4e5b>
     _3,
     _4,
+    /// Since `linux-4.10`: <https://github.com/torvalds/linux/commit/651be3cb085341a21847e47c694c249c3e1e4e5b>
     _5,
+    /// Since `linux-4.10`: <https://github.com/torvalds/linux/commit/651be3cb085341a21847e47c694c249c3e1e4e5b>
     _6,
+    /// Since `linux-4.10`: <https://github.com/torvalds/linux/commit/651be3cb085341a21847e47c694c249c3e1e4e5b>
     _7,
     _8,
 }
 
 impl Len {
+    #[cfg(feature = "linux-4.10")]
     pub(crate) const fn as_bp_len(&self) -> Result<u64> {
         let bp_len = match self {
             Self::_1 => b::HW_BREAKPOINT_LEN_1,
@@ -40,6 +45,18 @@ impl Len {
             Self::_6 => b::HW_BREAKPOINT_LEN_6,
             Self::_7 => b::HW_BREAKPOINT_LEN_7,
             Self::_8 => b::HW_BREAKPOINT_LEN_8,
+        };
+        Ok(bp_len as _)
+    }
+
+    #[cfg(not(feature = "linux-4.10"))]
+    pub(crate) fn as_bp_len(&self) -> Result<u64> {
+        let bp_len = match self {
+            Self::_1 => b::HW_BREAKPOINT_LEN_1,
+            Self::_2 => b::HW_BREAKPOINT_LEN_2,
+            Self::_4 => b::HW_BREAKPOINT_LEN_4,
+            Self::_8 => b::HW_BREAKPOINT_LEN_8,
+            _ => crate::config::unsupported!(),
         };
         Ok(bp_len as _)
     }
