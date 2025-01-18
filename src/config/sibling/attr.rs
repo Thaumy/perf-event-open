@@ -125,7 +125,10 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     when!(call_chain, it, {
         attr.set_exclude_callchain_user(it.exclude_user as _);
         attr.set_exclude_callchain_kernel(it.exclude_kernel as _);
-        attr.sample_max_stack = it.max_stack_frames;
+        #[cfg(feature = "linux-4.8")]
+        (attr.sample_max_stack = it.max_stack_frames);
+        #[cfg(not(feature = "linux-4.8"))]
+        crate::config::unsupported!(it.max_stack_frames > 0);
         sample_type |= b::PERF_SAMPLE_CALLCHAIN;
     });
     when!(data_addr, PERF_SAMPLE_ADDR);
