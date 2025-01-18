@@ -242,6 +242,7 @@ pub struct BranchType {
     pub call_stack: bool,
 
     // PERF_SAMPLE_BRANCH_CALL
+    /// Since `linux-4.4`: <https://github.com/torvalds/linux/commit/c229bf9dc179d2023e185c0f705bdf68484c1e73>
     pub call: bool,
     // PERF_SAMPLE_BRANCH_IND_CALL
     pub ind_call: bool,

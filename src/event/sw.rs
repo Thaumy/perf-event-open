@@ -18,6 +18,7 @@ pub enum Software {
     CgroupSwitch,
 
     Dummy,
+    /// Since `linux-4.4`: <https://github.com/torvalds/linux/commit/a43eec304259a6c637f4014a6d4767159b6a3aa3>
     BpfOutput,
     CpuMigration,
 }
@@ -40,6 +41,7 @@ super::try_from!(Software, value, {
         Software::CgroupSwitch   => b::PERF_COUNT_SW_CGROUP_SWITCHES,
 
         Software::Dummy          => b::PERF_COUNT_SW_DUMMY,
+        #[cfg(feature="linux-4.4")]
         Software::BpfOutput      => b::PERF_COUNT_SW_BPF_OUTPUT,
         Software::CpuMigration   => b::PERF_COUNT_SW_CPU_MIGRATIONS,
 
