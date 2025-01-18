@@ -68,14 +68,28 @@ impl Sampler {
         AuxTracer::new(&self.perf, metadata, exp)
     }
 
+    /// Since `linux-4.7`: <https://github.com/torvalds/linux/commit/86e7972f690c1017fd086cdfe53d8524e68c661c>
+    #[cfg(feature = "linux-4.7")]
     pub fn pause(&self) -> Result<()> {
         ioctl_arg(&self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as _, 1)?;
         Ok(())
     }
 
+    #[cfg(not(feature = "linux-4.7"))]
+    pub fn pause(&self) -> Result<()> {
+        crate::config::unsupported!()
+    }
+
+    /// Since `linux-4.7`: <https://github.com/torvalds/linux/commit/86e7972f690c1017fd086cdfe53d8524e68c661c>
+    #[cfg(feature = "linux-4.7")]
     pub fn resume(&self) -> Result<()> {
         ioctl_arg(&self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as _, 0)?;
         Ok(())
+    }
+
+    #[cfg(not(feature = "linux-4.7"))]
+    pub fn resume(&self) -> Result<()> {
+        crate::config::unsupported!()
     }
 
     pub fn enable_counter_with(&self, max_samples: u32) -> Result<()> {
