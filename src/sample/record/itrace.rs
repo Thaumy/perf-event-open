@@ -1,5 +1,6 @@
 use super::{RecordId, Task};
 
+/// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/ec0d7729bbaed4b9d2d3fada693278e13a3d1368>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ItraceStart {
@@ -9,6 +10,7 @@ pub struct ItraceStart {
 }
 
 impl ItraceStart {
+    #[cfg(feature = "linux-4.1")]
     pub(crate) unsafe fn from_ptr(
         mut ptr: *const u8,
         sample_id_all: Option<super::SampleType>,

@@ -44,6 +44,7 @@ pub struct Opts {
     // https://github.com/torvalds/linux/blob/2408a807bfc3f738850ef5ad5e3fd59d66168996/kernel/events/core.c#L12582
     /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/97ba62b278674293762c3d91f724f1bb922f04e0>
     pub sigtrap_on_sample: Option<SigData>,
+    /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/34f439278cef7b1177f8ce24f9fc81dfc6221d3b>
     pub timer: Option<Clock>,
     /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
     pub pause_aux: bool,
@@ -240,6 +241,7 @@ pub struct BranchType {
     /// Since `linux-4.2`: <https://github.com/torvalds/linux/commit/c9fdfa14c3792c0160849c484e83aa57afd80ccc>
     pub ind_jump: bool,
     // PERF_SAMPLE_BRANCH_CALL_STACK
+    /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/2c44b1936bb3b135a3fac8b3493394d42e51cf70>
     pub call_stack: bool,
 
     // PERF_SAMPLE_BRANCH_CALL
@@ -342,6 +344,7 @@ pub struct RecordIdFormat {
 #[derive(Clone, Debug, Default)]
 pub struct WakeUp {
     pub on: WakeUpOn,
+    /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/1a5941312414c71dece6717da9a0fa1303127afa>
     pub on_aux_bytes: u32,
 }
 

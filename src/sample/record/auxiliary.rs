@@ -1,5 +1,6 @@
 use super::RecordId;
 
+/// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/68db7e98c3a6ebe7284b6cf14906ed7c55f3f7f0>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Aux {
@@ -24,6 +25,7 @@ pub struct Aux {
 }
 
 impl Aux {
+    #[cfg(feature = "linux-4.1")]
     pub(crate) unsafe fn from_ptr(
         mut ptr: *const u8,
         sample_id_all: Option<super::SampleType>,

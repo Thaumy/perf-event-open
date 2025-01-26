@@ -172,7 +172,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
         when!(any_return, PERF_SAMPLE_BRANCH_ANY_RETURN);
         when!(cond, PERF_SAMPLE_BRANCH_COND);
         when!("linux-4.2", ind_jump, PERF_SAMPLE_BRANCH_IND_JUMP);
-        when!(call_stack, PERF_SAMPLE_BRANCH_CALL_STACK);
+        when!("linux-4.1", call_stack, PERF_SAMPLE_BRANCH_CALL_STACK);
         when!("linux-4.4", call, PERF_SAMPLE_BRANCH_CALL);
         when!(any_call, PERF_SAMPLE_BRANCH_ANY_CALL);
         when!(ind_call, PERF_SAMPLE_BRANCH_IND_CALL);
@@ -302,8 +302,12 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L556
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L24
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6927
-    attr.aux_watermark = opts.wake_up.on_aux_bytes;
+    #[cfg(feature = "linux-4.1")]
+    (attr.aux_watermark = opts.wake_up.on_aux_bytes);
+    #[cfg(not(feature = "linux-4.1"))]
+    crate::config::unsupported!(opts.wake_up.on_aux_bytes > 0);
 
+    #[cfg(feature = "linux-4.1")]
     if let Some(clock) = opts.timer.as_ref() {
         then!(set_use_clockid);
         use crate::config::Clock;
@@ -315,6 +319,8 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
             Clock::MonotonicRaw => b::CLOCK_MONOTONIC_RAW,
         } as _;
     }
+    #[cfg(not(feature = "linux-4.1"))]
+    crate::config::unsupported!(opts.timer.is_some());
 
     #[cfg(feature = "linux-6.13")]
     {

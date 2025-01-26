@@ -169,7 +169,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
         when!(any_return, PERF_SAMPLE_BRANCH_ANY_RETURN);
         when!(cond, PERF_SAMPLE_BRANCH_COND);
         when!("linux-4.2", ind_jump, PERF_SAMPLE_BRANCH_IND_JUMP);
-        when!(call_stack, PERF_SAMPLE_BRANCH_CALL_STACK);
+        when!("linux-4.1", call_stack, PERF_SAMPLE_BRANCH_CALL_STACK);
         when!("linux-4.4", call, PERF_SAMPLE_BRANCH_CALL);
         when!(any_call, PERF_SAMPLE_BRANCH_ANY_CALL);
         when!(ind_call, PERF_SAMPLE_BRANCH_IND_CALL);
@@ -291,12 +291,20 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L556
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L24
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6927
-    attr.aux_watermark = opts.wake_up.on_aux_bytes;
+    #[cfg(feature = "linux-4.1")]
+    (attr.aux_watermark = opts.wake_up.on_aux_bytes);
+    #[cfg(not(feature = "linux-4.1"))]
+    crate::config::unsupported!(opts.wake_up.on_aux_bytes > 0);
 
-    // All events in a group should have the same clock:
-    // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12918
-    attr.set_use_clockid(leader_attr.use_clockid());
-    attr.clockid = leader_attr.clockid;
+    #[cfg(feature = "linux-4.1")]
+    {
+        // All events in a group should have the same clock:
+        // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12918
+        attr.set_use_clockid(leader_attr.use_clockid());
+        attr.clockid = leader_attr.clockid;
+    }
+    #[cfg(not(feature = "linux-4.1"))]
+    let _ = leader_attr;
 
     #[cfg(feature = "linux-5.4")]
     attr.set_aux_output(opts.aux_output as _);

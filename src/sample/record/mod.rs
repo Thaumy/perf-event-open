@@ -67,9 +67,11 @@ pub enum Record {
     /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/e422267322cd319e2695a535e47c5b1feeac45eb>
     Namespaces(Box<Namespaces>),
     // PERF_RECORD_ITRACE_START
+    /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/ec0d7729bbaed4b9d2d3fada693278e13a3d1368>
     ItraceStart(Box<ItraceStart>),
 
     // PERF_RECORD_AUX
+    /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/68db7e98c3a6ebe7284b6cf14906ed7c55f3f7f0>
     Aux(Box<Aux>),
     // PERF_RECORD_AUX_OUTPUT_HW_ID
     /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/8b8ff8cc3b8155c18162e8b1f70e1230db176862>
@@ -411,7 +413,9 @@ impl UnsafeParser {
             }
             #[cfg(feature = "linux-4.12")]
             b::PERF_RECORD_NAMESPACES => from(Namespaces::from_ptr(ptr, sample_id_all)),
+            #[cfg(feature = "linux-4.1")]
             b::PERF_RECORD_ITRACE_START => from(ItraceStart::from_ptr(ptr, sample_id_all)),
+            #[cfg(feature = "linux-4.1")]
             b::PERF_RECORD_AUX => from(Aux::from_ptr(ptr, sample_id_all)),
             #[cfg(feature = "linux-5.16")]
             b::PERF_RECORD_AUX_OUTPUT_HW_ID => from(AuxOutputHwId::from_ptr(ptr, sample_id_all)),
