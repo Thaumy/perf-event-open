@@ -19,6 +19,62 @@ mod stat;
 
 pub use stat::*;
 
+/// Event counter.
+///
+/// Linux has many performance events to help developers identify performance
+/// issues with their programs. The [`perf_event_open`](https://man7.org/linux/man-pages/man2/perf_event_open.2.html)
+/// system call exposes the performance event subsystem for us to monitor these events.
+///
+/// This type is the core of utilizing `perf_event_open`, which provides the
+/// event counting functionality of `perf_event_open`, similar to the `perf stat` command.
+///
+/// # Permission
+///
+/// Access to performance monitoring and observability operations needs
+/// `CAP_PERFMON` or `CAP_SYS_ADMIN` Linux capability, or consider adjusting
+/// `/proc/sys/kernel/perf_event_paranoid` for users without these capabilities.
+///
+/// Possible values:
+/// - -1: Allow use of (almost) all events by all users. Ignore mlock limit
+///   after `perf_event_mlock_kb` without `CAP_IPC_LOCK`.
+/// - \>= 0: Disallow raw and ftrace function tracepoint access.
+/// - \>= 1: Disallow CPU event access.
+/// - \>= 2: Disallow kernel profiling.
+///
+/// To make the adjusted `perf_event_paranoid` setting permanent, preserve it
+/// in `/etc/sysctl.conf` (e.g., `kernel.perf_event_paranoid = <setting>`).
+///
+/// # Examples
+///
+/// ```rust
+/// use perf_event_open::config::{Cpu, Opts, Proc, SampleOn, Size};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::hw::Hardware;
+///
+/// // Count retired instructions on current process, all CPUs.
+/// let event = Hardware::Instr;
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let mut opts = Opts::default();
+/// opts.sample_on = SampleOn::Freq(1000); // 1000 samples per second.
+/// opts.sample_format.user_stack = Some(Size(8)); // Dump 8-bytes user stack in sample.
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+///
+/// counter.enable().unwrap(); // Start the counter.
+/// fn fib(n: usize) -> usize {
+///     match n {
+///         0 => 0,
+///         1 => 1,
+///         n => fib(n - 1) + fib(n - 2),
+///     }
+/// }
+/// std::hint::black_box(fib(30));
+/// counter.disable().unwrap(); // Stop the counter.
+///
+/// let instrs = counter.stat().unwrap().count;
+/// println!("{} instructions retired", instrs);
+/// ```
 pub struct Counter {
     pub(crate) target: Target,
     pub(crate) attr: UnsafeCell<Attr>,
@@ -27,6 +83,7 @@ pub struct Counter {
 }
 
 impl Counter {
+    /// Creates a new event counter.
     pub fn new(
         event: impl TryInto<Event, Error = io::Error>,
         target: impl Into<Target>,
@@ -52,35 +109,64 @@ impl Counter {
         })
     }
 
+    /// Create a sampler for this counter.
+    ///
+    /// The sampler needs a ring-buffer to store metadata and records,
+    /// and 1 + 2^`exp` pages will be allocated for this.
+    ///
+    /// Multiple calls to this method just duplicates the existing sampler,
+    /// samplers from the same counter shares the same ring-buffer in the
+    /// kernel space, so `exp` should be the same.
     pub fn sampler(&self, exp: u8) -> Result<Sampler> {
         Sampler::new(self, exp)
     }
 
+    /// Returns the file handle opened by [`perf_event_open`](https://man7.org/linux/man-pages/man2/perf_event_open.2.html)
+    /// system call for the current event.
+    ///
+    /// This might be useful if we want to interact with the handle directly.
     pub fn file(&self) -> &File {
         &self.perf
     }
 
+    /// Returns the event ID.
+    ///
+    /// The event ID is a globally incremented ID used to distinguish the
+    /// results of different counters.
+    ///
+    /// This is the same as [`Stat::id`], [`SiblingStat::id`] and [`RecordId::id`][crate::sample::record::RecordId::id].
     pub fn id(&self) -> Result<u64> {
         let mut id = 0;
         ioctl_argp(&self.perf, b::PERF_IOC_OP_ID as _, &mut id)?;
         Ok(id)
     }
 
+    /// Enable counter.
+    ///
+    /// Counter will start to accumulate event counts.
     pub fn enable(&self) -> Result<()> {
         ioctl(&self.perf, b::PERF_IOC_OP_ENABLE as _)?;
         Ok(())
     }
 
+    /// Disable counter.
+    ///
+    /// Counter will stop to accumulate event counts.
     pub fn disable(&self) -> Result<()> {
         ioctl(&self.perf, b::PERF_IOC_OP_DISABLE as _)?;
         Ok(())
     }
 
+    /// Clear event count.
+    ///
+    /// This will only clear the event counts in the statistics,
+    /// other fields (such as `time_enabled`) are not affected.
     pub fn clear_count(&self) -> Result<()> {
         ioctl(&self.perf, b::PERF_IOC_OP_RESET as _)?;
         Ok(())
     }
 
+    /// Returns counter statistics.
     pub fn stat(&self) -> Result<Stat> {
         // There could be only up to one reference to `read_buf` at the same time,
         // since `Counter` is not `Sync`.
@@ -99,6 +185,10 @@ impl Counter {
         Ok(stat)
     }
 
+    /// Attach a BPF program to an existing kprobe tracepoint event.
+    ///
+    /// The argument is a BPF program file that was created by a previous
+    /// [`bpf`](https://man7.org/linux/man-pages/man2/bpf.2.html) system call.
     pub fn attach_bpf(&self, file: &File) -> Result<()> {
         ioctl_arg(
             &self.perf,
@@ -108,6 +198,14 @@ impl Counter {
         Ok(())
     }
 
+    /// Querying which BPF programs are attached to the
+    /// existing kprobe tracepoint event.
+    ///
+    /// Returns the IDs of all BPF programs in all events attached to the tracepoint.
+    ///
+    /// If the buffer is not large enough to contain all IDs,
+    /// it also indicates how many IDs were lost.
+    ///
     /// Since `linux-4.16`: <https://github.com/torvalds/linux/commit/f371b304f12e31fe30207c41ca7754564e0ea4dc>
     #[cfg(feature = "linux-4.16")]
     pub fn query_bpf(&self, buf_len: u32) -> Result<(Vec<u32>, Option<u32>)> {
@@ -159,6 +257,7 @@ impl Counter {
         crate::config::unsupported!()
     }
 
+    /// Add an ftrace filter to current event.
     pub fn with_ftrace_filter(&self, filter: &CStr) -> Result<()> {
         let ptr = filter.as_ptr() as *mut i8;
 
@@ -170,6 +269,13 @@ impl Counter {
         Ok(())
     }
 
+    /// Switch to another event.
+    ///
+    /// This allows modifying an existing event without the overhead of
+    /// closing and reopening a new counter.
+    ///
+    /// Currently this is supported only for breakpoint events.
+    ///
     /// Since `linux-4.17`: <https://github.com/torvalds/linux/commit/32ff77e8cc9e66cc4fb38098f64fd54cc8f54573>
     #[cfg(feature = "linux-4.17")]
     pub fn switch_to<E>(&self, event: E) -> Result<()>
