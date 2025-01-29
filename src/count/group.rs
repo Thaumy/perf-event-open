@@ -12,6 +12,46 @@ use crate::event::Event;
 use crate::ffi::bindings as b;
 use crate::ffi::syscall::{ioctl_arg, perf_event_open};
 
+/// Counter group.
+///
+/// An event group is scheduled onto the CPU as a unit: it will be put onto
+/// the CPU only if all of the events in the group can be put onto the CPU.
+///
+/// This means that the values of the member events can be meaningfully compared, added,
+/// divided (to get ratios), and so on with each other, since they have counted events
+/// for the same set of executed instructions.
+///
+/// # Examples
+///
+/// ```rust
+/// use std::thread;
+/// use std::time::Duration;
+///
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::group::CounterGroup;
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::hw::Hardware;
+///
+/// let target = (Proc::ALL, Cpu(0)); // All processes on CPU 0.
+///
+/// let mut opts = Opts::default();
+/// opts.stat_format.siblings = true; // Collect sibling counts in leader stat.
+///
+/// let leader = Counter::new(Hardware::Instr, target, opts).unwrap();
+///
+/// let mut group = CounterGroup::from(leader);
+/// group.add(Hardware::CpuCycle, &Default::default()).unwrap();
+///
+/// group.enable().unwrap();
+/// thread::sleep(Duration::from_millis(100));
+/// group.disable().unwrap();
+///
+/// let stat = group.leader().stat().unwrap();
+/// let instrs = stat.count;
+/// let cycles = stat.siblings[0].count;
+///
+/// println!("IPC: {}", instrs as f64 / cycles as f64);
+/// ```
 pub struct CounterGroup {
     leader: Counter,
 
@@ -35,6 +75,7 @@ pub struct CounterGroup {
 }
 
 impl CounterGroup {
+    /// Create group with leader counter.
     pub fn from(leader: Counter) -> Self {
         Self {
             leader,
@@ -42,14 +83,19 @@ impl CounterGroup {
         }
     }
 
+    /// Returns a reference to the leader of the counter group.
     pub fn leader(&self) -> &Counter {
         &self.leader
     }
 
+    /// Returns the sibling counters of the counter group in the order they were added.
     pub fn siblings(&self) -> &[Rc<Counter>] {
         self.siblings.as_slice()
     }
 
+    /// Add sibling event to group.
+    ///
+    /// All siblings share the same [target][crate::config::Target] with the group leader.
     pub fn add(
         &mut self,
         event: impl TryInto<Event, Error = io::Error>,
@@ -97,6 +143,7 @@ impl CounterGroup {
         Ok(sibling)
     }
 
+    /// Enables all counters in the group.
     pub fn enable(&self) -> Result<()> {
         ioctl_arg(
             &self.leader.perf,
@@ -106,6 +153,7 @@ impl CounterGroup {
         Ok(())
     }
 
+    /// Disables all counters in the group.
     pub fn disable(&self) -> Result<()> {
         ioctl_arg(
             &self.leader.perf,
@@ -115,6 +163,7 @@ impl CounterGroup {
         Ok(())
     }
 
+    /// Clears the counts of all counters in the group.
     pub fn clear_count(&self) -> Result<()> {
         ioctl_arg(
             &self.leader.perf,
