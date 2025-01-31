@@ -472,6 +472,7 @@ pub struct EntryFormat {
     pub branch_priv: bool,
 }
 
+/// Semantic wrapper for options that require a size (in bytes).
 #[derive(Clone, Debug)]
 pub struct Size(pub u32);
 
