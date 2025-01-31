@@ -8,25 +8,67 @@ use crate::ffi::bindings as b;
 
 pub(crate) mod attr;
 
+// We skipped some options for sibling event to make sure the attr is valid.
+// * All events in a group should have the same clock:
+// https://github.com/torvalds/linux/blob/7ff71e6d923969d933e1ba7e0db857782d36cd19/kernel/events/core.c#L12962
+// * Only a group leader can be exclusive or pinned:
+// https://github.com/torvalds/linux/blob/7ff71e6d923969d933e1ba7e0db857782d36cd19/kernel/events/core.c#L12982
+/// Sibling event options.
 #[derive(Clone, Debug, Default)]
 pub struct Opts {
+    /// Exclude events with privilege levels.
+    ///
+    /// For example, if we set [`Priv::user`] to `true` here,
+    /// events that happen in user space will not be counted.
     pub exclude: Priv,
+
+    /// Controls the inherit behavior.
     pub inherit: Option<Inherit>,
+
+    /// Counter behavior when calling [`execve`](https://man7.org/linux/man-pages/man2/execve.2.html).
     pub on_execve: Option<OnExecve>,
+
+    /// Controls the format of [`Stat`][crate::count::Stat].
     pub stat_format: StatFormat,
 
+    /// Enable counter immediately after the counter is created.
     pub enable: bool,
+
+    /// Controls when to generate a [sample record][crate::sample::record::sample::Sample].
     pub sample_on: SampleOn,
+
+    /// Controls the amount of sample skid.
     pub sample_skid: SampleSkid,
+
+    /// Controls the format of [sample record][crate::sample::record::sample::Sample].
     pub sample_format: SampleFormat,
+
+    /// Generate extra record types.
     pub extra_record: ExtraRecord,
+
+    /// Contains [`RecordId`][crate::sample::record::RecordId] in all non-sample [record][crate::sample::record] types.
     pub record_id_all: bool,
+
+    /// Controls the format of [`RecordId`][crate::sample::record::RecordId].
     pub record_id_format: RecordIdFormat,
+
+    /// Wake up options for asynchronous iterators.
     pub wake_up: WakeUp,
+
     // https://github.com/torvalds/linux/commit/ab43762ef010967e4ccd53627f70a2eecbeafefb
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L2152
+    /// Enable sibling event to generate data for leader AUX event.
+    ///
+    /// In some cases, ordinary (non-AUX) events can generate data for AUX events.
+    /// For example, PEBS events can come out as records in the Intel PT stream
+    /// instead of their usual DS records, if configured to do so.
+    ///
+    /// This requires the group leader to be an AUX event.
+    ///
     /// Since `linux-5.4`: <https://github.com/torvalds/linux/commit/ab43762ef010967e4ccd53627f70a2eecbeafefb>
     pub aux_output: bool,
+
+    /// The action to perform when generating the [sample record][crate::sample::record::sample::Sample].
     pub on_sample: OnSample,
 }
 
