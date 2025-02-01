@@ -387,25 +387,44 @@ pub struct SampleFormat {
     pub weight: Option<Repr>,
 }
 
+/// LBR options.
 #[derive(Clone, Debug, Default)]
 pub struct Lbr {
     // Inherit exclude_{kernel, user, hv} from attr if not set:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12473
+    /// Specifies which branches of target privileges can be included in the branch record.
+    ///
+    /// If the user does not set privilege level explicitly,
+    /// the kernel will inherit event's privilege level
+    /// (e.g., compatible options from [`Opts::exclude`]).
     pub target_priv: Option<TargetPriv>,
+
+    /// Specifies which branches of types can be included in the branch record.
     pub branch_type: BranchType,
+
     // PERF_SAMPLE_BRANCH_HW_INDEX
+    /// Save [hardware index][crate::sample::record::sample::Lbr::hw_index].
+    ///
     /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/bbfd5e4fab63703375eafaf241a0c696024a59e1>
     pub hw_index: bool,
+
+    /// Controls the format of [LBR entry][crate::sample::record::sample::Entry].
     pub entry_format: EntryFormat,
 }
 
+/// Branch target privilege levels.
 #[derive(Clone, Debug)]
 pub struct TargetPriv {
     // PERF_SAMPLE_BRANCH_USER
+    /// Branch target is in user space.
     pub user: bool,
+
     // PERF_SAMPLE_BRANCH_KERNEL
+    /// Branch target is in kernel space.
     pub kernel: bool,
+
     // PERF_SAMPLE_BRANCH_HV
+    /// Branch target is in hypervisor.
     pub hv: bool,
 }
 
@@ -419,55 +438,86 @@ impl TargetPriv {
     }
 }
 
+/// Branch types.
 #[derive(Clone, Debug, Default)]
 pub struct BranchType {
     // PERF_SAMPLE_BRANCH_ANY
+    /// Any branch type.
     pub any: bool,
     // PERF_SAMPLE_BRANCH_ANY_RETURN
+    /// Any return branch.
     pub any_return: bool,
     // PERF_SAMPLE_BRANCH_COND
+    /// Conditional branches.
     pub cond: bool,
     // PERF_SAMPLE_BRANCH_IND_JUMP
+    /// Indirect jumps.
+    ///
     /// Since `linux-4.2`: <https://github.com/torvalds/linux/commit/c9fdfa14c3792c0160849c484e83aa57afd80ccc>
     pub ind_jump: bool,
     // PERF_SAMPLE_BRANCH_CALL_STACK
+    /// Branch is part of a hardware-generated call stack.
+    ///
     /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/2c44b1936bb3b135a3fac8b3493394d42e51cf70>
     pub call_stack: bool,
 
     // PERF_SAMPLE_BRANCH_CALL
+    /// Direct calls.
+    ///
     /// Since `linux-4.4`: <https://github.com/torvalds/linux/commit/c229bf9dc179d2023e185c0f705bdf68484c1e73>
     pub call: bool,
     // PERF_SAMPLE_BRANCH_IND_CALL
+    /// Indirect calls.
     pub ind_call: bool,
     // PERF_SAMPLE_BRANCH_ANY_CALL
+    /// Any call branch (includes direct calls, indirect calls, and far jumps).
     pub any_call: bool,
 
     // PERF_SAMPLE_BRANCH_IN_TX
+    /// Branch in transactional memory transaction.
     pub in_tx: bool,
     // PERF_SAMPLE_BRANCH_NO_TX
+    /// Branch not in transactional memory transaction.
     pub no_tx: bool,
     // PERF_SAMPLE_BRANCH_ABORT_TX
+    /// Transactional memory aborts.
     pub abort_tx: bool,
 }
 
+/// Controls the format of [LBR entry][crate::sample::record::sample::Entry].
 #[derive(Clone, Debug, Default)]
 pub struct EntryFormat {
     // PERF_SAMPLE_BRANCH_NO_FLAGS
+    /// Contains flags (e.g., [`mis`][crate::sample::record::sample::Entry::mis],
+    /// [`pred`][crate::sample::record::sample::Entry::pred],
+    /// [`in_tx`][crate::sample::record::sample::Entry::in_tx] and
+    /// [`abort`][crate::sample::record::sample::Entry::in_tx]).
+    ///
     /// Must be enabled before `linux-4.5`:
     /// <https://github.com/torvalds/linux/commit/b16a5b52eb90d92b597257778e51e1fdc6423e64>
     pub flags: bool,
     // PERF_SAMPLE_BRANCH_NO_CYCLES
+    /// Contains [cycles][crate::sample::record::sample::Entry::cycles].
+    ///
     /// Must be enabled before `linux-4.5`:
     /// <https://github.com/torvalds/linux/commit/b16a5b52eb90d92b597257778e51e1fdc6423e64>
     pub cycles: bool,
     // PERF_SAMPLE_BRANCH_COUNTERS
+    /// Contains [counter][crate::sample::record::sample::Entry::counter].
+    ///
     /// Since `linux-6.8`: <https://github.com/torvalds/linux/commit/571d91dcadfa3cef499010b4eddb9b58b0da4d24>
     pub counter: bool,
 
     // PERF_SAMPLE_BRANCH_TYPE_SAVE
+    /// Contains [branch type][crate::sample::record::sample::Entry::branch_type].
+    ///
+    /// Disassemble the branch instruction and record the branch type.
+    ///
     /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/eb0baf8a0d9259d168523b8e7c436b55ade7c546>
     pub branch_type: bool,
     // PERF_SAMPLE_BRANCH_PRIV_SAVE
+    /// Contains [branch privilege level][crate::sample::record::sample::Entry::branch_priv].
+    ///
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/5402d25aa5710d240040f73fb13d7d5c303ef071>
     pub branch_priv: bool,
 }
