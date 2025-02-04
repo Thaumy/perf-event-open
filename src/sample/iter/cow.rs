@@ -11,6 +11,10 @@ use crate::ffi::syscall::{epoll_create1, epoll_ctl, epoll_wait};
 use crate::sample::rb::{CowChunk, Rb};
 use crate::sample::record::Parser;
 
+/// COW (copy-on-write) record iterator.
+///
+/// This type allows you to access the raw bytes of record in the
+/// underlying ring-buffer directly without copy it to the outside.
 pub struct CowIter<'a> {
     pub(in crate::sample) rb: Rb<'a>,
     pub(in crate::sample) perf: &'a File,
@@ -18,6 +22,68 @@ pub struct CowIter<'a> {
 }
 
 impl<'a> CowIter<'a> {
+    /// Advances the iterator and returns the next value.
+    ///
+    /// If sampling is in happening, operations in the closure should be
+    /// quick and cheap. Slow iteration of raw bytes may throttle kernel
+    /// threads from outputting new data to the ring-buffer, and heavy
+    /// operations may affect the performance of the target process.
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// use perf_event_open::config::{Cpu, Opts, Proc, SampleOn, Size};
+    /// use perf_event_open::count::Counter;
+    /// use perf_event_open::event::sw::Software;
+    ///
+    /// let event = Software::TaskClock;
+    /// let target = (Proc::ALL, Cpu(0));
+    ///
+    /// let mut opts = Opts::default();
+    /// opts.sample_on = SampleOn::Count(50_000); // 50us
+    /// opts.sample_format.user_stack = Some(Size(8)); // Dump 8-bytes user stack in sample.
+    ///
+    /// let counter = Counter::new(event, target, &opts).unwrap();
+    /// let sampler = counter.sampler(5).unwrap();
+    /// let mut iter = sampler.iter().into_cow();
+    ///
+    /// counter.enable().unwrap();
+    ///
+    /// let mut skipped = 0;
+    /// let it = loop {
+    ///     let it = iter
+    ///         .next(|cc, p| {
+    ///             // ABI layout:
+    ///             // u32 type
+    ///             // u16 misc
+    ///             // u16 size
+    ///             // u64 len
+    ///             // [u8; len] bytes
+    ///
+    ///             let ptr = cc.as_bytes().as_ptr();
+    ///             let ty = ptr as *const u32;
+    ///
+    ///             // Only parse sample record with stack dumped.
+    ///             if unsafe { *ty } == 9 {
+    ///                 let len = unsafe { ptr.offset(8) } as *const u64;
+    ///                 if unsafe { *len } > 0 {
+    ///                     return Some(p.parse(cc));
+    ///                 }
+    ///             }
+    ///
+    ///             skipped += 1;
+    ///             None
+    ///         })
+    ///         .flatten();
+    ///
+    ///     if let Some(it) = it {
+    ///         break it;
+    ///     }
+    /// };
+    ///
+    /// println!("skipped: {}", skipped);
+    /// println!("{:-?}", it);
+    /// ```
     pub fn next<F, R>(&mut self, f: F) -> Option<R>
     where
         F: FnOnce(CowChunk<'_>, &Parser) -> R,
@@ -25,6 +91,7 @@ impl<'a> CowIter<'a> {
         self.rb.lending_pop().map(|cc| f(cc, self.parser))
     }
 
+    /// Creates an asynchronous iterator.
     pub fn into_async(self) -> Result<AsyncCowIter<'a>> {
         let epoll = epoll_create1(libc::O_CLOEXEC)?;
         let mut event = libc::epoll_event {
@@ -67,12 +134,18 @@ impl<'a> CowIter<'a> {
     }
 }
 
+/// Asynchronous COW record iterator.
 pub struct AsyncCowIter<'a> {
     inner: CowIter<'a>,
     waker: SyncSender<Waker>,
 }
 
 impl AsyncCowIter<'_> {
+    /// Advances the iterator and returns the next value.
+    ///
+    /// [`WakeUp::on`][crate::config::WakeUp::on] must be properly set to make this work.
+    ///
+    /// See also [`CowIter::next`].
     pub async fn next<F, R>(&mut self, f: F) -> Option<R>
     where
         F: FnOnce(CowChunk<'_>, &Parser) -> R + Unpin,
