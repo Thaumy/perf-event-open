@@ -5,6 +5,9 @@ pub mod raw;
 pub mod sw;
 pub mod tp;
 
+/// Unified event type.
+///
+/// Different events can be converted to this type to get a unified representation.
 #[derive(Clone, Debug)]
 pub struct Event(pub(super) EventConfig);
 
