@@ -590,16 +590,68 @@ pub struct RecordIdFormat {
     pub time: bool,
 }
 
+/// Wake up options for asynchronous iterators.
 #[derive(Clone, Debug, Default)]
 pub struct WakeUp {
+    /// When to wake up asynchronous iterators.
     pub on: WakeUpOn,
+
+    /// Wake up asynchronous iterators on every N bytes available in the AUX area.
+    ///
+    /// `0` means never wake up.
+    ///
     /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/1a5941312414c71dece6717da9a0fa1303127afa>
     pub on_aux_bytes: u32,
 }
 
+/// When to wake up asynchronous iterators.
+///
+/// "wake up" means notifying the async runtime to schedule the
+/// asynchronous iterator's future to be pulled in the next round.
+///
+/// For performance reasons, we may not want to wake up asynchronous
+/// iterators as soon as data is available. With this option we can
+/// configure the number of bytes or samples that triggers the wake
+/// up.
+///
+/// If we specify the [`Proc`] instead of [`All`], asynchronous iterators
+/// will be woken up when the target process exits.
+///
+/// # Examples
+///
+/// ```rust
+/// # tokio_test::block_on(async {
+/// use perf_event_open::config::{Cpu, Opts, Proc, SampleOn, WakeUpOn};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::sw::Software;
+///
+/// let event = Software::TaskClock;
+/// let target = (Proc::ALL, Cpu(0));
+///
+/// let mut opts = Opts::default();
+/// opts.sample_on = SampleOn::Freq(1000);
+/// // Wake up asynchronous iterators on every sample.
+/// opts.wake_up.on = WakeUpOn::Samples(1);
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+/// let sampler = counter.sampler(5).unwrap();
+///
+/// counter.enable().unwrap();
+///
+/// let mut iter = sampler.iter().into_async().unwrap();
+/// println!("{:-?}", iter.next().await);
+/// # });
+/// ```
 #[derive(Clone, Debug)]
 pub enum WakeUpOn {
+    /// Wake up on every N bytes available.
+    ///
+    /// `Bytes(0)` means never wake up.
     Bytes(u64),
+
+    /// Wake up on every N samples available.
+    ///
+    /// `Samples(0)` means never wake up.
     Samples(u64),
 }
 
