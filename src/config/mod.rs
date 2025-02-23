@@ -609,6 +609,11 @@ impl Default for WakeUpOn {
     }
 }
 
+/// Semantic wrapper for signal data to pass.
+///
+/// This data will be copied to user's signal handler (through `si_perf`
+/// in the `siginfo_t`) to disambiguate which event triggered the signal.
+///
 /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/97ba62b278674293762c3d91f724f1bb922f04e0>
 #[derive(Clone, Debug)]
 pub struct SigData(pub u64);
