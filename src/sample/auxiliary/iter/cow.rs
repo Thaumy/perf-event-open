@@ -12,12 +12,24 @@ use crate::ffi::syscall::{epoll_create1, epoll_ctl, epoll_wait};
 use crate::sample::auxiliary::rb::Rb;
 use crate::sample::rb::CowChunk;
 
+/// COW (copy-on-write) AUX area iterator.
+///
+/// Same as [COW record iterator][crate::sample::iter::CowIter], but for AUX area.
 pub struct CowIter<'a> {
     pub(in crate::sample::auxiliary) rb: Rb<'a>,
     pub(in crate::sample::auxiliary) perf: &'a File,
 }
 
 impl<'a> CowIter<'a> {
+    /// Advances the iterator and returns the next value.
+    ///
+    /// `max_chunk_len` specifies the maximum length of a chunk
+    /// that can be produced at one time, unlimited if `None`.
+    ///
+    /// If AUX area tracing is in happening, operations in the closure should
+    /// be quick and cheap. Slow iteration of raw bytes may throttle kernel
+    /// threads from outputting new data to the AUX area, and heavyd operations
+    /// may affect the performance of the target process.
     pub fn next<F, R>(&mut self, f: F, max_chunk_len: Option<NonZeroUsize>) -> Option<R>
     where
         F: FnOnce(CowChunk<'_>) -> R,
@@ -25,6 +37,7 @@ impl<'a> CowIter<'a> {
         self.rb.lending_pop(max_chunk_len).map(f)
     }
 
+    /// Creates an asynchronous iterator.
     pub fn into_async(self) -> Result<AsyncCowIter<'a>> {
         let epoll = epoll_create1(libc::O_CLOEXEC)?;
         let mut event = libc::epoll_event {
@@ -67,12 +80,19 @@ impl<'a> CowIter<'a> {
     }
 }
 
+/// Asynchronous COW AUX area iterator.
 pub struct AsyncCowIter<'a> {
     inner: CowIter<'a>,
     waker: SyncSender<Waker>,
 }
 
 impl AsyncCowIter<'_> {
+    /// Advances the iterator and returns the next value.
+    ///
+    /// [`WakeUp::on_aux_bytes`][crate::config::WakeUp::on_aux_bytes]
+    /// must be properly set to make this work.
+    ///
+    /// See also [`CowIter::next`].
     pub async fn next<F, R>(&mut self, f: F, max_chunk_len: Option<NonZeroUsize>) -> Option<R>
     where
         F: FnOnce(CowChunk<'_>) -> R + Unpin,
