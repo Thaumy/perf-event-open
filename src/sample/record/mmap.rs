@@ -9,17 +9,67 @@ use crate::ffi::{bindings as b, deref_offset};
 // https://github.com/torvalds/linux/blob/v6.13/include/linux/buildid.h#L7
 const BUILD_ID_SIZE_MAX: usize = 20;
 
+/// Process memory-mapped.
+///
+/// This is useful if we want to correlate user-space IPs to code.
+///
+/// # Examples
+///
+/// ```rust
+/// use std::ptr::null_mut;
+///
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::sw::Software;
+/// # use perf_event_open::sample::record::Record;
+///
+/// let event = Software::Dummy;
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let mut opts = Opts::default();
+/// opts.extra_record.mmap.code = true; // Capture executable mmaps.
+/// opts.extra_record.mmap.data = true; // Capture non-executable mmaps.
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+/// let sampler = counter.sampler(5).unwrap();
+///
+/// counter.enable().unwrap();
+///
+/// let flags = libc::MAP_ANONYMOUS | libc::MAP_SHARED;
+/// let len = 4096;
+/// unsafe {
+///     libc::mmap(null_mut(), len, libc::PROT_EXEC, flags, -1, 0);
+///     libc::mmap(null_mut(), len, libc::PROT_READ, flags, -1, 0);
+/// };
+///
+/// # let mut count = 0;
+/// for it in sampler.iter() {
+///     println!("{:-?}", it);
+///     # if matches!(it.1, Record::Mmap(_)) {
+///     #     count += 1;
+///     # }
+/// }
+/// # assert_eq!(count, 2);
+/// ```
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Mmap {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// Executable mapping.
     pub executable: bool,
+    /// Task info.
     pub task: Task,
+    /// Address.
     pub addr: u64,
+    /// Length.
     pub len: u64,
+    /// Mapped file.
     pub file: CString,
+    /// Page offset.
     pub page_offset: u64,
+    /// Extension fields.
     pub ext: Option<Ext>,
 }
 
@@ -184,23 +234,37 @@ super::debug!(Mmap {
     {ext?},
 });
 
+/// Extension fields.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Ext {
+    /// Protection info.
     pub prot: u32,
+    /// Flags info.
     pub flags: u32,
+    /// Device info or ELF file build ID.
     pub info: Info,
 }
 
+/// Device info or ELF file build ID.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Info {
+    /// Device info.
     Device {
+        /// Major number.
         major: u32,
+        /// Minor number.
         minor: u32,
+        /// Inode number.
         inode: u64,
+        /// Inode generation.
         inode_gen: u64,
     },
+    /// ELF file build ID.
+    ///
+    /// See also [`UseBuildId`][crate::config::UseBuildId].
+    ///
     /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/88a16a1309333e43d328621ece3e9fa37027e8eb>
     BuildId(ArrayVec<u8, BUILD_ID_SIZE_MAX>),
 }
