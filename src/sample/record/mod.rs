@@ -18,6 +18,7 @@ use task::{Exit, Fork};
 use text_poke::TextPoke;
 use throttle::{Throttle, Unthrottle};
 
+use super::rb::CowChunk;
 use crate::ffi::{bindings as b, deref_offset, Attr};
 
 pub mod auxiliary;
@@ -404,5 +405,19 @@ impl UnsafeParser {
         };
 
         (record_priv, record)
+    }
+}
+
+#[derive(Debug)]
+pub struct Parser(pub(in crate::sample) UnsafeParser);
+
+impl Parser {
+    pub fn parse(&self, chunk: CowChunk<'_>) -> (Priv, Record) {
+        let bytes = chunk.as_bytes();
+        unsafe { self.0.parse(bytes) }
+    }
+
+    pub fn as_unsafe(&self) -> &UnsafeParser {
+        &self.0
     }
 }
