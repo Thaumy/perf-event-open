@@ -286,8 +286,13 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
         } as _;
     }
 
-    let aux_action = unsafe { &mut attr.__bindgen_anon_5.__bindgen_anon_1 };
-    aux_action.set_aux_start_paused(opts.pause_aux as _);
+    #[cfg(feature = "linux-6.13")]
+    {
+        let aux_action = unsafe { &mut attr.__bindgen_anon_5.__bindgen_anon_1 };
+        aux_action.set_aux_start_paused(opts.pause_aux as _);
+    }
+    #[cfg(not(feature = "linux-6.13"))]
+    crate::config::unsupported!(opts.pause_aux);
 
     Ok(attr)
 }

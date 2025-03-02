@@ -273,14 +273,19 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
 
     attr.set_aux_output(opts.aux_output as _);
 
-    let aux_action = unsafe { &mut attr.__bindgen_anon_5.__bindgen_anon_1 };
-    match opts.on_sample.aux {
-        // pause and resume are mutually exclusive, see:
-        // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12332
-        Some(crate::config::sibling::AuxTracer::Pause) => aux_action.set_aux_pause(1),
-        Some(crate::config::sibling::AuxTracer::Resume) => aux_action.set_aux_resume(1),
-        None => (),
+    #[cfg(feature = "linux-6.13")]
+    {
+        let aux_action = unsafe { &mut attr.__bindgen_anon_5.__bindgen_anon_1 };
+        match opts.on_sample.aux {
+            // pause and resume are mutually exclusive, see:
+            // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12332
+            Some(crate::config::sibling::AuxTracer::Pause) => aux_action.set_aux_pause(1),
+            Some(crate::config::sibling::AuxTracer::Resume) => aux_action.set_aux_resume(1),
+            None => (),
+        }
     }
+    #[cfg(not(feature = "linux-6.13"))]
+    crate::config::unsupported!(opts.on_sample.aux.is_some());
 
     if let Some(crate::config::SigData(data)) = opts.on_sample.sigtrap.as_ref() {
         then!(set_sigtrap);

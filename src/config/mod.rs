@@ -32,6 +32,7 @@ pub struct Opts {
     // https://github.com/torvalds/linux/blob/2408a807bfc3f738850ef5ad5e3fd59d66168996/kernel/events/core.c#L12582
     pub sigtrap_on_sample: Option<SigData>,
     pub timer: Option<Clock>,
+    /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
     pub pause_aux: bool,
 }
 

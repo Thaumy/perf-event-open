@@ -57,6 +57,7 @@ impl StatFormat {
 
 #[derive(Clone, Debug, Default)]
 pub struct OnSample {
+    /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
     pub aux: Option<AuxTracer>,
 
     // Must be used together with `remove_on_exec`:
@@ -64,6 +65,7 @@ pub struct OnSample {
     pub sigtrap: Option<SigData>,
 }
 
+/// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
 #[derive(Clone, Debug)]
 pub enum AuxTracer {
     Pause,
