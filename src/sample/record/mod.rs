@@ -333,6 +333,9 @@ macro_rules! debug {
 }
 pub(crate) use debug;
 
+/// Unsafe record parser.
+///
+/// Unlike [`Parser`], you need to ensure the safety of parsing record bytes.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UnsafeParser {
@@ -356,6 +359,13 @@ impl UnsafeParser {
         }
     }
 
+    /// Parse record bytes into record type.
+    ///
+    /// # Safety
+    ///
+    /// `bytes` must be created by the same sampler as this parser.
+    ///
+    /// See also [`Parser`].
     pub unsafe fn parse<T>(&self, bytes: T) -> (Priv, Record)
     where
         T: Borrow<[u8]>,
@@ -434,15 +444,23 @@ impl UnsafeParser {
     }
 }
 
+/// Record parser.
+///
+/// This type can only be accessed within the closure scope of COW record iterators,
+/// parse [`CowChunk`] with this parser is always safe since the closure scope ensures
+/// that the `CowChunk` and the underlying unsafe parser are created from the same
+/// sampler.
 #[derive(Debug)]
 pub struct Parser(pub(in crate::sample) UnsafeParser);
 
 impl Parser {
+    /// Parse [`CowChunk`] into record type.
     pub fn parse(&self, chunk: CowChunk<'_>) -> (Priv, Record) {
         let bytes = chunk.as_bytes();
         unsafe { self.0.parse(bytes) }
     }
 
+    /// Returns the underlying unsafe record parser.
     pub fn as_unsafe(&self) -> &UnsafeParser {
         &self.0
     }
