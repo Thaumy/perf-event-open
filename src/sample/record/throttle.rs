@@ -1,13 +1,23 @@
 use super::{RecordId, SampleType};
 use crate::ffi::deref_offset;
 
+/// Sampling has been throttled.
+///
+/// This record indicates that the maximum sampling rate has been reached,
+/// and kernel will correct the sampling rate to avoid exceeding the limit.
+///
+/// See also [`SampleOn`][crate::config::SampleOn].
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Throttle {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// Timestamp.
     pub time: u64,
+    /// Event ID.
     pub id: u64,
+    /// Event stream ID.
     pub stream_id: u64,
 }
 
@@ -45,13 +55,18 @@ super::debug!(Throttle {
     {stream_id},
 });
 
+/// Sampling throttle has been lifted.
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Unthrottle {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// Timestamp.
     pub time: u64,
+    /// Event ID.
     pub id: u64,
+    /// Event stream ID.
     pub stream_id: u64,
 }
 
