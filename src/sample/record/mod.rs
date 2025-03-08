@@ -190,13 +190,29 @@ impl Priv {
     }
 }
 
+/// A collection of IDs used to identify records.
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RecordId {
+    /// Event ID.
     pub id: Option<u64>,
+
+    /// Event stream ID.
+    ///
+    /// This ID is used to distinguish the results of different inherited tasks.
+    ///
+    /// See also [`Inherit`][crate::config::Inherit].
     pub stream_id: Option<u64>,
+
+    /// CPU number.
     pub cpu: Option<u32>,
+
+    /// Task info.
     pub task: Option<Task>,
+
+    /// Timestamp.
+    ///
+    /// See also [`Opts::timer`][crate::config::Opts::timer].
     pub time: Option<u64>,
 }
 
