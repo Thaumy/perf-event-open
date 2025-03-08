@@ -1,18 +1,55 @@
 use super::{RecordId, Task};
 
+/// Namespace information for the new task.
+///
+/// # Examples
+///
+/// ```rust, no_run
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::sw::Software;
+///
+/// let event = Software::Dummy;
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let mut opts = Opts::default();
+/// opts.extra_record.namespaces = true;
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+/// let sampler = counter.sampler(5).unwrap();
+///
+/// counter.enable().unwrap();
+///
+/// // Captures the namespace information for this task.
+/// std::thread::spawn(|| {});
+///
+/// for it in sampler.iter() {
+///     println!("{:-?}", it);
+/// }
+/// ```
+///
 /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/e422267322cd319e2695a535e47c5b1feeac45eb>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Namespaces {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// Task info.
     pub task: Task,
+    // UTS namespace link info.
     pub ns_uts: LinkInfo,
+    // PID namespace link info.
     pub ns_pid: LinkInfo,
+    // IPC namespace link info.
     pub ns_ipc: LinkInfo,
+    // Mount namespace link info.
     pub ns_mnt: LinkInfo,
+    // Network namespace link info.
     pub ns_net: LinkInfo,
+    // User namespace link info.
     pub ns_user: LinkInfo,
+    // Cgroup namespace link info.
     pub ns_cgroup: LinkInfo,
 }
 
@@ -87,9 +124,13 @@ super::debug!(Namespaces {
 });
 
 // Naming: https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8590
+/// Namespace link info.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LinkInfo {
+    /// Device number.
     pub dev: u64,
+
+    /// Inode number.
     pub inode: u64,
 }
