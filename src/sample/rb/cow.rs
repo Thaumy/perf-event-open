@@ -2,6 +2,11 @@ use std::borrow::{Borrow, Cow};
 use std::mem;
 use std::sync::atomic::{AtomicU64, Ordering};
 
+/// Copy-on-write chunk.
+///
+/// This type holds a reference to the underlying ring-buffer data,
+/// so it is necessary to drop this type as early as possible to
+/// avoid the ring buffer being stuck due to insufficient space.
 pub struct CowChunk<'a> {
     pub(in crate::sample) tail: &'a AtomicU64,
     pub(in crate::sample) new_tail: u64,
