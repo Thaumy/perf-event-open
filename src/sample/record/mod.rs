@@ -151,20 +151,27 @@ pub struct Task {
     pub tid: u32,
 }
 
+/// Privilege levels.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Priv {
     // PERF_RECORD_MISC_USER
+    /// User space.
     User,
     // PERF_RECORD_MISC_KERNEL
+    /// Kernel space.
     Kernel,
     // PERF_RECORD_MISC_HYPERVISOR
+    /// Hypervisor.
     Hv,
     // PERF_RECORD_MISC_GUEST_USER
+    /// Guest user space.
     GuestUser,
     // PERF_RECORD_MISC_GUEST_KERNEL
+    /// Guest kernel space.
     GuestKernel,
     // PERF_RECORD_MISC_CPUMODE_UNKNOWN
+    /// Unknown.
     Unknown,
 }
 
