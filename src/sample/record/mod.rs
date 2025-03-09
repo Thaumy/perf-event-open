@@ -141,10 +141,13 @@ impl Debug for Record {
     }
 }
 
+/// Task info.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Task {
+    /// Process ID.
     pub pid: u32,
+    /// Thread ID.
     pub tid: u32,
 }
 
