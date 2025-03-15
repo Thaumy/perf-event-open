@@ -7,15 +7,70 @@ const BPF_TAG_SIZE: u32 = crate::ffi::bindings::BPF_TAG_SIZE;
 #[cfg(not(feature = "linux-5.1"))]
 const BPF_TAG_SIZE: u32 = 8;
 
+/// BPF event.
+///
+/// # Examples
+///
+/// Running this example may require root privileges.
+///
+/// ```rust, no_run
+/// # tokio_test::block_on(async {
+/// use std::sync::atomic::{AtomicBool, Ordering};
+/// use std::sync::mpsc::channel;
+/// use std::thread;
+///
+/// use perf_event_open::config::{Cpu, Opts, Proc, WakeUpOn};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::sw::Software;
+///
+/// static WAIT: AtomicBool = AtomicBool::new(true);
+///
+/// let (tid_tx, tid_rx) = channel();
+/// thread::spawn(move || {
+///     tid_tx.send(unsafe { libc::gettid() }).unwrap();
+///
+///     while WAIT.load(Ordering::Relaxed) {
+///         std::hint::spin_loop();
+///     }
+///
+///     // Load a BPF program to trigger a `BpfEvent` record.
+///     aya::Ebpf::load_file("HelloWorld.bpf.o").unwrap();
+/// });
+///
+/// let event = Software::Dummy;
+/// let target = (Proc(tid_rx.recv().unwrap() as _), Cpu::ALL);
+///
+/// let mut opts = Opts::default();
+/// opts.wake_up.on = WakeUpOn::Bytes(1);
+/// opts.extra_record.bpf_event = true;
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+/// let sampler = counter.sampler(5).unwrap();
+///
+/// counter.enable().unwrap();
+/// WAIT.store(false, Ordering::Relaxed);
+///
+/// let mut iter = sampler.iter().into_async().unwrap();
+/// while let Some(it) = iter.next().await {
+///     println!("{:-?}", it);
+/// }
+/// # });
+/// ```
+///
 /// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/6ee52e2a3fe4ea35520720736e6791df1fb67106>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BpfEvent {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// BPF event type.
     pub ty: Type,
+    /// BPF program ID.
     pub id: u32,
+    /// BPF program tag.
     pub tag: [u8; BPF_TAG_SIZE as _],
+    /// Flags.
     pub flags: u16,
 }
 
@@ -70,13 +125,17 @@ super::debug!(BpfEvent {
 });
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1245
+/// BPF event type.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     // PERF_BPF_EVENT_PROG_LOAD
+    /// BPF program load.
     ProgLoad,
     // PERF_BPF_EVENT_PROG_UNLOAD
+    /// BPF program unload.
     ProgUnload,
     // PERF_BPF_EVENT_UNKNOWN
+    /// Unknown.
     Unknown,
 }
