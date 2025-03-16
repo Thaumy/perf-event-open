@@ -1,25 +1,91 @@
 use super::RecordId;
 
+/// New data is available in the AUX area.
+///
+/// # Examples
+///
+/// ```rust
+/// use std::fs::read_to_string;
+/// use std::sync::mpsc::channel;
+/// use std::thread;
+/// use std::time::Duration;
+///
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::dp::DynamicPmu;
+///
+/// let (tid_tx, tid_rx) = channel();
+/// thread::spawn(move || {
+///     tid_tx.send(unsafe { libc::gettid() }).unwrap();
+///     loop {
+///         std::hint::spin_loop();
+///     }
+/// });
+///
+/// // Intel PT
+/// let ty = read_to_string("/sys/bus/event_source/devices/intel_pt/type");
+/// # if ty.is_err() {
+/// #     return;
+/// # }
+///
+/// let event = DynamicPmu {
+///     ty: ty.unwrap().lines().next().unwrap().parse().unwrap(),
+///     config: 0,
+///     config1: 0,
+///     config2: 0,
+///     config3: 0,
+/// };
+/// let target = (Proc(tid_rx.recv().unwrap() as _), Cpu::ALL);
+/// let opts = Opts::default();
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+/// let sampler = counter.sampler(10).unwrap();
+/// let aux = sampler.aux_tracer(10).unwrap();
+///
+/// counter.enable().unwrap();
+/// thread::sleep(Duration::from_millis(1));
+/// counter.disable().unwrap();
+///
+/// for it in sampler.iter() {
+///     println!("{:-?}", it);
+/// }
+/// while let Some(it) = aux.iter().next(None) {
+///     let bytes = it.len();
+///     println!("{:.2} KB", bytes as f64 / 1000.0);
+/// }
+/// ```
+///
 /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/68db7e98c3a6ebe7284b6cf14906ed7c55f3f7f0>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Aux {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// Data offset in the AUX area.
     pub offset: u64,
+    /// Data size.
     pub size: u64,
 
     // PERF_AUX_FLAG_TRUNCATED
+    /// Record was truncated to fit.
     pub truncated: bool,
     // PERF_AUX_FLAG_OVERWRITE
+    /// Snapshot from overwrite mode.
     pub overwrite: bool,
     // PERF_AUX_FLAG_PARTIAL
+    /// Record contains gaps.
+    ///
     /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/ae0c2d995d648d5165545d5e05e2869642009b38>
     pub partial: bool,
     // PERF_AUX_FLAG_COLLISION
+    /// Sample collided with another.
+    ///
     /// Since `linux-4.15`: <https://github.com/torvalds/linux/commit/085b30625e39df67d7320f22269796276c6b0c11>
     pub collision: bool,
     // `flags` masked with `PERF_AUX_FLAG_PMU_FORMAT_TYPE_MASK`
+    /// PMU specific trace format type.
+    ///
     /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/547b60988e631f74ed025cf1ec50cfc17f49fd13>
     pub pmu_format_type: u8,
 }
