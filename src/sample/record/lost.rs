@@ -99,12 +99,19 @@ super::debug!(LostRecords {
     {lost_records},
 });
 
+/// Some samples have been lost.
+///
+/// This counts only hardware generated corrupt samples
+/// that are discarded by the kernel.
+///
 /// Since `linux-4.2`: <https://github.com/torvalds/linux/commit/f38b0dbb491a6987e198aa6b428db8692a6480f8>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LostSamples {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// The number of lost samples.
     pub lost_samples: u64,
 }
 
