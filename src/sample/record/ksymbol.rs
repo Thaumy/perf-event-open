@@ -2,16 +2,70 @@ use std::ffi::CString;
 
 use super::RecordId;
 
+/// Kernel symbol event.
+///
+/// # Examples
+///
+/// ```rust, no_run
+/// # tokio_test::block_on(async {
+/// use std::sync::atomic::{AtomicBool, Ordering};
+/// use std::sync::mpsc::channel;
+/// use std::thread;
+///
+/// use perf_event_open::config::{Cpu, Opts, Proc, WakeUpOn};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::sw::Software;
+///
+/// static WAIT: AtomicBool = AtomicBool::new(true);
+///
+/// let (tid_tx, tid_rx) = channel();
+/// thread::spawn(move || {
+///     tid_tx.send(unsafe { libc::gettid() }).unwrap();
+///
+///     while WAIT.load(Ordering::Relaxed) {
+///         std::hint::spin_loop();
+///     }
+///
+///     // Load a BPF program to trigger a `BpfEvent` record.
+///     aya::Ebpf::load_file("HelloWorld.bpf.o").unwrap();
+/// });
+///
+/// let event = Software::Dummy;
+/// let target = (Proc(tid_rx.recv().unwrap() as _), Cpu::ALL);
+///
+/// let mut opts = Opts::default();
+/// opts.wake_up.on = WakeUpOn::Bytes(1);
+/// opts.extra_record.ksymbol = true;
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+/// let sampler = counter.sampler(5).unwrap();
+///
+/// counter.enable().unwrap();
+/// WAIT.store(false, Ordering::Relaxed);
+///
+/// let mut iter = sampler.iter().into_async().unwrap();
+/// while let Some(it) = iter.next().await {
+///     println!("{:-?}", it);
+/// }
+/// # });
+/// ```
+///
 /// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/76193a94522f1d4edf2447a536f3f796ce56343b>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Ksymbol {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// Type.
     pub ty: Type,
+    /// Name.
     pub name: CString,
+    /// State.
     pub state: State,
+    /// Address.
     pub addr: u64,
+    /// Length.
     pub len: u32,
 }
 
@@ -85,22 +139,30 @@ super::debug!(Ksymbol {
     {len},
 });
 
+/// Ksymbol state.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum State {
+    /// Register.
     Reg,
+    /// Unregister.
     Unreg,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1232
+/// Ksymbol type.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     // PERF_RECORD_KSYMBOL_TYPE_BPF
+    /// BPF program.
     Bpf,
     // PERF_RECORD_KSYMBOL_TYPE_OOL
+    /// Out of line code such as kprobe-replaced instructions or optimized kprobes.
+    ///
     /// Since `linux-5.9`: <https://github.com/torvalds/linux/commit/69e49088692899d25dedfa22f00dfb9761e86ed7>
     OutOfLine,
     // PERF_RECORD_KSYMBOL_TYPE_UNKNOWN
+    /// Unknown.
     Unknown,
 }
