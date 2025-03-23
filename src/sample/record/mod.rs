@@ -38,6 +38,10 @@ pub mod text_poke;
 pub mod throttle;
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L847
+/// Record types.
+///
+/// This type and all record types can be formatted with the `{:-?}`
+/// formatter for compact debugging displays.
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Record {
@@ -95,6 +99,9 @@ pub enum Record {
     /// Since `linux-4.2`: <https://github.com/torvalds/linux/commit/f38b0dbb491a6987e198aa6b428db8692a6480f8>
     LostSamples(Box<LostSamples>),
 
+    /// Unknown record type.
+    ///
+    /// This is for compatibility, not ABI.
     Unknown(Vec<u8>),
 }
 
