@@ -5,35 +5,81 @@ use super::{RecordId, Task};
 use crate::count::Stat;
 use crate::ffi::{bindings as b, deref_offset};
 
+/// Sample.
+///
+/// Fields can be enabled via [`SampleFormat`][crate::config::SampleFormat].
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Sample {
+    /// Record IDs.
     pub record_id: RecordId,
 
+    /// Counter statistics.
     pub stat: Option<Stat>,
+    /// Sampling period.
     pub period: Option<u64>,
+    /// Cgroup ID (for the perf event subsystem).
+    ///
+    /// To get the pathname of the cgroup, the ID should match to
+    /// [`Cgroup::id`][crate::sample::record::Cgroup::id].
     pub cgroup: Option<u64>,
+    /// Call chain (stack backtrace).
     pub call_chain: Option<Vec<u64>>,
+    /// User stack.
     pub user_stack: Option<Vec<u8>>,
 
+    /// Data address.
+    ///
+    /// This is usually the address of a tracepoint, breakpoint, or software event;
+    /// otherwise the value is 0.
     pub data_addr: Option<u64>,
+    /// Physical data address.
+    ///
     /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/fc7ce9c74c3ad232b084d80148654f926d01ece7>
     pub data_phys_addr: Option<u64>,
+    /// Page size of [data address][Self::data_addr].
+    ///
     /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/8d97e71811aaafe4abf611dc24822fd6e73df1a1>
     pub data_page_size: Option<u64>,
+    /// The source of data associated with the sampled instruction.
     pub data_source: Option<DataSource>,
 
+    /// Code address (instruction pointer).
+    ///
+    /// The second member will be true if the instruction pointer points to the actual
+    /// instruction that triggered the event (0 [skid][crate::config::SampleSkid]).
     pub code_addr: Option<(u64, bool)>,
+    /// Page size of [code address][Self::code_addr].
+    ///
     /// Since `linux-5.11`: <https://github.com/torvalds/linux/commit/995f088efebe1eba0282a6ffa12411b37f8990c2>
     pub code_page_size: Option<u64>,
 
+    /// Registers at sample time.
     pub user_regs: Option<(Vec<u64>, Abi)>,
+    /// Registers at interrupt (event overflow).
     pub intr_regs: Option<(Vec<u64>, Abi)>,
 
+    /// Raw data.
+    ///
+    /// This raw data is opaque with respect to the ABI. The ABI doesn't
+    /// make any promises with respect to the stability of its content,
+    /// it may vary depending on event, hardware, and kernel version.
     pub raw: Option<Vec<u8>>,
+    /// LBR data.
+    ///
+    /// This provides a record of recent branches, as provided by
+    /// CPU branch sampling hardware (such as Intel LBR).
+    ///
+    /// Not all hardware supports this feature.
     pub lbr: Option<Lbr>,
+    /// A snapshot of the AUX area.
     pub aux: Option<Vec<u8>>,
+    /// The sources of any transactional memory aborts.
     pub txn: Option<Txn>,
+    /// A hardware provided [weight][crate::sample::record::sample::Sample::weight]
+    /// value that expresses how costly the sampled event was.
+    ///
+    /// This allows the hardware to highlight expensive events in a profile.
     pub weight: Option<Weight>,
 }
 
@@ -645,11 +691,23 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
     }
 }
 
+/// LBR data.
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lbr {
+    /// The index in the underlying hardware buffer of the most recently
+    /// captured taken branch.
+    ///
+    /// It is very useful for reconstructing the call stack.
+    /// For example, in Intel LBR call stack mode, the depth of reconstructed
+    /// LBR call stack limits to the number of LBR registers. With the low level
+    /// index information, perf tool may stitch the stacks of two samples.
+    /// The reconstructed LBR call stack can break the hardware limitation.
+    ///
     /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/bbfd5e4fab63703375eafaf241a0c696024a59e1>
     pub hw_index: Option<u64>,
+
+    /// LBR entries.
     pub entries: Vec<Entry>,
 }
 
@@ -659,6 +717,7 @@ super::debug!(Lbr {
 });
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1436
+/// LBR entry.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Entry {
@@ -679,10 +738,14 @@ pub struct Entry {
     pub branch_priv: BranchPriv,
 
     // https://github.com/torvalds/linux/commit/571d91dcadfa3cef499010b4eddb9b58b0da4d24
+    /// This counter may store the occurrences of several events.
+    ///
     /// Since `linux-6.8`: <https://github.com/torvalds/linux/commit/571d91dcadfa3cef499010b4eddb9b58b0da4d24>
     pub counter: Option<u64>,
 }
 
+/// Branch types.
+///
 /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/eb0baf8a0d9259d168523b8e7c436b55ade7c546>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -691,37 +754,52 @@ pub enum BranchType {
     // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L248
 
     // PERF_BR_UNKNOWN
+    /// Unknown.
     Unknown,
     // PERF_BR_COND
+    /// Conditional.
     Cond,
     // PERF_BR_UNCOND
+    /// Unconditional.
     Uncond,
     // PERF_BR_IND
+    /// Indirect.
     Ind,
     // PERF_BR_CALL
+    /// Function call.
     Call,
     // PERF_BR_IND_CALL
+    /// Indirect function call.
     IndCall,
     // PERF_BR_RET
+    /// Function return.
     Ret,
     // PERF_BR_SYSCALL
+    /// Syscall.
     Syscall,
     // PERF_BR_SYSRET
+    /// Syscall return.
     Sysret,
     // PERF_BR_COND_CALL
+    /// Conditional function call.
     CondCall,
     // PERF_BR_COND_RET
+    /// Conditional function return.
     CondRet,
     // PERF_BR_ERET
+    /// Exception return.
     /// Since `linux-5.18`: <https://github.com/torvalds/linux/commit/cedd3614e5d9c80908099c19f8716714ce0610b1>
     Eret,
     // PERF_BR_IRQ
+    /// IRQ.
     /// Since `linux-5.18`: <https://github.com/torvalds/linux/commit/cedd3614e5d9c80908099c19f8716714ce0610b1>
     Irq,
     // PERF_BR_SERROR
+    /// System error.
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/a724ec82966d57e4b5d36341d3e3dc1a3c011564>
     SysErr,
     // PERF_BR_NO_TX
+    /// Not in transaction.
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/a724ec82966d57e4b5d36341d3e3dc1a3c011564>
     NoTx,
 
@@ -729,40 +807,56 @@ pub enum BranchType {
     // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L279
 
     // PERF_BR_NEW_FAULT_DATA
+    /// Data fault.
     DataFault,
     // PERF_BR_NEW_FAULT_ALGN
+    /// Alignment fault.
     AlignFault,
     // PERF_BR_NEW_FAULT_INST
+    /// Instruction fault.
     InstrFault,
 
     // PERF_BR_NEW_ARCH_1
+    /// Architecture specific.
     Arch1,
     // PERF_BR_NEW_ARCH_2
+    /// Architecture specific.
     Arch2,
     // PERF_BR_NEW_ARCH_3
+    /// Architecture specific.
     Arch3,
     // PERF_BR_NEW_ARCH_4
+    /// Architecture specific.
     Arch4,
     // PERF_BR_NEW_ARCH_5
+    /// Architecture specific.
     Arch5,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L271
+/// Branch speculation outcome classification.
+///
 /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/93315e46b000fc80fff5d53c3f444417fb3df6de>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchSpec {
     // PERF_BR_SPEC_NA
+    /// Not available.
     Na,
     // PERF_BR_SPEC_WRONG_PATH
+    /// Speculative but on wrong path.
     Wrong,
     // PERF_BR_SPEC_CORRECT_PATH
+    /// Speculative and on correct path.
     Correct,
     // PERF_BR_NON_SPEC_CORRECT_PATH
+    /// Non-speculative but on correct path.
     NoSpecCorrect,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L291
+/// Branch privilege levels.
+///
 /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/5402d25aa5710d240040f73fb13d7d5c303ef071>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -777,6 +871,7 @@ pub enum BranchPriv {
     Hv,
 }
 
+/// Sampling weight.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Weight {
@@ -785,116 +880,174 @@ pub enum Weight {
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L322
+/// The sources of any transactional memory aborts.
+///
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Txn {
     // PERF_TXN_ELISION
+    /// From elision.
     pub elision: bool,
     // PERF_TXN_TRANSACTION
+    /// From transaction.
     pub tx: bool,
     // PERF_TXN_SYNC
+    /// Aborts caused by current thread.
     pub is_sync: bool,
     // PERF_TXN_ASYNC
+    /// Aborts caused by other theads.
     pub is_async: bool,
     // PERF_TXN_RETRY
+    /// Retryable transaction.
     pub retry: bool,
     // PERF_TXN_CONFLICT
+    /// Conflicts with other threads.
     pub conflict: bool,
     // PERF_TXN_CAPACITY_READ
+    /// Transaction write capacity overflow.
     pub capacity_read: bool,
     // PERF_TXN_CAPACITY_WRITE
+    /// Transaction read capacity overflow.
     pub capacity_write: bool,
     // (flags & PERF_TXN_ABORT_MASK) >> PERF_TXN_ABORT_SHIFT
+    /// User-specified abort code.
     pub code: u32,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1286
+/// The source of data associated with the sampled instruction.
+///
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DataSource {
+    /// Type of opcode.
     pub op: MemOp,
+    /// Memory hierarchy levels.
     pub level: MemLevel,
+    /// Snoop mode.
     pub snoop: MemSnoop,
+    /// Locked instruction.
     pub lock: MemLock,
+    /// TLB access.
     pub tlb: MemTlb,
+    /// Memory hierarchy levels (V2).
+    ///
     /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
     pub level2: MemLevel2,
+    /// This can be combined with the memory hierarchy levels to signify a remote cache.
+    ///
     /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
     pub remote: bool,
+    /// Access blocked.
+    ///
     /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/61b985e3e775a3a75fda04ce7ef1b1aefc4758bc>
     pub block: MemBlock,
+    /// Hop level.
+    ///
     /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/fec9cc6175d0ec1e13efe12be491d9bd4de62f80>
     pub hops: MemHop,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1324
+/// Type of opcode.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemOp {
     // PERF_MEM_OP_NA
+    /// Not available.
     pub na: bool,
     // PERF_MEM_OP_LOAD
+    /// Load instruction.
     pub load: bool,
     // PERF_MEM_OP_STORE
+    /// Store instruction.
     pub store: bool,
     // PERF_MEM_OP_PFETCH
+    /// Prefetch.
     pub prefetch: bool,
     // PERF_MEM_OP_EXEC
+    /// Code execution.
     pub exec: bool,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1338
+/// Memory hierarchy levels.
+///
+/// This is being deprecated in favour of [`MemLevel2`].
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemLevel {
     // PERF_MEM_LVL_NA
+    /// Not available.
     pub na: bool,
     // PERF_MEM_LVL_HIT
+    /// Hit level.
     pub hit: bool,
     // PERF_MEM_LVL_MISS
+    /// Miss level.
     pub miss: bool,
     // PERF_MEM_LVL_L1
+    /// L1.
     pub l1: bool,
     // PERF_MEM_LVL_LFB
+    /// Line fill buffer.
     pub lfb: bool,
     // PERF_MEM_LVL_L2
+    /// L2.
     pub l2: bool,
     // PERF_MEM_LVL_L3
+    /// L3.
     pub l3: bool,
     // PERF_MEM_LVL_LOC_RAM
+    /// Local DRAM.
     pub loc_ram: bool,
     // PERF_MEM_LVL_REM_RAM1
+    /// Remote DRAM (1 hop).
     pub rem_ram1: bool,
     // PERF_MEM_LVL_REM_RAM2
+    /// Remote DRAM (2 hops).
     pub rem_ram2: bool,
     // PERF_MEM_LVL_REM_CCE1
+    /// Remote cache (1 hop).
     pub rem_cce1: bool,
     // PERF_MEM_LVL_REM_CCE2
+    /// Remote cache (2 hops).
     pub rem_cce2: bool,
     // PERF_MEM_LVL_IO
+    /// I/O memory.
     pub io: bool,
     // PERF_MEM_LVL_UNC
+    /// Uncached memory.
     pub unc: bool,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1376
+/// Snoop mode.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemSnoop {
     // PERF_MEM_SNOOP_NA
+    /// Not available.
     pub na: bool,
     // PERF_MEM_SNOOP_NONE
+    /// No snoop.
     pub none: bool,
     // PERF_MEM_SNOOP_HIT
+    /// Snoop hit.
     pub hit: bool,
     // PERF_MEM_SNOOP_MISS
+    /// Snoop miss.
     pub miss: bool,
     // PERF_MEM_SNOOP_HITM
+    /// Snoop hit modified.
     pub hit_m: bool,
     // PERF_MEM_SNOOPX_FWD
+    /// Forward.
     /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
     pub fwd: bool,
     // PERF_MEM_SNOOPX_PEER
+    /// Transfer from peer.
+    ///
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/cfef80bad4cf79cdc964a53c98254dfa462be83f>
     ///
     /// NOTE: This feature was first available in the perf tool in Linux 6.0,
@@ -904,114 +1057,171 @@ pub struct MemSnoop {
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1388
+/// Locked instruction.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemLock {
     // PERF_MEM_LOCK_NA
+    /// Not available.
     pub na: bool,
     // PERF_MEM_LOCK_LOCKED
+    /// Locked transaction.
     pub locked: bool,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1393
+/// TLB access.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemTlb {
     // PERF_MEM_TLB_NA
+    /// Not available.
     pub na: bool,
     // PERF_MEM_TLB_HIT
+    /// Hit level.
     pub hit: bool,
     // PERF_MEM_TLB_MISS
+    /// Miss level.
     pub miss: bool,
     // PERF_MEM_TLB_L1
+    /// L1.
     pub l1: bool,
     // PERF_MEM_TLB_L2
+    /// L2.
     pub l2: bool,
     // PERF_MEM_TLB_WK
+    /// Hardware walker.
     pub walker: bool,
     // PERF_MEM_TLB_OS
+    /// OS fault handler.
     pub fault: bool,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1357
+/// Memory hierarchy levels (V2).
+///
 /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemLevel2 {
     // PERF_MEM_LVLNUM_L1
+    /// L1.
     L1,
     // PERF_MEM_LVLNUM_L2
+    /// L2.
     L2,
     // PERF_MEM_LVLNUM_L3
+    /// L3.
     L3,
     // PERF_MEM_LVLNUM_L4
+    /// L4.
     L4,
     // PERF_MEM_LVLNUM_L2_MHB
+    /// L2 miss handling buffer.
+    ///
     /// Since `linux-6.11`: <https://github.com/torvalds/linux/commit/608f6976c309793ceea37292c54b057dab091944>
     L2Mhb,
     // PERF_MEM_LVLNUM_MSC
+    /// Memory-side cache.
+    ///
     /// Since `linux-6.11`: <https://github.com/torvalds/linux/commit/608f6976c309793ceea37292c54b057dab091944>
     Msc,
     // PERF_MEM_LVLNUM_UNC
+    /// Uncached.
+    ///
     /// Since `linux-6.6`: <https://github.com/torvalds/linux/commit/526fffabc5fb63e80eb890c74b6570df2570c87f>
     Unc,
     // PERF_MEM_LVLNUM_CXL
+    /// CXL.
+    ///
     /// Since `linux-6.1`:
     /// <https://github.com/torvalds/linux/commit/cb6c18b5a41622c7a439508f7421f8766a91cb87>
     /// <https://github.com/torvalds/linux/commit/ee3e88dfec23153d0675b5d00522297b9adf657c>
     Cxl,
     // PERF_MEM_LVLNUM_IO
+    /// I/O.
+    ///
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/ee3e88dfec23153d0675b5d00522297b9adf657c>
     Io,
     // PERF_MEM_LVLNUM_ANY_CACHE
+    /// Any cache.
     AnyCache,
     // PERF_MEM_LVLNUM_LFB
+    /// LFB / L1 Miss Handling Buffer.
     Lfb,
     // PERF_MEM_LVLNUM_RAM
+    /// RAM.
     Ram,
     // PERF_MEM_LVLNUM_PMEM
+    /// PMEM.
     Pmem,
     // PERF_MEM_LVLNUM_NA
+    /// Not available.
     Na,
+    /// Unknown.
+    ///
+    /// This is for compatibility, not ABI.
     Unknown,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1403
+/// Access blocked.
+///
 /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/61b985e3e775a3a75fda04ce7ef1b1aefc4758bc>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemBlock {
     // PERF_MEM_BLK_NA
+    /// Not available.
     pub na: bool,
+
     // PERF_MEM_BLK_DATA
+    /// Data could not be forwarded.
     pub data: bool,
+
     // PERF_MEM_BLK_ADDR
+    /// Address conflict.
     pub addr: bool,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1409
 // https://github.com/torvalds/linux/blob/v6.13/tools/perf/util/mem-events.c#L385
+/// Hop levels.
+///
 /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/fec9cc6175d0ec1e13efe12be491d9bd4de62f80>
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemHop {
     // PERF_MEM_HOPS_0
+    /// Remote core, same node.
     Core,
     // PERF_MEM_HOPS_1
+    /// Remote node, same socket.
+    ///
     /// Since `linux-5.17`: <https://github.com/torvalds/linux/commit/cb1c4aba055f928ffae0c868e8dfe08eeab302e7>
     Node,
     // PERF_MEM_HOPS_2
+    /// Remote socket, same board.
+    ///
     /// Since `linux-5.17`: <https://github.com/torvalds/linux/commit/cb1c4aba055f928ffae0c868e8dfe08eeab302e7>
     Socket,
     // PERF_MEM_HOPS_3
+    /// Remote board.
+    ///
     /// Since `linux-5.17`: <https://github.com/torvalds/linux/commit/cb1c4aba055f928ffae0c868e8dfe08eeab302e7>
     Board,
+    /// Unknown.
+    ///
+    /// This is for compatibility, not ABI.
     Unknown,
 }
 
+/// Type of ABI.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Abi {
+    /// 32-bit ABI.
     _32,
+    /// 64-bit ABI.
     _64,
 }
