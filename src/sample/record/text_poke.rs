@@ -1,13 +1,55 @@
 use super::RecordId;
 
+/// Records changes to kernel text i.e. self-modified code.
+///
+/// # Examples
+///
+/// Running this example may require root privileges.
+///
+/// ```rust, no_run
+/// use std::fs::File;
+/// use std::os::fd::AsRawFd;
+///
+/// use perf_event_open::config::{Cpu, Opts, Proc, WakeUpOn};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::sw::Software;
+///
+/// let event = Software::Dummy;
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let mut opts = Opts::default();
+/// opts.wake_up.on = WakeUpOn::Bytes(1);
+/// opts.extra_record.ksymbol = true;
+/// opts.extra_record.text_poke = true;
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+/// let sampler = counter.sampler(5).unwrap();
+/// counter.enable().unwrap();
+///
+/// // Insert a kernel module that registers a kprobe.
+/// let file = File::open("register_kprobe_module.ko").unwrap();
+/// unsafe {
+///     libc::syscall(libc::SYS_finit_module, file.as_raw_fd(), b"\0", 0);
+///     libc::syscall(libc::SYS_delete_module, b"register_kprobe_module\0", 0);
+/// }
+///
+/// for it in sampler.iter() {
+///     println!("{:-?}", it);
+/// }
+/// ```
+///
 /// Since `linux-5.9`: <https://github.com/torvalds/linux/commit/e17d43b93e544f5016c0251d2074c15568d5d963>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TextPoke {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// Address.
     pub addr: u64,
+    /// Old bytes.
     pub old_bytes: Vec<u8>,
+    /// New bytes.
     pub new_bytes: Vec<u8>,
 }
 
