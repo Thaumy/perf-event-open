@@ -162,12 +162,22 @@ super::debug!(Aux {
     {pmu_format_type},
 });
 
+/// Hardware ID of the AUX output event.
+///
+/// Data written to the AUX area by hardware due to [`aux_output`][crate::config::sibling::Opts::aux_output],
+/// may need to be matched to the event by an architecture-specific hardware ID.
+/// This records the hardware ID, but requires [`RecordId`] to provide the
+/// event ID. e.g. Intel PT uses this record to disambiguate PEBS-via-PT
+/// records from multiple events.
+///
 /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/8b8ff8cc3b8155c18162e8b1f70e1230db176862>
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AuxOutputHwId {
+    /// Record IDs.
     pub record_id: Option<RecordId>,
 
+    /// Hardware ID.
     pub hw_id: u64,
 }
 
