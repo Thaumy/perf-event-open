@@ -20,32 +20,170 @@ macro_rules! unsupported {
 }
 pub(super) use unsupported;
 
+/// Event options.
 #[derive(Clone, Debug, Default)]
 pub struct Opts {
+    /// Exclude events with privilege levels.
+    ///
+    /// For example, if we set [`Priv::user`] to `true` here,
+    /// events that happen in user space will not be counted.
     pub exclude: Priv,
+
+    /// This group should be the only group on the CPU.
+    ///
+    /// This means that when this counter group is on a CPU,
+    /// it should be the only group using the CPU counters.
+    ///
+    /// This allows monitoring programs with PMU that need to run alone so that
+    /// they do not disrupt other hardware counters.
     pub only_group: bool,
+
+    /// The counter should always be on the CPU if at all possible.
+    ///
+    /// If a pinned counter cannot be put onto the CPU (e.g., because there are not enough
+    /// hardware counters or because of a conflict with some other event), then the counter
+    /// goes into an "error" state, where [stat][crate::count::Counter::stat] return EOF.
     pub pin_on_pmu: bool,
 
     // `mmap` will fail if this option is used with all CPUs:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6575
+    /// Controls the inherit behavior.
+    ///
+    /// This is incompatible with monitoring all CPUs in sampling mode.
     pub inherit: Option<Inherit>,
+
+    /// Counter behavior when calling [`execve`](https://man7.org/linux/man-pages/man2/execve.2.html).
     pub on_execve: Option<OnExecve>,
+
+    /// Controls the format of [`Stat`][crate::count::Stat].
     pub stat_format: StatFormat,
 
+    /// Enable counter immediately after the counter is created.
     pub enable: bool,
+
+    /// Controls when to generate a [sample record][crate::sample::record::sample::Sample].
     pub sample_on: SampleOn,
+
+    /// Controls the amount of sample skid.
     pub sample_skid: SampleSkid,
+
+    /// Controls the format of [sample record][crate::sample::record::sample::Sample].
     pub sample_format: SampleFormat,
+
+    /// Generate extra record types.
     pub extra_record: ExtraRecord,
+
+    /// Contains [`RecordId`][crate::sample::record::RecordId] in all non-sample [record][crate::sample::record] types.
     pub record_id_all: bool,
+
+    /// Controls the format of [`RecordId`][crate::sample::record::RecordId].
     pub record_id_format: RecordIdFormat,
+
+    /// Wake up options for asynchronous iterators.
     pub wake_up: WakeUp,
+
     // Must be used together with `remove_on_exec`:
     // https://github.com/torvalds/linux/blob/2408a807bfc3f738850ef5ad5e3fd59d66168996/kernel/events/core.c#L12582
+    /// Enables synchronous signal delivery of `SIGTRAP` to the target
+    /// process on event overflow.
+    ///
+    /// Must be used together with [`OnExecve::Remove`].
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # #[cfg(not(feature = "linux-5.13"))]
+    /// # return;
+    /// #
+    /// use std::mem::{transmute, MaybeUninit};
+    /// use std::ptr::null_mut;
+    /// use std::sync::atomic::{AtomicBool, Ordering};
+    /// use std::sync::mpsc::channel;
+    /// use std::thread;
+    ///
+    /// use perf_event_open::config::{Cpu, OnExecve, Opts, Proc, SampleOn, SigData};
+    /// use perf_event_open::count::Counter;
+    /// use perf_event_open::event::sw::Software;
+    ///
+    /// const SIG_DATA: u64 = 123456; // Data sent on SIGTRAP.
+    ///
+    /// let (pid_tx, pid_rx) = channel();
+    /// let handle = thread::spawn(move || {
+    ///     # // Fork to avoid signal handler conflicts.
+    ///     unsafe {
+    ///         let child = libc::fork();
+    ///         if child > 0 {
+    ///             pid_tx.send(child).unwrap();
+    ///             let mut code = 0;
+    ///             libc::waitpid(child, &mut code as _, 0);
+    ///             assert_eq!(code, 0);
+    ///             return;
+    ///         }
+    ///     }
+    ///
+    ///     unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) };
+    ///
+    ///     let result = std::panic::catch_unwind(|| {
+    ///
+    ///         static SPIN: AtomicBool = AtomicBool::new(true);
+    ///
+    ///         fn handler(num: i32, info: *const libc::siginfo_t) {
+    ///             assert_eq!(num, libc::SIGTRAP);
+    ///             let sig_data = unsafe { transmute::<libc::siginfo_t, [u64; 16]>(*info) }[3];
+    ///             assert_eq!(sig_data, SIG_DATA);
+    ///             SPIN.store(false, Ordering::Relaxed);
+    ///         }
+    ///
+    ///         let act = libc::sigaction {
+    ///             sa_sigaction: handler as _,
+    ///             sa_mask: unsafe { MaybeUninit::zeroed().assume_init() },
+    ///             sa_flags: libc::SA_SIGINFO,
+    ///             sa_restorer: None,
+    ///         };
+    ///         unsafe { libc::sigaction(libc::SIGTRAP, &act as _, null_mut()) };
+    ///
+    ///         while SPIN.load(Ordering::Relaxed) {
+    ///             // Busy wait to ensure the task clock increments.
+    ///             std::hint::spin_loop();
+    ///         }
+    ///     });
+    ///     if result.is_err() {
+    ///         unsafe { libc::abort() };
+    ///     }
+    ///
+    ///     unsafe { libc::exit(0) };
+    /// });
+    ///
+    /// let event = Software::TaskClock;
+    /// let target = (Proc(pid_rx.recv().unwrap() as _), Cpu::ALL);
+    ///
+    /// let mut opts = Opts::default();
+    /// opts.sample_on = SampleOn::Freq(1000);
+    /// opts.sigtrap_on_sample = Some(SigData(SIG_DATA)); // Send SIGTRAP to the target when sampling.
+    /// opts.on_execve = Some(OnExecve::Remove); // Must be used together with `sigtrap_on_sample`.
+    ///
+    /// let counter = Counter::new(event, target, opts).unwrap();
+    /// counter.sampler(5).unwrap();
+    /// counter.enable().unwrap();
+    ///
+    /// handle.join().unwrap();
+    /// ```
+    ///
+    /// NOTE: Child process monitoring itself seems buggy,
+    /// panic in the signal handler may get the child process stuck.
+    ///
     /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/97ba62b278674293762c3d91f724f1bb922f04e0>
     pub sigtrap_on_sample: Option<SigData>,
+
+    /// Selects which internal Linux timer to use for [timestamps][crate::sample::record::RecordId::time].
+    ///
+    /// This can make it easier to correlate perf sample times with timestamps generated by other tools.
+    ///
     /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/34f439278cef7b1177f8ce24f9fc81dfc6221d3b>
     pub timer: Option<Clock>,
+
+    /// Pauses the newly created [AUX tracer][crate::sample::auxiliary::AuxTracer].
+    ///
     /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
     pub pause_aux: bool,
 }
