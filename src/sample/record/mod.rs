@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
@@ -17,7 +18,7 @@ use task::{Exit, Fork};
 use text_poke::TextPoke;
 use throttle::{Throttle, Unthrottle};
 
-use crate::ffi::{bindings as b, deref_offset};
+use crate::ffi::{bindings as b, deref_offset, Attr};
 
 pub mod auxiliary;
 pub mod bpf;
@@ -316,3 +317,92 @@ macro_rules! debug {
     };
 }
 pub(crate) use debug;
+
+#[derive(Clone, Debug)]
+pub struct UnsafeParser {
+    pub sample_id_all: bool,
+    pub sample_type: u64,
+    pub read_format: u64,
+    pub user_regs: usize,
+    pub intr_regs: usize,
+    pub branch_sample_type: u64,
+}
+
+impl UnsafeParser {
+    pub(crate) fn from_attr(attr: &Attr) -> Self {
+        Self {
+            sample_id_all: attr.sample_id_all() > 0,
+            sample_type: attr.sample_type,
+            user_regs: attr.sample_regs_user.count_ones() as _,
+            intr_regs: attr.sample_regs_intr.count_ones() as _,
+            branch_sample_type: attr.branch_sample_type,
+            read_format: attr.read_format,
+        }
+    }
+
+    pub unsafe fn parse<T>(&self, bytes: T) -> (Priv, Record)
+    where
+        T: Borrow<[u8]>,
+    {
+        let bytes = bytes.borrow();
+        let ptr = &mut bytes.as_ptr();
+
+        // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L824
+        // struct perf_event_header {
+        //     u32 type;
+        //     u16 misc;
+        //     u16 size;
+        // };
+
+        let ty: u32 = deref_offset(ptr);
+        let misc: u16 = deref_offset(ptr);
+        let record_priv = Priv::from_misc(misc);
+
+        let ptr = ptr.add(size_of::<u16>()); // skip `size`
+        let sample_id_all = self.sample_id_all.then_some(SampleType(self.sample_type));
+
+        fn from<T>(t: T) -> Record
+        where
+            Box<T>: Into<Record>,
+        {
+            Box::new(t).into()
+        }
+
+        let record = match ty {
+            b::PERF_RECORD_SAMPLE => from(Sample::from_ptr(
+                ptr,
+                misc,
+                self.read_format,
+                self.sample_type,
+                self.user_regs,
+                self.intr_regs,
+                self.branch_sample_type,
+            )),
+            b::PERF_RECORD_MMAP => from(Mmap::from_ptr(ptr, misc, false, sample_id_all)),
+            b::PERF_RECORD_MMAP2 => from(Mmap::from_ptr(ptr, misc, true, sample_id_all)),
+            b::PERF_RECORD_READ => from(Read::from_ptr(ptr, self.read_format, sample_id_all)),
+            b::PERF_RECORD_CGROUP => from(Cgroup::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_KSYMBOL => from(Ksymbol::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_TEXT_POKE => from(TextPoke::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_BPF_EVENT => from(BpfEvent::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_SWITCH => from(CtxSwitch::from_ptr(ptr, false, misc, sample_id_all)),
+            b::PERF_RECORD_SWITCH_CPU_WIDE => {
+                from(CtxSwitch::from_ptr(ptr, true, misc, sample_id_all))
+            }
+            b::PERF_RECORD_NAMESPACES => from(Namespaces::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_ITRACE_START => from(ItraceStart::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_AUX => from(Aux::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_AUX_OUTPUT_HW_ID => from(AuxOutputHwId::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_COMM => from(Comm::from_ptr(ptr, misc, sample_id_all)),
+            b::PERF_RECORD_EXIT => from(Exit::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_FORK => from(Fork::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_THROTTLE => from(Throttle::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_UNTHROTTLE => from(Unthrottle::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_LOST => from(LostRecords::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_LOST_SAMPLES => from(LostSamples::from_ptr(ptr, sample_id_all)),
+            _ => Record::Unknown(bytes.to_vec()), // For compatibility, not ABI.
+        };
+
+        (record_priv, record)
+    }
+}
