@@ -1,5 +1,6 @@
 use crate::ffi::{bindings as b, deref_offset};
 
+pub mod auxiliary;
 pub mod bpf;
 pub mod cgroup;
 pub mod comm;
