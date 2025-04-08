@@ -34,3 +34,26 @@ impl Throttle {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct Unthrottle {
+    pub record_id: Option<RecordId>,
+
+    pub time: u64,
+    pub id: u64,
+    pub stream_id: u64,
+}
+
+impl Unthrottle {
+    pub(crate) unsafe fn from_ptr(ptr: *const u8, sample_id_all: Option<SampleType>) -> Self {
+        // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L9332
+        let layout = Throttle::from_ptr(ptr, sample_id_all);
+
+        Self {
+            record_id: layout.record_id,
+            time: layout.time,
+            id: layout.id,
+            stream_id: layout.stream_id,
+        }
+    }
+}
