@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 pub mod bindings;
 pub mod syscall;
 
@@ -9,5 +11,11 @@ pub unsafe fn deref_offset<T: Copy>(ptr: &mut *const u8) -> T {
     *ptr = ptr.add(size_of::<T>());
     val
 }
+
+pub static PAGE_SIZE: LazyLock<usize> = LazyLock::new(|| {
+    let name = libc::_SC_PAGE_SIZE;
+    let size = unsafe { libc::sysconf(name) };
+    size as _
+});
 
 pub type Attr = bindings::perf_event_attr;
