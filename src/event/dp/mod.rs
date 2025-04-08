@@ -12,12 +12,24 @@ pub use up::*;
 
 use super::EventConfig;
 
+/// Dynamic PMU event
 #[derive(Clone, Debug)]
 pub struct DynamicPmu {
+    /// The type value to use can be found in the sysfs filesystem: there is a subdirectory per
+    /// PMU instance under `/sys/bus/event_source/devices`. In each subdirectory there is a
+    /// type file whose content is an integer that can be used in the this field.
+    ///
+    /// For instance, `/sys/bus/event_source/devices/cpu/type` contains the value for
+    /// the core CPU PMU, which is usually 4.
     pub ty: u32,
+    /// Event config.
     pub config: u64,
+    /// Event config1.
     pub config1: u64,
+    /// Event config2.
     pub config2: u64,
+    /// Event config3.
+    ///
     /// Since `linux-6.3`: <https://github.com/torvalds/linux/commit/09519ec3b19e4144b5f6e269c54fbb9c294a9fcb>
     pub config3: u64,
 }

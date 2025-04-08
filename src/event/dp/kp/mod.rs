@@ -8,9 +8,12 @@ use super::{get_retprobe_bit, get_type, DynamicPmu, Error};
 const TYPE_PATH: &str = "/sys/bus/event_source/devices/kprobe/type";
 const RETPROBE_PATH: &str = "/sys/bus/event_source/devices/kprobe/format/retprobe";
 
+/// Kernel probe event
 #[derive(Clone, Debug)]
 pub enum Kprobe {
+    /// Symbol + offset where the probe is inserted.
     Symbol { name: &'static CStr, offset: u64 },
+    /// Address where the probe is inserted.
     Addr(u64),
 }
 
@@ -45,9 +48,12 @@ impl TryFrom<Kprobe> for DynamicPmu {
     }
 }
 
+/// Kernel return probe event
 #[derive(Clone, Debug)]
 pub enum Kretprobe {
+    /// Symbol + offset where the probe is inserted.
     Symbol { name: &'static CStr, offset: u64 },
+    /// Address where the probe is inserted.
     Addr(u64),
 }
 

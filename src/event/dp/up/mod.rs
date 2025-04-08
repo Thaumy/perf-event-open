@@ -8,9 +8,12 @@ use super::{get_retprobe_bit, get_type, DynamicPmu, Error};
 const TYPE_PATH: &str = "/sys/bus/event_source/devices/uprobe/type";
 const RETPROBE_PATH: &str = "/sys/bus/event_source/devices/kprobe/format/retprobe";
 
+/// User probe event
 #[derive(Clone, Debug)]
 pub struct Uprobe {
+    /// Path to an executable or a library.
     pub path: &'static CStr,
+    /// Where the probe is inserted.
     pub offset: u64,
 }
 
@@ -35,9 +38,12 @@ impl TryFrom<Uprobe> for DynamicPmu {
     }
 }
 
+/// User return probe event
 #[derive(Clone, Debug)]
 pub struct Uretprobe {
+    /// Path to an executable or a library.
     pub path: &'static CStr,
+    /// Where the probe is inserted.
     pub offset: u64,
 }
 
