@@ -10,6 +10,7 @@ description = "High-level wrapper for the perf_event_open system call"
 rust-version = "1.80.0"
 
 [features]
+default = ["latest"]
 "latest" = ["linux-6.13"]
 "legacy" = ["linux-5.4"]
 "linux-6.13" = ["linux-6.11"]
