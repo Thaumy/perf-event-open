@@ -12,7 +12,6 @@ rust-version = "1.80.0"
 build = "build/main.rs"
 
 [features]
-default = ["latest"]
 "serde" = []
 "latest" = ["linux-6.13"]
 "legacy" = ["linux-5.4"]
