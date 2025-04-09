@@ -265,7 +265,7 @@ impl Counter {
         // so we don't have to worry about the mutable reference.
         let argp = unsafe { &mut *ptr };
 
-        ioctl_argp(&self.perf, b::PERF_IOC_OP_RESET as _, argp)?;
+        ioctl_argp(&self.perf, b::PERF_IOC_OP_SET_FILTER as _, argp)?;
         Ok(())
     }
 
