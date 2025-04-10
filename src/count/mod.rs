@@ -3,7 +3,7 @@ use std::cell::UnsafeCell;
 use std::ffi::CStr;
 use std::fs::File;
 use std::io::{self, Result};
-use std::mem::{transmute, MaybeUninit};
+use std::mem::transmute;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
 
@@ -11,7 +11,7 @@ use super::sample::Sampler;
 use crate::config::attr::from;
 use crate::config::{Opts, Target};
 use crate::event::Event;
-use crate::ffi::syscall::{ioctl_arg, ioctl_argp, perf_event_open, read_uninit};
+use crate::ffi::syscall::{ioctl_arg, ioctl_argp, perf_event_open, read};
 use crate::ffi::{bindings as b, Attr};
 
 pub mod group;
@@ -79,7 +79,7 @@ pub struct Counter {
     pub(crate) target: Target,
     pub(crate) attr: UnsafeCell<Attr>,
     pub(crate) perf: Arc<File>,
-    pub(crate) read_buf: UnsafeCell<Vec<MaybeUninit<u8>>>,
+    pub(crate) read_buf: UnsafeCell<Vec<u8>>,
 }
 
 impl Counter {
@@ -93,19 +93,16 @@ impl Counter {
         let attr = from(event.try_into()?.0, opts.borrow())?;
         let flags = target.flags | b::PERF_FLAG_FD_CLOEXEC as u64;
         let perf = perf_event_open(&attr, target.pid, target.cpu, -1, flags)?;
+        // Now there is only one event in the group, if in the future
+        // this counter becomes the group leader, `CounterGroup::add`
+        // will allocate a new buffer if `PERF_FORMAT_GROUP` is enabled.
+        let read_buf = vec![0; Stat::read_buf_size(1, attr.read_format)];
 
         Ok(Self {
             target,
             attr: UnsafeCell::new(attr),
             perf: Arc::new(perf),
-            read_buf: {
-                let mut base = vec![];
-                // Now there is only one event in the group, if in the future
-                // this counter becomes the leader, `CounterGroup::add_memnber`
-                // will extend this buffer to sufficient size.
-                Stat::alloc_read_buf(&mut base, 1, attr.read_format);
-                UnsafeCell::new(base)
-            },
+            read_buf: UnsafeCell::new(read_buf),
         })
     }
 
@@ -172,7 +169,7 @@ impl Counter {
         // since `Counter` is not `Sync`.
         let buf = unsafe { &mut *self.read_buf.get() };
 
-        read_uninit(&self.perf, buf)?;
+        read(&self.perf, buf)?;
         let buf = buf.as_mut_slice();
         let buf = unsafe { transmute::<&mut [_], &mut [u8]>(buf) };
 
@@ -214,6 +211,8 @@ impl Counter {
         //     u32 prog_cnt;
         //     u32 ids[0];
         // }
+
+        use std::mem::MaybeUninit;
         let mut buf = vec![MaybeUninit::uninit(); (2 + buf_len) as _];
         buf[0] = MaybeUninit::new(buf_len); // set `ids_len`
 

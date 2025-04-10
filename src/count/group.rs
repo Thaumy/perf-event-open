@@ -116,29 +116,36 @@ impl CounterGroup {
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12926
         let flags = leader.target.flags | b::PERF_FLAG_FD_CLOEXEC as u64;
         let perf = perf_event_open(&attr, leader.target.pid, leader.target.cpu, group_fd, flags)?;
+        // `group::StatFormat` has no `PERF_FORMAT_GROUP` for sibling event,
+        // so set `group_size` to 1 is safe.
+        let read_buf = vec![0; Stat::read_buf_size(1, attr.read_format)];
 
         let sibling = Rc::new(Counter {
             target: leader.target.clone(),
             attr: UnsafeCell::new(attr),
             perf: Arc::new(perf),
-            read_buf: {
-                let mut base = vec![];
-                // `group::StatFormat` has no `PERF_FORMAT_GROUP` for sibling event,
-                // so set `group_size` to 1 is safe.
-                Stat::alloc_read_buf(&mut base, 1, attr.read_format);
-                UnsafeCell::new(base)
-            },
+            read_buf: UnsafeCell::new(read_buf),
         });
 
         self.siblings.push(Rc::clone(&sibling));
 
-        // Counter group and group leader always lives in the same thread,
-        // there could be only up to one borrow to the `read_buf` at the same time.
-        let base = unsafe { &mut *leader.read_buf.get() };
         // We only change the attr fields related to event config,
         // there is nothing about `read_format`.
         let leader_read_format = unsafe { &*leader.attr.get() }.read_format;
-        Stat::alloc_read_buf(base, self.siblings.len() + 1, leader_read_format);
+        let new_len = Stat::read_buf_size(self.siblings.len() + 1, leader_read_format);
+        // Counter group and group leader always lives in the same thread,
+        // there could be only up to one borrow to the `read_buf` at the same time.
+        let old = unsafe { &mut *leader.read_buf.get() };
+        if new_len > old.len() {
+            // We allocate a new buffer instead of resizing the old one to avoid
+            // the copying old data unnecessarily.
+            //
+            // Because `vec![0; n]` is optimized to use `calloc`, the real
+            // allocation will happen in the `Counter::stat` call, so there
+            // is no overhead in calling `add` multiple times.
+            let mut new = vec![0; new_len];
+            std::mem::swap(old, &mut new);
+        }
 
         Ok(sibling)
     }

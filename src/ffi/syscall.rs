@@ -1,6 +1,5 @@
 use std::fs::File;
 use std::io::{Error, Result};
-use std::mem::{transmute, MaybeUninit};
 use std::os::fd::{AsRawFd, FromRawFd};
 use std::ptr::NonNull;
 
@@ -48,11 +47,6 @@ pub fn read(file: &File, buf: &mut [u8]) -> Result<usize> {
     } else {
         Err(Error::last_os_error())
     }
-}
-
-pub fn read_uninit(file: &File, buf: &mut [MaybeUninit<u8>]) -> Result<usize> {
-    let buf = unsafe { transmute::<&mut [_], &mut [u8]>(buf) };
-    read(file, buf)
 }
 
 pub unsafe fn mmap(
