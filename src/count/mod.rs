@@ -11,7 +11,7 @@ use super::sample::Sampler;
 use crate::config::attr::from;
 use crate::config::{Opts, Target};
 use crate::event::Event;
-use crate::ffi::syscall::{ioctl, ioctl_arg, ioctl_argp, perf_event_open, read_uninit};
+use crate::ffi::syscall::{ioctl_arg, ioctl_argp, perf_event_open, read_uninit};
 use crate::ffi::{bindings as b, Attr};
 
 pub mod group;
@@ -145,7 +145,7 @@ impl Counter {
     ///
     /// Counter will start to accumulate event counts.
     pub fn enable(&self) -> Result<()> {
-        ioctl(&self.perf, b::PERF_IOC_OP_ENABLE as _)?;
+        ioctl_arg(&self.perf, b::PERF_IOC_OP_ENABLE as _, 0)?;
         Ok(())
     }
 
@@ -153,7 +153,7 @@ impl Counter {
     ///
     /// Counter will stop to accumulate event counts.
     pub fn disable(&self) -> Result<()> {
-        ioctl(&self.perf, b::PERF_IOC_OP_DISABLE as _)?;
+        ioctl_arg(&self.perf, b::PERF_IOC_OP_DISABLE as _, 0)?;
         Ok(())
     }
 
@@ -162,7 +162,7 @@ impl Counter {
     /// This will only clear the event counts in the statistics,
     /// other fields (such as `time_enabled`) are not affected.
     pub fn clear_count(&self) -> Result<()> {
-        ioctl(&self.perf, b::PERF_IOC_OP_RESET as _)?;
+        ioctl_arg(&self.perf, b::PERF_IOC_OP_RESET as _, 0)?;
         Ok(())
     }
 
