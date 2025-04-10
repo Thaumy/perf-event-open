@@ -1,12 +1,12 @@
 use std::fs::File;
 use std::io::Result;
-use std::ptr::null_mut;
+use std::ptr::{null_mut, NonNull};
 use std::slice;
 
 use crate::ffi::syscall::{mmap, munmap};
 
 pub struct Arena {
-    ptr: *mut u8,
+    ptr: NonNull<u8>,
     len: usize,
 }
 
@@ -15,18 +15,18 @@ impl Arena {
         let prot = libc::PROT_READ | libc::PROT_WRITE;
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6582
         let flags = libc::MAP_SHARED;
-        let ptr = unsafe { mmap(null_mut(), len, prot, flags, file, offset as _) }?;
+        let ptr = unsafe { mmap(null_mut(), len, prot, flags, file, offset as _) }?.cast();
         Ok(Self { ptr, len })
     }
 
     pub fn as_slice(&self) -> &[u8] {
-        unsafe { slice::from_raw_parts(self.ptr, self.len) }
+        unsafe { slice::from_raw_parts(self.ptr.as_ptr(), self.len) }
     }
 }
 
 impl Drop for Arena {
     fn drop(&mut self) {
-        match unsafe { munmap(self.ptr, self.len) } {
+        match unsafe { munmap(self.ptr.as_ptr() as _, self.len) } {
             Ok(()) => (),
             Err(e) => panic!("Failed to unmap arena: {}", e),
         }

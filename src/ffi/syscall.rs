@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{Error, Result};
 use std::mem::{transmute, MaybeUninit};
 use std::os::fd::{AsRawFd, FromRawFd};
+use std::ptr::NonNull;
 
 use libc::epoll_event;
 
@@ -54,23 +55,23 @@ pub fn read_uninit(file: &File, buf: &mut [MaybeUninit<u8>]) -> Result<usize> {
     read(file, buf)
 }
 
-pub unsafe fn mmap<T>(
+pub unsafe fn mmap(
     ptr: *mut (),
     len: usize,
     prot: i32,
     flags: i32,
     file: &File,
     offset: i64,
-) -> Result<*mut T> {
+) -> Result<NonNull<()>> {
     let ptr = libc::mmap(ptr as _, len, prot, flags, file.as_raw_fd(), offset);
     if ptr != libc::MAP_FAILED {
-        Ok(ptr as _)
+        Ok(unsafe { NonNull::new_unchecked(ptr as _) })
     } else {
         Err(Error::last_os_error())
     }
 }
 
-pub unsafe fn munmap<T>(ptr: *mut T, len: usize) -> Result<()> {
+pub unsafe fn munmap(ptr: *mut (), len: usize) -> Result<()> {
     let result = libc::munmap(ptr as _, len);
     if result != -1 {
         Ok(())
