@@ -567,12 +567,18 @@ pub struct TargetPriv {
 }
 
 impl TargetPriv {
-    #[rustfmt::skip]
     pub(crate) fn as_branch_sample_type(&self) -> u64 {
-        let u = if self.user { b::PERF_SAMPLE_BRANCH_USER } else { 0 };
-        let k = if self.kernel { b::PERF_SAMPLE_BRANCH_KERNEL } else { 0 };
-        let h = if self.hv { b::PERF_SAMPLE_BRANCH_HV } else { 0 };
-        ( u | k | h ) as _
+        let mut flags = 0;
+        if self.user {
+            flags |= b::PERF_SAMPLE_BRANCH_USER;
+        }
+        if self.kernel {
+            flags |= b::PERF_SAMPLE_BRANCH_KERNEL;
+        };
+        if self.hv {
+            flags |= b::PERF_SAMPLE_BRANCH_HV;
+        }
+        flags as _
     }
 }
 

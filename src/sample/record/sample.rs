@@ -543,97 +543,91 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         };
     }
 
-    #[rustfmt::skip]
     let op = MemOp {
-        na:       when!(bits, PERF_MEM_OP_NA),
-        load:     when!(bits, PERF_MEM_OP_LOAD),
-        store:    when!(bits, PERF_MEM_OP_STORE),
+        na: when!(bits, PERF_MEM_OP_NA),
+        load: when!(bits, PERF_MEM_OP_LOAD),
+        store: when!(bits, PERF_MEM_OP_STORE),
         prefetch: when!(bits, PERF_MEM_OP_PFETCH),
-        exec:     when!(bits, PERF_MEM_OP_EXEC),
+        exec: when!(bits, PERF_MEM_OP_EXEC),
     };
 
     let shifted = bits >> b::PERF_MEM_LVL_SHIFT;
-    #[rustfmt::skip]
     let level = MemLevel {
-        na:       when!(shifted, PERF_MEM_LVL_NA),
-        hit:      when!(shifted, PERF_MEM_LVL_HIT),
-        miss:     when!(shifted, PERF_MEM_LVL_MISS),
-        l1:       when!(shifted, PERF_MEM_LVL_L1),
-        lfb:      when!(shifted, PERF_MEM_LVL_LFB),
-        l2:       when!(shifted, PERF_MEM_LVL_L2),
-        l3:       when!(shifted, PERF_MEM_LVL_L3),
-        loc_ram:  when!(shifted, PERF_MEM_LVL_LOC_RAM),
+        na: when!(shifted, PERF_MEM_LVL_NA),
+        hit: when!(shifted, PERF_MEM_LVL_HIT),
+        miss: when!(shifted, PERF_MEM_LVL_MISS),
+        l1: when!(shifted, PERF_MEM_LVL_L1),
+        lfb: when!(shifted, PERF_MEM_LVL_LFB),
+        l2: when!(shifted, PERF_MEM_LVL_L2),
+        l3: when!(shifted, PERF_MEM_LVL_L3),
+        loc_ram: when!(shifted, PERF_MEM_LVL_LOC_RAM),
         rem_ram1: when!(shifted, PERF_MEM_LVL_REM_RAM1),
         rem_ram2: when!(shifted, PERF_MEM_LVL_REM_RAM2),
         rem_cce1: when!(shifted, PERF_MEM_LVL_REM_CCE1),
         rem_cce2: when!(shifted, PERF_MEM_LVL_REM_CCE2),
-        io:       when!(shifted, PERF_MEM_LVL_IO),
-        unc:      when!(shifted, PERF_MEM_LVL_UNC),
+        io: when!(shifted, PERF_MEM_LVL_IO),
+        unc: when!(shifted, PERF_MEM_LVL_UNC),
     };
 
     let shifted1 = bits >> b::PERF_MEM_SNOOP_SHIFT;
     #[cfg(feature = "linux-4.14")]
     let shifted2 = bits >> b::PERF_MEM_SNOOPX_SHIFT;
-    #[rustfmt::skip]
     let snoop = MemSnoop {
-        na:    when!(shifted1, PERF_MEM_SNOOP_NA),
-        none:  when!(shifted1, PERF_MEM_SNOOP_NONE),
-        hit:   when!(shifted1, PERF_MEM_SNOOP_HIT),
-        miss:  when!(shifted1, PERF_MEM_SNOOP_MISS),
+        na: when!(shifted1, PERF_MEM_SNOOP_NA),
+        none: when!(shifted1, PERF_MEM_SNOOP_NONE),
+        hit: when!(shifted1, PERF_MEM_SNOOP_HIT),
+        miss: when!(shifted1, PERF_MEM_SNOOP_MISS),
         hit_m: when!(shifted1, PERF_MEM_SNOOP_HITM),
         #[cfg(feature = "linux-4.14")]
-        fwd:   when!(shifted2, PERF_MEM_SNOOPX_FWD),
+        fwd: when!(shifted2, PERF_MEM_SNOOPX_FWD),
         #[cfg(not(feature = "linux-4.14"))]
-        fwd:   false,
+        fwd: false,
         #[cfg(feature = "linux-6.1")]
-        peer:  when!(shifted2, PERF_MEM_SNOOPX_PEER),
+        peer: when!(shifted2, PERF_MEM_SNOOPX_PEER),
         #[cfg(not(feature = "linux-6.1"))]
-        peer:  false
+        peer: false,
     };
 
     let shifted = bits >> b::PERF_MEM_LOCK_SHIFT;
-    #[rustfmt::skip]
     let lock = MemLock {
-        na:     when!(shifted, PERF_MEM_LOCK_NA),
+        na: when!(shifted, PERF_MEM_LOCK_NA),
         locked: when!(shifted, PERF_MEM_LOCK_LOCKED),
     };
 
     let shifted = bits >> b::PERF_MEM_TLB_SHIFT;
-    #[rustfmt::skip]
     let tlb = MemTlb {
-        na:     when!(shifted, PERF_MEM_TLB_NA),
-        hit:    when!(shifted, PERF_MEM_TLB_HIT),
-        miss:   when!(shifted, PERF_MEM_TLB_MISS),
-        l1:     when!(shifted, PERF_MEM_TLB_L1),
-        l2:     when!(shifted, PERF_MEM_TLB_L2),
+        na: when!(shifted, PERF_MEM_TLB_NA),
+        hit: when!(shifted, PERF_MEM_TLB_HIT),
+        miss: when!(shifted, PERF_MEM_TLB_MISS),
+        l1: when!(shifted, PERF_MEM_TLB_L1),
+        l2: when!(shifted, PERF_MEM_TLB_L2),
         walker: when!(shifted, PERF_MEM_TLB_WK),
-        fault:  when!(shifted, PERF_MEM_TLB_OS),
+        fault: when!(shifted, PERF_MEM_TLB_OS),
     };
 
     #[cfg(feature = "linux-4.14")]
     let shifted = bits >> b::PERF_MEM_LVLNUM_SHIFT;
     #[cfg(feature = "linux-4.14")]
-    #[rustfmt::skip]
     let level2 = match (shifted & 0b1111) as u32 {
-        b::PERF_MEM_LVLNUM_L1        => MemLevel2::L1,
-        b::PERF_MEM_LVLNUM_L2        => MemLevel2::L2,
-        b::PERF_MEM_LVLNUM_L3        => MemLevel2::L3,
-        b::PERF_MEM_LVLNUM_L4        => MemLevel2::L4,
-        #[cfg(feature="linux-6.11")]
-        b::PERF_MEM_LVLNUM_L2_MHB    => MemLevel2::L2Mhb,
-        #[cfg(feature="linux-6.11")]
-        b::PERF_MEM_LVLNUM_MSC       => MemLevel2::Msc,
-        #[cfg(feature="linux-6.6")]
-        b::PERF_MEM_LVLNUM_UNC       => MemLevel2::Unc,
-        #[cfg(feature="linux-6.1")]
-        b::PERF_MEM_LVLNUM_CXL       => MemLevel2::Cxl,
-        #[cfg(feature="linux-6.1")]
-        b::PERF_MEM_LVLNUM_IO        => MemLevel2::Io,
+        b::PERF_MEM_LVLNUM_L1 => MemLevel2::L1,
+        b::PERF_MEM_LVLNUM_L2 => MemLevel2::L2,
+        b::PERF_MEM_LVLNUM_L3 => MemLevel2::L3,
+        b::PERF_MEM_LVLNUM_L4 => MemLevel2::L4,
+        #[cfg(feature = "linux-6.11")]
+        b::PERF_MEM_LVLNUM_L2_MHB => MemLevel2::L2Mhb,
+        #[cfg(feature = "linux-6.11")]
+        b::PERF_MEM_LVLNUM_MSC => MemLevel2::Msc,
+        #[cfg(feature = "linux-6.6")]
+        b::PERF_MEM_LVLNUM_UNC => MemLevel2::Unc,
+        #[cfg(feature = "linux-6.1")]
+        b::PERF_MEM_LVLNUM_CXL => MemLevel2::Cxl,
+        #[cfg(feature = "linux-6.1")]
+        b::PERF_MEM_LVLNUM_IO => MemLevel2::Io,
         b::PERF_MEM_LVLNUM_ANY_CACHE => MemLevel2::AnyCache,
-        b::PERF_MEM_LVLNUM_LFB       => MemLevel2::Lfb,
-        b::PERF_MEM_LVLNUM_RAM       => MemLevel2::Ram,
-        b::PERF_MEM_LVLNUM_PMEM      => MemLevel2::Pmem,
-        b::PERF_MEM_LVLNUM_NA        => MemLevel2::Na,
+        b::PERF_MEM_LVLNUM_LFB => MemLevel2::Lfb,
+        b::PERF_MEM_LVLNUM_RAM => MemLevel2::Ram,
+        b::PERF_MEM_LVLNUM_PMEM => MemLevel2::Pmem,
+        b::PERF_MEM_LVLNUM_NA => MemLevel2::Na,
         // For compatibility, not ABI.
         _ => MemLevel2::Unknown,
     };
@@ -648,9 +642,8 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
     #[cfg(feature = "linux-5.12")]
     let shifted = bits >> b::PERF_MEM_BLK_SHIFT;
     #[cfg(feature = "linux-5.12")]
-    #[rustfmt::skip]
     let block = MemBlock {
-        na:   when!(shifted, PERF_MEM_BLK_NA),
+        na: when!(shifted, PERF_MEM_BLK_NA),
         data: when!(shifted, PERF_MEM_BLK_DATA),
         addr: when!(shifted, PERF_MEM_BLK_ADDR),
     };

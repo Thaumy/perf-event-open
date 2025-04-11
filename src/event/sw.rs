@@ -54,29 +54,28 @@ pub enum Software {
 }
 
 super::try_from!(Software, value, {
-    #[rustfmt::skip]
-    let config =  match value {
-        Software::CpuClock       => b::PERF_COUNT_SW_CPU_CLOCK,
-        Software::TaskClock      => b::PERF_COUNT_SW_TASK_CLOCK,
+    let config = match value {
+        Software::CpuClock => b::PERF_COUNT_SW_CPU_CLOCK,
+        Software::TaskClock => b::PERF_COUNT_SW_TASK_CLOCK,
 
-        Software::PageFault      => b::PERF_COUNT_SW_PAGE_FAULTS,
+        Software::PageFault => b::PERF_COUNT_SW_PAGE_FAULTS,
         Software::MinorPageFault => b::PERF_COUNT_SW_PAGE_FAULTS_MIN,
         Software::MajorPageFault => b::PERF_COUNT_SW_PAGE_FAULTS_MAJ,
 
         Software::EmuFault => b::PERF_COUNT_SW_EMULATION_FAULTS,
         Software::AlignFault => b::PERF_COUNT_SW_ALIGNMENT_FAULTS,
 
-        Software::CtxSwitch      => b::PERF_COUNT_SW_CONTEXT_SWITCHES,
-        #[cfg(feature="linux-5.13")]
-        Software::CgroupSwitch   => b::PERF_COUNT_SW_CGROUP_SWITCHES,
+        Software::CtxSwitch => b::PERF_COUNT_SW_CONTEXT_SWITCHES,
+        #[cfg(feature = "linux-5.13")]
+        Software::CgroupSwitch => b::PERF_COUNT_SW_CGROUP_SWITCHES,
 
-        Software::Dummy          => b::PERF_COUNT_SW_DUMMY,
-        #[cfg(feature="linux-4.4")]
-        Software::BpfOutput      => b::PERF_COUNT_SW_BPF_OUTPUT,
-        Software::CpuMigration   => b::PERF_COUNT_SW_CPU_MIGRATIONS,
+        Software::Dummy => b::PERF_COUNT_SW_DUMMY,
+        #[cfg(feature = "linux-4.4")]
+        Software::BpfOutput => b::PERF_COUNT_SW_BPF_OUTPUT,
+        Software::CpuMigration => b::PERF_COUNT_SW_CPU_MIGRATIONS,
 
-        #[cfg(not(feature="linux-5.13"))]
-        _  => crate::config::unsupported!(),
+        #[cfg(not(feature = "linux-5.13"))]
+        _ => crate::config::unsupported!(),
     };
     let event_config = EventConfig {
         ty: b::PERF_TYPE_SOFTWARE,
