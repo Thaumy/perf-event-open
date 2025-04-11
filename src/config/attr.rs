@@ -203,13 +203,13 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
             #[cfg(feature = "linux-4.5")]
             (attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_NO_FLAGS as u64);
             #[cfg(not(feature = "linux-4.5"))]
-            crate::config::unsupported!();
+            Err(std::io::ErrorKind::InvalidInput)?;
         }
         if !it.entry_format.cycles {
             #[cfg(feature = "linux-4.5")]
             (attr.branch_sample_type |= b::PERF_SAMPLE_BRANCH_NO_CYCLES as u64);
             #[cfg(not(feature = "linux-4.5"))]
-            crate::config::unsupported!();
+            Err(std::io::ErrorKind::InvalidInput)?;
         }
         when!("linux-6.8", counter, PERF_SAMPLE_BRANCH_COUNTERS);
         when!("linux-4.14", branch_type, PERF_SAMPLE_BRANCH_TYPE_SAVE);
