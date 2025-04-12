@@ -5,10 +5,12 @@ use crate::ffi::bindings as b;
 
 /// Monitor all processes (if [`Proc`] is not set) or all CPUs (if [`Cpu`] is not set).
 #[derive(Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct All;
 
 /// Which CPU to monitor.
 #[derive(Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Cpu(pub u32);
 
 impl Cpu {
@@ -24,6 +26,7 @@ impl Cpu {
 ///
 /// `Proc(0)` indicates the current process.
 #[derive(Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Proc(pub u32);
 
 impl Proc {

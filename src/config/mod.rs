@@ -22,6 +22,7 @@ pub(super) use unsupported;
 
 /// Event options.
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Opts {
     /// Exclude events with privilege levels.
     ///
@@ -190,6 +191,7 @@ pub struct Opts {
 
 /// Privilege levels.
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Priv {
     /// User space.
     pub user: bool,
@@ -212,6 +214,7 @@ pub struct Priv {
 
 /// Controls the inherit behavior.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Inherit {
     /// New child tasks will inherit the counter.
     ///
@@ -232,6 +235,7 @@ pub enum Inherit {
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12535
 /// Counter behavior when calling [`execve`](https://man7.org/linux/man-pages/man2/execve.2.html).
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum OnExecve {
     /// Enable counter.
     Enable,
@@ -244,6 +248,7 @@ pub enum OnExecve {
 
 /// Controls the format of [`Stat`][crate::count::Stat].
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StatFormat {
     /// Contains the [event ID][crate::count::SiblingStat::id].
     pub id: bool,
@@ -392,6 +397,7 @@ impl StatFormat {
 /// For more information on I/O signals, see also
 /// [`Sampler::enable_counter_with`][crate::sample::Sampler::enable_counter_with].
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum SampleOn {
     /// Sample on frequency (Hz).
     ///
@@ -424,6 +430,7 @@ impl Default for SampleOn {
 ///
 /// This affects the precision of [`code_addr`][crate::sample::record::sample::Sample::code_addr].
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum SampleSkid {
     /// Can have arbitrary skid.
     Arbitrary,
@@ -454,6 +461,7 @@ impl Default for SampleSkid {
 
 /// Controls the format of [sample record][crate::sample::record::sample::Sample].
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SampleFormat {
     // PERF_SAMPLE_READ
     /// Contains [counter statistics][crate::sample::record::sample::Sample::stat].
@@ -527,6 +535,7 @@ pub struct SampleFormat {
 
 /// LBR options.
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lbr {
     // Inherit exclude_{kernel, user, hv} from attr if not set:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12473
@@ -552,6 +561,7 @@ pub struct Lbr {
 
 /// Branch target privilege levels.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TargetPriv {
     // PERF_SAMPLE_BRANCH_USER
     /// Branch target is in user space.
@@ -584,6 +594,7 @@ impl TargetPriv {
 
 /// Branch types.
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BranchType {
     // PERF_SAMPLE_BRANCH_ANY
     /// Any branch type.
@@ -630,6 +641,7 @@ pub struct BranchType {
 
 /// Controls the format of [LBR entry][crate::sample::record::sample::Entry].
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct EntryFormat {
     // PERF_SAMPLE_BRANCH_NO_FLAGS
     /// Contains flags (e.g., [`mis`][crate::sample::record::sample::Entry::mis],
@@ -668,10 +680,12 @@ pub struct EntryFormat {
 
 /// Semantic wrapper for options that require a size (in bytes).
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Size(pub u32);
 
 /// Controls how weight values are represented.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Repr {
     // PERF_SAMPLE_WEIGHT
     /// Represent weight value as [`Full`][crate::sample::record::sample::Weight::Full].
@@ -686,6 +700,7 @@ pub enum Repr {
 
 /// Call chain options.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CallChain {
     /// Exclude user call chains.
     pub exclude_user: bool,
@@ -706,10 +721,12 @@ pub struct CallChain {
 /// The layout of the register mask is architecture-specific and is described
 /// in the kernel header file `arch/<arch>/include/uapi/asm/perf_regs.h`.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RegsMask(pub u64);
 
 /// Generate extra record types.
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ExtraRecord {
     /// Generate [`Fork`][crate::sample::record::task::Fork]
     /// and [`Exit`][crate::sample::record::task::Exit] records.
@@ -763,6 +780,7 @@ pub struct ExtraRecord {
 
 /// Controls the format of [`RecordId`][crate::sample::record::RecordId].
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RecordIdFormat {
     // PERF_SAMPLE_ID
     /// Contains [event ID][crate::sample::record::RecordId::id].
@@ -787,6 +805,7 @@ pub struct RecordIdFormat {
 
 /// Wake up options for asynchronous iterators.
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct WakeUp {
     /// When to wake up asynchronous iterators.
     pub on: WakeUpOn,
@@ -838,6 +857,7 @@ pub struct WakeUp {
 /// # });
 /// ```
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum WakeUpOn {
     /// Wake up on every N bytes available.
     ///
@@ -863,10 +883,12 @@ impl Default for WakeUpOn {
 ///
 /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/97ba62b278674293762c3d91f724f1bb922f04e0>
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SigData(pub u64);
 
 /// Available internal Linux timers.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Clock {
     // CLOCK_TAI
     /// A nonsettable system-wide clock derived from wall-clock time but ignoring leap seconds.
@@ -915,6 +937,7 @@ pub enum Clock {
 
 /// [`Mmap`][crate::sample::record::mmap::Mmap] record options.
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Mmap {
     // This also enables `task`:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8389
@@ -947,6 +970,7 @@ pub struct Mmap {
 ///
 /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/88a16a1309333e43d328621ece3e9fa37027e8eb>
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UseBuildId(pub bool);
 
 /*
