@@ -5,6 +5,7 @@ use crate::ffi::bindings as b;
 ///
 /// Not all of these are available on all platforms.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Hardware {
     /// Total CPU cycles, affected by CPU frequency scaling.
     CpuCycle,
@@ -47,6 +48,7 @@ pub enum Hardware {
 
 /// Type of cache
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     /// L1 data cache.
     L1d,
@@ -66,6 +68,7 @@ pub enum Type {
 
 /// Cache operations
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Op {
     /// Read accesses.
     Read,
@@ -77,6 +80,7 @@ pub enum Op {
 
 /// Cache operation results.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum OpResult {
     /// Operation misses.
     Miss,

@@ -14,6 +14,7 @@ use super::EventConfig;
 
 /// Dynamic PMU event
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DynamicPmu {
     /// The type value to use can be found in the sysfs filesystem: there is a subdirectory per
     /// PMU instance under `/sys/bus/event_source/devices`. In each subdirectory there is a

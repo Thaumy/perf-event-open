@@ -3,6 +3,7 @@ use crate::ffi::bindings as b;
 
 /// A "raw" implementation-specific event.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Raw {
     /// Event config.
     pub config: u64,

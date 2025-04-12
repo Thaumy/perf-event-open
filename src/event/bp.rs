@@ -8,6 +8,7 @@ use crate::ffi::bindings as b;
 /// Breakpoints can be read/write accesses to an address as well as
 /// execution of an instruction address.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Breakpoint {
     /// Breakpoint type.
     pub ty: Type,
@@ -17,6 +18,7 @@ pub struct Breakpoint {
 
 /// Breakpoint type.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     /// Count when we read the memory location.
     R(Len),
@@ -30,6 +32,7 @@ pub enum Type {
 
 /// Breakpoint size (in bytes).
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Len {
     /// 1 byte.
     _1,
