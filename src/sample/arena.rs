@@ -26,9 +26,8 @@ impl Arena {
 
 impl Drop for Arena {
     fn drop(&mut self) {
-        match unsafe { munmap(self.ptr.as_ptr() as _, self.len) } {
-            Ok(()) => (),
-            Err(e) => panic!("Failed to unmap arena: {}", e),
+        if let Err(e) = unsafe { munmap(self.ptr.as_ptr() as _, self.len) } {
+            panic!("Failed to unmap arena: {}", e)
         }
     }
 }
