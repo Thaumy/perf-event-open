@@ -9,9 +9,8 @@ use iter::{CowIter, Iter};
 use rb::Rb;
 use record::{Parser, UnsafeParser};
 
-use crate::count::Counter;
 use crate::ffi::syscall::ioctl_arg;
-use crate::ffi::{bindings as b, Metadata, PAGE_SIZE};
+use crate::ffi::{bindings as b, Attr, Metadata, PAGE_SIZE};
 
 mod arena;
 pub mod auxiliary;
@@ -65,19 +64,14 @@ pub struct Sampler {
 }
 
 impl Sampler {
-    pub(super) fn new(counter: &Counter, exp: u8) -> Result<Self> {
+    pub(super) fn new(perf: Arc<File>, attr: &Attr, exp: u8) -> Result<Self> {
         let len = (1 + 2_usize.pow(exp as _)) * *PAGE_SIZE;
-        let arena = Arena::new(&counter.perf, len, 0)?;
-
-        // We only change the attr fields related to event config,
-        // which are not used in `ChunkParser::from_attr`.
-        let attr = unsafe { &*counter.attr.get() };
-        let parser = Parser(UnsafeParser::from_attr(attr));
+        let arena = Arena::new(&perf, len, 0)?;
 
         Ok(Sampler {
-            perf: Arc::clone(&counter.perf),
+            perf,
             arena,
-            parser,
+            parser: Parser(UnsafeParser::from_attr(attr)),
         })
     }
 
@@ -289,8 +283,9 @@ impl Sampler {
 
     /// Counter's enabled time.
     ///
-    /// Same as [time][crate::count::Stat::time_enabled] returned by [`Counter::stat`],
-    /// but much cheaper since the value is read from memory instead of system call.
+    /// Same as [time][crate::count::Stat::time_enabled] returned by
+    /// [`Counter::stat`][crate::count::Counter::stat], but much cheaper
+    /// since the value is read from memory instead of system call.
     pub fn counter_time_enabled(&self) -> u64 {
         let metadata = self.metadata_inner();
         let metadata = unsafe { &mut *metadata };
@@ -300,8 +295,9 @@ impl Sampler {
 
     /// Counter's running time.
     ///
-    /// Same as [time][crate::count::Stat::time_running] returned by [`Counter::stat`],
-    /// but much cheaper since the value is read from memory instead of system call.
+    /// Same as [time][crate::count::Stat::time_running] returned by
+    /// [`Counter::stat`][crate::count::Counter::stat], but much cheaper
+    /// since the value is read from memory instead of system call.
     pub fn counter_time_running(&self) -> u64 {
         let metadata = self.metadata_inner();
         let metadata = unsafe { &mut *metadata };

@@ -2,7 +2,7 @@ use std::borrow::Borrow;
 use std::cell::UnsafeCell;
 use std::ffi::CStr;
 use std::fs::File;
-use std::io::{self, Result};
+use std::io::{self, Error, ErrorKind, Result};
 use std::mem::transmute;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
@@ -111,11 +111,30 @@ impl Counter {
     /// The sampler needs a ring-buffer to store metadata and records,
     /// and 1 + 2^`exp` pages will be allocated for this.
     ///
-    /// Multiple calls to this method just duplicates the existing sampler,
-    /// samplers from the same counter shares the same ring-buffer in the
-    /// kernel space, so `exp` should be the same.
+    /// A counter cannot have multiple samplers simultaneously.
+    /// Attempting to create a new sampler while the previous one
+    /// is still active will result in [`ErrorKind::AlreadyExists`].
     pub fn sampler(&self, exp: u8) -> Result<Sampler> {
-        Sampler::new(self, exp)
+        if Arc::strong_count(&self.perf) == 1 {
+            // We only change the attr fields related to event config,
+            // which are not used in `ChunkParser::from_attr`.
+            let attr = unsafe { &*self.attr.get() };
+            Sampler::new(Arc::clone(&self.perf), attr, exp)
+        } else {
+            // The kernel allows creating multiple samplers for a counter, these
+            // samplers share the same ring buffer in kernel space and require
+            // the same mmap length.
+            //
+            // Multiple samplers will result in an unsound `Send` impl, samplers
+            // from different threads will race on the drop of COW chunks, which
+            // may set the ring buffer head backwards.
+            //
+            // We prohibit users from creating multiple samplers per counter to
+            // avoid the data race. Creating multiple samplers on the same counter
+            // is usually useless, while the `Send` impl is much more useful.
+            let error = "There is already an sampler attached to this counter.";
+            Err(Error::new(ErrorKind::AlreadyExists, error))
+        }
     }
 
     /// Returns the file handle opened by [`perf_event_open`](https://man7.org/linux/man-pages/man2/perf_event_open.2.html)
