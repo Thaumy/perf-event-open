@@ -6,7 +6,7 @@ license = "MIT"
 homepage = "https://github.com/Thaumy/perf-event-open"
 keywords = ["perf_event_open", "performance", "linux", "perf"]
 repository = "https://github.com/Thaumy/perf-event-open"
-description = "High-level wrapper for the perf_event_open system call"
+description = "Full-featured high-level wrapper for the perf_event_open system call."
 rust-version = "1.80.0"
 
 build = "build/main.rs"
