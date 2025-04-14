@@ -111,3 +111,12 @@ pub fn epoll_wait<'a>(
         Err(Error::last_os_error())
     }
 }
+
+pub fn prctl(option: i32) -> Result<()> {
+    let result = unsafe { libc::prctl(option) };
+    if result != -1 {
+        Ok(())
+    } else {
+        Err(Error::last_os_error())
+    }
+}
