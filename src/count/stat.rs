@@ -2,6 +2,9 @@ use crate::ffi::{bindings as b, deref_offset};
 use crate::sample::record::debug;
 
 /// Event statistics.
+///
+/// This type can be formatted with the `{:-?}` formatter for compact
+/// debugging displays.
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Stat {
