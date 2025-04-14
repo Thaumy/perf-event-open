@@ -11,7 +11,7 @@ use super::sample::Sampler;
 use crate::config::attr::from;
 use crate::config::{Opts, Target};
 use crate::event::Event;
-use crate::ffi::syscall::{ioctl_arg, ioctl_argp, perf_event_open, read};
+use crate::ffi::syscall::{ioctl_arg, ioctl_argp, perf_event_open, prctl, read};
 use crate::ffi::{bindings as b, Attr};
 
 pub mod group;
@@ -104,6 +104,16 @@ impl Counter {
             perf: Arc::new(perf),
             read_buf: UnsafeCell::new(read_buf),
         })
+    }
+
+    /// Enables all counters created by the current process.
+    pub fn enable_all() -> Result<()> {
+        prctl(libc::PR_TASK_PERF_EVENTS_ENABLE)
+    }
+
+    /// Disables all counters created by the current process.
+    pub fn disable_all() -> Result<()> {
+        prctl(libc::PR_TASK_PERF_EVENTS_DISABLE)
     }
 
     /// Create a sampler for this counter.
