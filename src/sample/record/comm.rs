@@ -1,5 +1,4 @@
 use std::ffi::{CStr, CString};
-use std::mem::align_of;
 
 use super::{RecordId, SampleType, Task};
 use crate::ffi::{bindings as b, deref_offset};

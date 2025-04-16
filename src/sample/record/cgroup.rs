@@ -64,7 +64,6 @@ impl Cgroup {
         sample_id_all: Option<super::SampleType>,
     ) -> Self {
         use std::ffi::CStr;
-        use std::mem::align_of;
 
         use super::SampleType;
         use crate::ffi::deref_offset;

@@ -76,7 +76,6 @@ impl Ksymbol {
         sample_id_all: Option<super::SampleType>,
     ) -> Self {
         use std::ffi::CStr;
-        use std::mem::align_of;
 
         use super::SampleType;
         use crate::ffi::{bindings as b, deref_offset};

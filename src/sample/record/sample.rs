@@ -1,4 +1,3 @@
-use std::mem::{align_of, size_of};
 use std::slice;
 
 use super::{RecordId, Task};

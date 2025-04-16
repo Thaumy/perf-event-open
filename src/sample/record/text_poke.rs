@@ -59,7 +59,6 @@ impl TextPoke {
         mut ptr: *const u8,
         sample_id_all: Option<super::SampleType>,
     ) -> Self {
-        use std::mem::align_of;
         use std::slice;
 
         use super::SampleType;
