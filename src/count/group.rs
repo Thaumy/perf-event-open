@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 use std::cell::UnsafeCell;
 use std::io::{self, Result};
+use std::mem;
 use std::os::fd::AsRawFd;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -143,8 +144,8 @@ impl CounterGroup {
             // Because `vec![0; n]` is optimized to use `calloc`, the real
             // allocation will happen in the `Counter::stat` call, so there
             // is no overhead in calling `add` multiple times.
-            let mut new = vec![0; new_len];
-            std::mem::swap(old, &mut new);
+            let new = vec![0; new_len];
+            let _ = mem::replace(old, new);
         }
 
         Ok(sibling)

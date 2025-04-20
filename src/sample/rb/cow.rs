@@ -1,5 +1,5 @@
 use std::borrow::{Borrow, Cow};
-use std::mem;
+use std::mem::{self};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 /// Copy-on-write chunk.
@@ -21,11 +21,7 @@ impl CowChunk<'_> {
     pub fn into_owned(mut self) -> Vec<u8> {
         match &mut self.chunk {
             Cow::Borrowed(b) => b.to_vec(),
-            Cow::Owned(o) => {
-                let mut vec = vec![];
-                mem::swap(&mut vec, o);
-                vec
-            }
+            Cow::Owned(o) => mem::take(o),
         }
     }
 }
