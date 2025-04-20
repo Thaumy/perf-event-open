@@ -8,8 +8,6 @@ use crate::ffi::{bindings as b, deref_offset};
 /// # Examples
 ///
 /// ```rust
-/// use std::ffi::CStr;
-///
 /// use perf_event_open::config::{Cpu, Opts, Proc};
 /// use perf_event_open::count::Counter;
 /// use perf_event_open::event::sw::Software;
@@ -27,8 +25,7 @@ use crate::ffi::{bindings as b, deref_offset};
 /// counter.enable().unwrap();
 ///
 /// // Change the process name to "foo" to trigger the `Comm` record.
-/// let name = CStr::from_bytes_with_nul(b"foo\0").unwrap();
-/// unsafe { libc::prctl(libc::PR_SET_NAME, name.as_ptr()) };
+/// unsafe { libc::prctl(libc::PR_SET_NAME, c"foo".as_ptr()) };
 ///
 /// # let mut vec = vec![];
 /// let mut iter = sampler.iter();

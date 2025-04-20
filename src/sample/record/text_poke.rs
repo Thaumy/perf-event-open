@@ -29,8 +29,8 @@ use super::RecordId;
 /// // Insert a kernel module that registers a kprobe.
 /// let file = File::open("register_kprobe_module.ko").unwrap();
 /// unsafe {
-///     libc::syscall(libc::SYS_finit_module, file.as_raw_fd(), b"\0", 0);
-///     libc::syscall(libc::SYS_delete_module, b"register_kprobe_module\0", 0);
+///     libc::syscall(libc::SYS_finit_module, file.as_raw_fd(), c"".as_ptr(), 0);
+///     libc::syscall(libc::SYS_delete_module, c"register_kprobe_module".as_ptr(), 0);
 /// }
 ///
 /// for it in sampler.iter() {

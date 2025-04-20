@@ -1,12 +1,10 @@
-use std::ffi::CStr;
-
 use super::{Kprobe, Kretprobe};
 use crate::event::dp::DynamicPmu;
 
 #[test]
 fn test_from_kprobe_func() {
     let ev = Kprobe::Symbol {
-        name: CStr::from_bytes_with_nul(b"\0").unwrap(),
+        name: c"",
         offset: 0,
     };
     DynamicPmu::try_from(ev).unwrap();
@@ -21,7 +19,7 @@ fn test_from_kprobe_addr() {
 #[test]
 fn test_from_kretprobe_func() {
     let ev = Kretprobe::Symbol {
-        name: CStr::from_bytes_with_nul(b"\0").unwrap(),
+        name: c"",
         offset: 0,
     };
     DynamicPmu::try_from(ev).unwrap();
