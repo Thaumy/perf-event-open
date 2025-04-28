@@ -2,6 +2,7 @@
 mod test;
 
 use std::ffi::CStr;
+use std::io::Result;
 
 use super::{get_retprobe_bit, get_type, DynamicPmu, Error};
 
@@ -18,7 +19,7 @@ pub enum Kprobe {
 }
 
 impl Kprobe {
-    pub fn try_into_dp(self) -> Result<DynamicPmu, Error> {
+    pub fn try_into_dp(self) -> Result<DynamicPmu> {
         let ty = get_type(TYPE_PATH)?;
         let ev = match self {
             Kprobe::Symbol { name, offset } => DynamicPmu {
@@ -43,7 +44,7 @@ impl Kprobe {
 impl TryFrom<Kprobe> for DynamicPmu {
     type Error = Error;
 
-    fn try_from(value: Kprobe) -> Result<Self, Self::Error> {
+    fn try_from(value: Kprobe) -> Result<Self> {
         value.try_into_dp()
     }
 }
@@ -58,7 +59,7 @@ pub enum Kretprobe {
 }
 
 impl Kretprobe {
-    pub fn try_into_dp(self) -> Result<DynamicPmu, Error> {
+    pub fn try_into_dp(self) -> Result<DynamicPmu> {
         let ty = get_type(TYPE_PATH)?;
         let retprobe_bit = get_retprobe_bit(RETPROBE_PATH)?;
         let ev = match self {
@@ -84,7 +85,7 @@ impl Kretprobe {
 impl TryFrom<Kretprobe> for DynamicPmu {
     type Error = Error;
 
-    fn try_from(value: Kretprobe) -> Result<Self, Self::Error> {
+    fn try_from(value: Kretprobe) -> Result<Self> {
         value.try_into_dp()
     }
 }

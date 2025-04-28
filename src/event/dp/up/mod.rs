@@ -2,6 +2,7 @@
 mod test;
 
 use std::ffi::CStr;
+use std::io::Result;
 
 use super::{get_retprobe_bit, get_type, DynamicPmu, Error};
 
@@ -18,7 +19,7 @@ pub struct Uprobe {
 }
 
 impl Uprobe {
-    pub fn try_into_dp(self) -> Result<DynamicPmu, Error> {
+    pub fn try_into_dp(self) -> Result<DynamicPmu> {
         let ev = DynamicPmu {
             ty: get_type(TYPE_PATH)?,
             config: 0,
@@ -33,7 +34,7 @@ impl Uprobe {
 impl TryFrom<Uprobe> for DynamicPmu {
     type Error = Error;
 
-    fn try_from(value: Uprobe) -> Result<Self, Self::Error> {
+    fn try_from(value: Uprobe) -> Result<Self> {
         value.try_into_dp()
     }
 }
@@ -48,7 +49,7 @@ pub struct Uretprobe {
 }
 
 impl Uretprobe {
-    pub fn try_into_dp(self) -> Result<DynamicPmu, Error> {
+    pub fn try_into_dp(self) -> Result<DynamicPmu> {
         let ev = DynamicPmu {
             ty: get_type(TYPE_PATH)?,
             config: 1 << get_retprobe_bit(RETPROBE_PATH)?,
@@ -63,7 +64,7 @@ impl Uretprobe {
 impl TryFrom<Uretprobe> for DynamicPmu {
     type Error = Error;
 
-    fn try_from(value: Uretprobe) -> Result<Self, Self::Error> {
+    fn try_from(value: Uretprobe) -> Result<Self> {
         value.try_into_dp()
     }
 }
