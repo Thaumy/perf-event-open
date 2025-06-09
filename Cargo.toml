@@ -61,5 +61,5 @@ tokio-test = "0.4"
 
 [build-dependencies]
 anyhow = "1.0"
-bindgen = "0.71"
+bindgen = "0.72"
 itertools = "0.14"
