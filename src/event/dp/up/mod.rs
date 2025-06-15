@@ -5,6 +5,7 @@ use std::ffi::CStr;
 use std::io::Result;
 
 use super::{get_retprobe_bit, get_type, DynamicPmu, Error};
+use crate::event::Event;
 
 const TYPE_PATH: &str = "/sys/bus/event_source/devices/uprobe/type";
 const RETPROBE_PATH: &str = "/sys/bus/event_source/devices/kprobe/format/retprobe";
@@ -39,6 +40,14 @@ impl TryFrom<Uprobe> for DynamicPmu {
     }
 }
 
+impl TryFrom<Uprobe> for Event {
+    type Error = Error;
+
+    fn try_from(value: Uprobe) -> Result<Self> {
+        value.try_into_dp()?.try_into()
+    }
+}
+
 /// User return probe event
 #[derive(Clone, Debug)]
 pub struct Uretprobe {
@@ -66,5 +75,13 @@ impl TryFrom<Uretprobe> for DynamicPmu {
 
     fn try_from(value: Uretprobe) -> Result<Self> {
         value.try_into_dp()
+    }
+}
+
+impl TryFrom<Uretprobe> for Event {
+    type Error = Error;
+
+    fn try_from(value: Uretprobe) -> Result<Self> {
+        value.try_into_dp()?.try_into()
     }
 }
