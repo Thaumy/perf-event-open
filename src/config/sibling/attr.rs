@@ -248,7 +248,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
                 $(#[cfg(feature = $feature)])?
                 attr.$then(1);
                 $(
-                #[cfg(feature = $feature)]
+                #[cfg(not(feature = $feature))]
                 crate::config::unsupported!();
                 )?
             }
