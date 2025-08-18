@@ -12,7 +12,7 @@ rust-version = "1.80.0"
 build = "build/main.rs"
 
 [features]
-"serde" = []
+"serde" = ["dep:serde", "arrayvec/serde"]
 "latest" = ["linux-6.13"]
 "legacy" = ["linux-5.4"]
 "linux-6.13" = ["linux-6.11"]
@@ -50,8 +50,8 @@ build = "build/main.rs"
 
 [dependencies]
 libc = "0.2"
-serde = { version = "1", features = ["derive"] }
-arrayvec = { version = "0.7", features = ["serde"] }
+serde = { version = "1", features = ["derive"], optional = true }
+arrayvec = "0.7"
 thiserror = "2"
 
 [dev-dependencies]
