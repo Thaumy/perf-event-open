@@ -8,6 +8,9 @@ mod target;
 
 pub use target::*;
 
+/// This macro will not be used under the `latest` feature, as all syscall
+/// features are supported.
+#[allow(unused_macros)]
 macro_rules! unsupported {
     () => {
         Err(std::io::ErrorKind::Unsupported)?
@@ -18,6 +21,7 @@ macro_rules! unsupported {
         }
     };
 }
+#[allow(unused_imports)]
 pub(super) use unsupported;
 
 /// Event options.
