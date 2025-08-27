@@ -7,6 +7,7 @@ homepage = "https://github.com/Thaumy/perf-event-open"
 keywords = ["perf_event_open", "performance", "linux", "perf"]
 repository = "https://github.com/Thaumy/perf-event-open"
 description = "Full-featured high-level wrapper for the perf_event_open system call."
+documentation = "https://docs.rs/perf-event-open"
 rust-version = "1.80.0"
 
 build = "build/main.rs"
