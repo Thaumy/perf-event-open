@@ -1,6 +1,5 @@
 use std::borrow::Cow;
 use std::cmp::Ordering as Ord;
-use std::mem::transmute;
 use std::ptr::copy_nonoverlapping;
 use std::slice;
 use std::sync::atomic::{AtomicU64, Ordering as MemOrd};
@@ -56,7 +55,7 @@ impl<'a> Rb<'a> {
                     let hi_part_ptr = rb_ptr.add((tail + 6) as _);
                     let lo_part_ptr = rb_ptr;
                     let buf = [*hi_part_ptr, *lo_part_ptr];
-                    transmute::<[u8; 2], u16>(buf)
+                    u16::from_ne_bytes(buf)
                 },
             }
         };

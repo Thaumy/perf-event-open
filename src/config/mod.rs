@@ -433,10 +433,11 @@ impl Default for SampleOn {
 /// to which instructions, but hardware is often limited with how small this can be.
 ///
 /// This affects the precision of [`code_addr`][crate::sample::record::sample::Sample::code_addr].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum SampleSkid {
     /// Can have arbitrary skid.
+    #[default]
     Arbitrary,
     /// Must have constant skid.
     Const,
@@ -454,12 +455,6 @@ impl SampleSkid {
             Self::ReqZero => 2,
             Self::Zero => 3,
         }
-    }
-}
-
-impl Default for SampleSkid {
-    fn default() -> Self {
-        Self::Arbitrary
     }
 }
 
