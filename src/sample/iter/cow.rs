@@ -141,6 +141,32 @@ pub struct AsyncCowIter<'a> {
 }
 
 impl AsyncCowIter<'_> {
+    /// Attempt to pull out the next value, registering the current task for
+    /// wakeup if the value is not yet available, and returning `None` if the
+    /// iterator is exhausted.
+    ///
+    /// [`WakeUp::on`][crate::config::WakeUp::on] must be properly set to make this work.
+    ///
+    /// See also [`CowIter::next`].
+    pub fn poll_next<F, R>(self: Pin<&mut Self>, cx: &mut Context<'_>, f: F) -> Poll<Option<R>>
+    where
+        F: FnOnce(CowChunk<'_>, &Parser) -> R + Unpin,
+    {
+        let this = self.get_mut();
+
+        if let Some(cc) = this.inner.rb.lending_pop() {
+            return Poll::Ready(Some(f(cc, this.inner.parser)));
+        }
+
+        let waker = cx.waker().clone();
+        match this.waker.send(waker) {
+            Ok(()) => Poll::Pending,
+            // The task we were monitoring exited, so the epoll thread died.
+            // No more data needs to be produced.
+            Err(_) => Poll::Ready(None),
+        }
+    }
+
     /// Advances the iterator and returns the next value.
     ///
     /// [`WakeUp::on`][crate::config::WakeUp::on] must be properly set to make this work.
@@ -161,20 +187,12 @@ impl AsyncCowIter<'_> {
             fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
                 let Fut(iter, f) = self.get_mut();
 
-                if let Some(cc) = iter.inner.rb.lending_pop() {
+                Pin::new(&mut **iter).poll_next(cx, |cc, p| {
                     let f = f.take();
                     // We only take `f` once, so there is always a value there.
                     let f = unsafe { f.unwrap_unchecked() };
-                    return Poll::Ready(Some(f(cc, iter.inner.parser)));
-                }
-
-                let waker = cx.waker().clone();
-                match iter.waker.send(waker) {
-                    Ok(()) => Poll::Pending,
-                    // The task we were monitoring exited, so the epoll thread died.
-                    // No more data needs to be produced.
-                    Err(_) => Poll::Ready(None),
-                }
+                    f(cc, p)
+                })
             }
         }
 

@@ -87,6 +87,38 @@ pub struct AsyncCowIter<'a> {
 }
 
 impl AsyncCowIter<'_> {
+    /// Attempt to pull out the next value, registering the current task for
+    /// wakeup if the value is not yet available, and returning `None` if the
+    /// iterator is exhausted.
+    ///
+    /// [`WakeUp::on_aux_bytes`][crate::config::WakeUp::on_aux_bytes]
+    /// must be properly set to make this work.
+    ///
+    /// See also [`CowIter::next`].
+    pub fn poll_next<F, R>(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        f: F,
+        max_chunk_len: Option<NonZeroUsize>,
+    ) -> Poll<Option<R>>
+    where
+        F: FnOnce(CowChunk<'_>) -> R + Unpin,
+    {
+        let this = self.get_mut();
+
+        if let Some(cc) = this.inner.rb.lending_pop(max_chunk_len) {
+            return Poll::Ready(Some(f(cc)));
+        }
+
+        let waker = cx.waker().clone();
+        match this.waker.send(waker) {
+            Ok(()) => Poll::Pending,
+            // The task we were monitoring exited, so the epoll thread died.
+            // No more data needs to be produced.
+            Err(_) => Poll::Ready(None),
+        }
+    }
+
     /// Advances the iterator and returns the next value.
     ///
     /// [`WakeUp::on_aux_bytes`][crate::config::WakeUp::on_aux_bytes]
@@ -108,20 +140,16 @@ impl AsyncCowIter<'_> {
             fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
                 let Fut(iter, f, max_chunk_len) = self.get_mut();
 
-                if let Some(cc) = iter.inner.rb.lending_pop(*max_chunk_len) {
-                    let f = f.take();
-                    // We only take `f` once, so there is always a value there.
-                    let f = unsafe { f.unwrap_unchecked() };
-                    return Poll::Ready(Some(f(cc)));
-                }
-
-                let waker = cx.waker().clone();
-                match iter.waker.send(waker) {
-                    Ok(()) => Poll::Pending,
-                    // The task we were monitoring exited, so the epoll thread died.
-                    // No more data needs to be produced.
-                    Err(_) => Poll::Ready(None),
-                }
+                Pin::new(&mut **iter).poll_next(
+                    cx,
+                    |cc| {
+                        let f = f.take();
+                        // We only take `f` once, so there is always a value there.
+                        let f = unsafe { f.unwrap_unchecked() };
+                        f(cc)
+                    },
+                    *max_chunk_len,
+                )
             }
         }
 
