@@ -2,7 +2,7 @@ mod kp;
 mod up;
 
 use std::fs::File;
-use std::io::{self, Error, Read, Result, Seek, SeekFrom};
+use std::io::{Error, Read, Result, Seek, SeekFrom};
 use std::path::Path;
 
 pub use kp::*;
@@ -50,8 +50,7 @@ where
     }
     let bit = unsafe { std::str::from_utf8_unchecked(&acc) };
 
-    bit.parse::<u32>()
-        .map_err(|e| Error::new(io::ErrorKind::Other, e))
+    bit.parse::<u32>().map_err(Error::other)
 }
 
 // bpf_get_retprobe_bit:
@@ -73,8 +72,7 @@ where
     }
     let bit = unsafe { std::str::from_utf8_unchecked(&acc) };
 
-    bit.parse::<u8>()
-        .map_err(|e| Error::new(io::ErrorKind::Other, e))
+    bit.parse::<u8>().map_err(Error::other)
 }
 
 super::try_from!(DynamicPmu, value, {

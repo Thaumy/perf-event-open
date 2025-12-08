@@ -18,9 +18,10 @@ pub fn bindgen<P>(version: &Version, headers_dir: P, to: P) -> Result<()>
 where
     P: AsRef<Path>,
 {
-    let bpf_h = (version >= &v!(5, 1))
-        .then_some("#include <linux/bpf.h>")
-        .unwrap_or_default();
+    let bpf_h = match version >= &v!(5, 1) {
+        true => "#include <linux/bpf.h>",
+        false => "",
+    };
     let enabled_ioctls = IOC_OPS
         .into_iter()
         .filter_map(|(since, entry)| (version >= &since).then_some(entry))
