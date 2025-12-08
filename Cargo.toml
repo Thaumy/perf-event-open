@@ -1,6 +1,6 @@
 [package]
 name = "perf-event-open"
-version = "0.4.2"
+version = "0.4.3"
 edition = "2021"
 license = "MIT"
 homepage = "https://github.com/Thaumy/perf-event-open"
