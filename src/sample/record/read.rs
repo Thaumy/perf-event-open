@@ -6,12 +6,60 @@ use crate::ffi::deref_offset;
 ///
 /// This allows a per-task stat on an inherited process hierarchy.
 ///
-/// NOTE: This record can be genreated by enabling `inherit` and `remove_on_exec`
-/// if there is an execve call in the target process. But triggering it by exiting
-/// task seems broken, we may need to debug the kernel implementation to find out
-/// why, so there is no example for this record now. This situation can also be
-/// reproduced by `perf record -s` and `perf report -T` commands, which share the
-/// same perf attr as our test case.
+/// # Examples
+///
+/// ```rust
+/// use std::mem::MaybeUninit;
+///
+/// use perf_event_open::config::{Cpu, Inherit, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::sw::Software;
+///
+/// let event = Software::TaskClock;
+/// let target = (Proc::CURRENT, Cpu(0));
+///
+/// let mut opts = Opts::default();
+/// opts.inherit = Some(Inherit::NewChild);
+/// opts.extra_record.read = true;
+///
+/// let counter = Counter::new(event, target, opts).unwrap();
+/// let sampler = counter.sampler(5).unwrap();
+///
+/// counter.enable().unwrap();
+///
+/// unsafe {
+///     let child = libc::fork();
+///     if child > 0 {
+///         let mut code = 0;
+///         libc::waitpid(child, &mut code as _, 0);
+///         assert_eq!(code, 0);
+///     } else {
+///         // schedule child processes on CPU 0
+///         let mut set = MaybeUninit::zeroed().assume_init();
+///         libc::CPU_SET(0, &mut set);
+///         let tid = libc::gettid();
+///         let set_size = size_of_val(&set);
+///         assert_eq!(libc::sched_setaffinity(tid, set_size, &set as _), 0);
+///
+///         // make some noise in the child process to kill time
+///         for i in 0..100 {
+///             std::hint::black_box(&i);
+///         }
+///         return;
+///     }
+/// }
+///
+/// let mut count = 0;
+/// for it in sampler.iter() {
+///     count += 1;
+///     println!("{:-?}", it);
+/// }
+/// assert_eq!(count, 1);
+/// ```
+///
+/// A kernel bug introduced in Linux 5.13 caused this feature to be unavailable;
+/// this bug has been fixed in Linux 6.19. Therefore, you may not receive this
+/// record if your Linux kernel does not include the fix, see [patch](https://github.com/torvalds/linux/commit/c418d8b4d7a43a86b82ee39cb52ece3034383530).
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Read {
