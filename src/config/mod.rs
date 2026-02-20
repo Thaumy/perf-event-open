@@ -420,7 +420,7 @@ pub enum SampleOn {
 
 impl Default for SampleOn {
     fn default() -> Self {
-        Self::Freq(0)
+        Self::Count(0)
     }
 }
 
