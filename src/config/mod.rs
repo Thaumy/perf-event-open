@@ -405,7 +405,7 @@ impl StatFormat {
 pub enum SampleOn {
     /// Sample on frequency (Hz).
     ///
-    /// The kernel will adjust the sampling period to try and achieve the desired rate.
+    /// The kernel will adjust the sampling period to try to achieve the desired rate.
     ///
     /// `Freq(0)` means no overflow, i.e., sample records will never be generated.
     Freq(u64),

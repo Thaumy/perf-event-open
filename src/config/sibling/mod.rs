@@ -114,7 +114,6 @@ impl StatFormat {
 }
 
 /// The action to perform when generating the [sample record][crate::sample::record::sample::Sample].
-///
 #[derive(Clone, Debug, Default)]
 pub struct OnSample {
     /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
@@ -133,6 +132,7 @@ pub struct OnSample {
 }
 
 /// AUX tracer action.
+///
 /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
 #[derive(Clone, Debug)]
 pub enum AuxTracer {

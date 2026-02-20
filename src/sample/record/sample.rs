@@ -908,7 +908,6 @@ pub struct Txn {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1286
 /// The source of data associated with the sampled instruction.
-///
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DataSource {

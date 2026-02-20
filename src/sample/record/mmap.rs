@@ -84,6 +84,7 @@ impl Mmap {
     //     char filename[];
     //     struct sample_id sample_id;
     // };
+    //
     // PERF_RECORD_MMAP2
     // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1048
     // struct {
@@ -113,7 +114,8 @@ impl Mmap {
     //
     // `PERF_RECORD_MMAP` and `PERF_RECORD_MMAP2` shares the same output and will never appear together
     // in the same ring-buffer since kernel replaces `PERF_RECORD_MMAP` with `PERF_RECORD_MMAP2` and
-    // extends the output if `attr.mmap2` was enabled
+    // extends the output if `attr.mmap2` was enabled.
+    //
     // Call chain: `perf_event_mmap` -> `perf_event_mmap_event` -> `perf_event_mmap_output`
     // `perf_event_mmap` set `type` to `PERF_RECORD_MMAP`:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L9129
@@ -123,7 +125,8 @@ impl Mmap {
     // https://github.com/torvalds/linux/blob/v6.12/kernel/events/core.c#L8815
     // `perf_event_mmap_output` extends the output:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8884
-    // So the final output ABI is:
+    //
+    // So the final output ABI would be:
     // struct {
     //     struct perf_event_header header;
     //     u32 pid, tid;
