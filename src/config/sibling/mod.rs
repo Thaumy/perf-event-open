@@ -134,7 +134,7 @@ pub struct OnSample {
 /// AUX tracer action.
 ///
 /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum AuxTracer {
     /// Pause [AUX tracer][crate::sample::auxiliary::AuxTracer].
     Pause,

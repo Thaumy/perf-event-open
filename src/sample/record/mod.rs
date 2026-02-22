@@ -159,7 +159,7 @@ pub struct Task {
 }
 
 /// Privilege levels.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Priv {
     // PERF_RECORD_MISC_USER

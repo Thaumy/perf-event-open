@@ -139,7 +139,7 @@ super::debug!(Ksymbol {
 });
 
 /// Ksymbol state.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum State {
     /// Register.
@@ -150,7 +150,7 @@ pub enum State {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1232
 /// Ksymbol type.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     // PERF_RECORD_KSYMBOL_TYPE_BPF

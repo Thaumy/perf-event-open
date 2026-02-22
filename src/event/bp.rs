@@ -31,7 +31,7 @@ pub enum Type {
 }
 
 /// Breakpoint size (in bytes).
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Len {
     /// 1 byte.

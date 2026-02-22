@@ -739,7 +739,7 @@ pub struct Entry {
 /// Branch types.
 ///
 /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/eb0baf8a0d9259d168523b8e7c436b55ade7c546>
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchType {
     // PERF_BR_*
@@ -829,7 +829,7 @@ pub enum BranchType {
 /// Branch speculation outcome classification.
 ///
 /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/93315e46b000fc80fff5d53c3f444417fb3df6de>
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchSpec {
     // PERF_BR_SPEC_NA
@@ -850,7 +850,7 @@ pub enum BranchSpec {
 /// Branch privilege levels.
 ///
 /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/5402d25aa5710d240040f73fb13d7d5c303ef071>
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchPriv {
     // PERF_BR_PRIV_UNKNOWN
@@ -1092,7 +1092,7 @@ pub struct MemTlb {
 /// Memory hierarchy levels (V2).
 ///
 /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemLevel2 {
     // PERF_MEM_LVLNUM_L1
@@ -1180,7 +1180,7 @@ pub struct MemBlock {
 /// Hop levels.
 ///
 /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/fec9cc6175d0ec1e13efe12be491d9bd4de62f80>
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemHop {
     // PERF_MEM_HOPS_0
@@ -1208,7 +1208,7 @@ pub enum MemHop {
 }
 
 /// Type of ABI.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Abi {
     /// 32-bit ABI.

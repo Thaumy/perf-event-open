@@ -47,7 +47,7 @@ pub enum Hardware {
 }
 
 /// Type of cache
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     /// L1 data cache.
@@ -67,7 +67,7 @@ pub enum Type {
 }
 
 /// Cache operations
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Op {
     /// Read accesses.
@@ -79,7 +79,7 @@ pub enum Op {
 }
 
 /// Cache operation results.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum OpResult {
     /// Operation misses.

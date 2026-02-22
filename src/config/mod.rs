@@ -217,7 +217,7 @@ pub struct Priv {
 }
 
 /// Controls the inherit behavior.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Inherit {
     /// New child tasks will inherit the counter.
@@ -238,7 +238,7 @@ pub enum Inherit {
 
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12535
 /// Counter behavior when calling [`execve`](https://man7.org/linux/man-pages/man2/execve.2.html).
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum OnExecve {
     /// Enable counter.
@@ -433,7 +433,7 @@ impl Default for SampleOn {
 /// to which instructions, but hardware is often limited with how small this can be.
 ///
 /// This affects the precision of [`code_addr`][crate::sample::record::sample::Sample::code_addr].
-#[derive(Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum SampleSkid {
     /// Can have arbitrary skid.
@@ -683,7 +683,7 @@ pub struct EntryFormat {
 pub struct Size(pub u32);
 
 /// Controls how weight values are represented.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Repr {
     // PERF_SAMPLE_WEIGHT
@@ -886,7 +886,7 @@ impl Default for WakeUpOn {
 pub struct SigData(pub u64);
 
 /// Available internal Linux timers.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Clock {
     // CLOCK_TAI
