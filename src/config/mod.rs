@@ -678,7 +678,7 @@ pub struct EntryFormat {
 }
 
 /// Semantic wrapper for options that require a size (in bytes).
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Size(pub u32);
 
@@ -719,7 +719,7 @@ pub struct CallChain {
 ///
 /// The layout of the register mask is architecture-specific and is described
 /// in the kernel header file `arch/<arch>/include/uapi/asm/perf_regs.h`.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RegsMask(pub u64);
 
@@ -881,7 +881,7 @@ impl Default for WakeUpOn {
 /// in the `siginfo_t`) to disambiguate which event triggered the signal.
 ///
 /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/97ba62b278674293762c3d91f724f1bb922f04e0>
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SigData(pub u64);
 
@@ -968,7 +968,7 @@ pub struct Mmap {
 /// a Build ID. Otherwise, device info is used as a fallback.
 ///
 /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/88a16a1309333e43d328621ece3e9fa37027e8eb>
-#[derive(Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UseBuildId(pub bool);
 
