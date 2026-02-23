@@ -29,7 +29,7 @@ use super::{RecordId, Task};
 /// ```
 ///
 /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/e422267322cd319e2695a535e47c5b1feeac45eb>
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Namespaces {
     /// Record IDs.
@@ -125,7 +125,7 @@ super::debug!(Namespaces {
 
 // Naming: https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8590
 /// Namespace link info.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LinkInfo {
     /// Device number.

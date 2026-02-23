@@ -51,7 +51,7 @@ use super::RecordId;
 /// ```
 ///
 /// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/76193a94522f1d4edf2447a536f3f796ce56343b>
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Ksymbol {
     /// Record IDs.
@@ -139,7 +139,7 @@ super::debug!(Ksymbol {
 });
 
 /// Ksymbol state.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum State {
     /// Register.
@@ -150,7 +150,7 @@ pub enum State {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1232
 /// Ksymbol type.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     // PERF_RECORD_KSYMBOL_TYPE_BPF

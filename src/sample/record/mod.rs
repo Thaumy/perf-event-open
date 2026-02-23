@@ -42,7 +42,7 @@ pub mod throttle;
 ///
 /// This type and all record types can be formatted with the `{:-?}`
 /// formatter for compact debugging displays.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Record {
     // PERF_RECORD_SAMPLE
@@ -149,7 +149,7 @@ impl Debug for Record {
 }
 
 /// Task info.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Task {
     /// Process ID.
@@ -159,7 +159,7 @@ pub struct Task {
 }
 
 /// Privilege levels.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Priv {
     // PERF_RECORD_MISC_USER
@@ -198,7 +198,7 @@ impl Priv {
 }
 
 /// A collection of IDs used to identify records.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RecordId {
     /// Event ID.
@@ -369,7 +369,7 @@ pub(crate) use debug;
 /// Unsafe record parser.
 ///
 /// Unlike [`Parser`], you need to ensure the safety of parsing record bytes.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UnsafeParser {
     pub sample_id_all: bool,

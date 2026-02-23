@@ -56,7 +56,7 @@ use super::RecordId;
 /// ```
 ///
 /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/68db7e98c3a6ebe7284b6cf14906ed7c55f3f7f0>
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Aux {
     /// Record IDs.
@@ -171,7 +171,7 @@ super::debug!(Aux {
 /// records from multiple events.
 ///
 /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/8b8ff8cc3b8155c18162e8b1f70e1230db176862>
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AuxOutputHwId {
     /// Record IDs.

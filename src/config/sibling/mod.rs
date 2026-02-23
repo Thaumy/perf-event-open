@@ -14,7 +14,7 @@ pub(crate) mod attr;
 // * Only a group leader can be exclusive or pinned:
 // https://github.com/torvalds/linux/blob/7ff71e6d923969d933e1ba7e0db857782d36cd19/kernel/events/core.c#L12982
 /// Sibling event options.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Opts {
     /// Exclude events with privilege levels.
     ///
@@ -73,7 +73,7 @@ pub struct Opts {
 }
 
 /// Controls the format of [`Stat`][crate::count::Stat].
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub struct StatFormat {
     /// Contains the event ID ([`Stat::id`][crate::count::Stat::id]
     /// and [`SiblingStat::id`][crate::count::SiblingStat::id]).
@@ -114,7 +114,7 @@ impl StatFormat {
 }
 
 /// The action to perform when generating the [sample record][crate::sample::record::sample::Sample].
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub struct OnSample {
     /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
     pub aux: Option<AuxTracer>,
@@ -134,7 +134,7 @@ pub struct OnSample {
 /// AUX tracer action.
 ///
 /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum AuxTracer {
     /// Pause [AUX tracer][crate::sample::auxiliary::AuxTracer].
     Pause,

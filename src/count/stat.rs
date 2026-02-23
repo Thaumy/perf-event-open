@@ -5,7 +5,7 @@ use crate::sample::record::debug;
 ///
 /// This type can be formatted with the `{:-?}` formatter for compact
 /// debugging displays.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Stat {
     /// Event count.
@@ -159,7 +159,7 @@ debug!(Stat {
 });
 
 /// Sibling event statistics.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SiblingStat {
     /// Event count.

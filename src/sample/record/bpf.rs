@@ -58,7 +58,7 @@ const BPF_TAG_SIZE: u32 = 8;
 /// ```
 ///
 /// Since `linux-5.1`: <https://github.com/torvalds/linux/commit/6ee52e2a3fe4ea35520720736e6791df1fb67106>
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BpfEvent {
     /// Record IDs.
@@ -126,7 +126,7 @@ super::debug!(BpfEvent {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1245
 /// BPF event type.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     // PERF_BPF_EVENT_PROG_LOAD

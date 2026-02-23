@@ -7,7 +7,7 @@ use crate::ffi::deref_offset;
 /// and kernel will correct the sampling rate to avoid exceeding the limit.
 ///
 /// See also [`SampleOn`][crate::config::SampleOn].
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Throttle {
     /// Record IDs.
@@ -56,7 +56,7 @@ super::debug!(Throttle {
 });
 
 /// Sampling throttle has been lifted.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Unthrottle {
     /// Record IDs.

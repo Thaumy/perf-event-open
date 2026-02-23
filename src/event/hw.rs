@@ -4,7 +4,7 @@ use crate::ffi::bindings as b;
 /// Generalized hardware CPU events.
 ///
 /// Not all of these are available on all platforms.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Hardware {
     /// Total CPU cycles, affected by CPU frequency scaling.
@@ -47,7 +47,7 @@ pub enum Hardware {
 }
 
 /// Type of cache
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Type {
     /// L1 data cache.
@@ -67,7 +67,7 @@ pub enum Type {
 }
 
 /// Cache operations
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Op {
     /// Read accesses.
@@ -79,7 +79,7 @@ pub enum Op {
 }
 
 /// Cache operation results.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum OpResult {
     /// Operation misses.

@@ -50,7 +50,7 @@ const BUILD_ID_SIZE_MAX: usize = 20;
 /// }
 /// # assert_eq!(count, 2);
 /// ```
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Mmap {
     /// Record IDs.
@@ -237,7 +237,7 @@ super::debug!(Mmap {
 });
 
 /// Extension fields.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Ext {
     /// Protection info.
@@ -249,7 +249,7 @@ pub struct Ext {
 }
 
 /// Device info or ELF file build ID.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Info {
     /// Device info.

@@ -2,7 +2,7 @@ use super::EventConfig;
 use crate::ffi::bindings as b;
 
 /// Software events provided by the kernel.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Software {
     /// This reports the CPU clock, a high-resolution per-CPU timer.

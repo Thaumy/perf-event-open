@@ -47,7 +47,7 @@ use super::{RecordId, Task};
 /// ```
 ///
 /// Since `linux-4.3`: <https://github.com/torvalds/linux/commit/45ac1403f564f411c6a383a2448688ba8dd705a4>
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CtxSwitch {
     /// Record IDs.
@@ -112,7 +112,7 @@ super::debug!(CtxSwitch {
 
 // Some(task) if PERF_RECORD_SWITCH_CPU_WIDE
 /// Context switch info.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Switch {
     // PERF_RECORD_MISC_SWITCH_OUT

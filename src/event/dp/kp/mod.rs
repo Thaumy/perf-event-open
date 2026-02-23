@@ -11,7 +11,7 @@ const TYPE_PATH: &str = "/sys/bus/event_source/devices/kprobe/type";
 const RETPROBE_PATH: &str = "/sys/bus/event_source/devices/kprobe/format/retprobe";
 
 /// Kernel probe event
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Kprobe {
     /// Symbol + offset where the probe is inserted.
     Symbol { name: &'static CStr, offset: u64 },
@@ -59,7 +59,7 @@ impl TryFrom<Kprobe> for Event {
 }
 
 /// Kernel return probe event
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Kretprobe {
     /// Symbol + offset where the probe is inserted.
     Symbol { name: &'static CStr, offset: u64 },

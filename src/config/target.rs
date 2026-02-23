@@ -4,12 +4,12 @@ use std::os::fd::AsRawFd;
 use crate::ffi::bindings as b;
 
 /// Monitor all processes (if [`Proc`] is not set) or all CPUs (if [`Cpu`] is not set).
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct All;
 
 /// Which CPU to monitor.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Cpu(pub u32);
 
@@ -25,7 +25,7 @@ impl Cpu {
 /// Construct with pid or tid.
 ///
 /// `Proc(0)` indicates the current process.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Proc(pub u32);
 
@@ -59,7 +59,7 @@ pub struct Cgroup<'a>(pub &'a File);
 ///
 /// This design limits what we can monitor at compile time. For example, the kernel not support
 /// monitoring any process on all CPUs, or a cgroup on all CPUs.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Target {
     pub(crate) pid: i32,
     pub(crate) cpu: i32,

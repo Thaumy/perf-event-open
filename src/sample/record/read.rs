@@ -60,7 +60,7 @@ use crate::ffi::deref_offset;
 /// A kernel bug introduced in Linux 5.13 caused this feature to be unavailable;
 /// this bug has been fixed in Linux 6.19. Therefore, you may not receive this
 /// record if your Linux kernel does not include the fix, see [patch](https://github.com/torvalds/linux/commit/c418d8b4d7a43a86b82ee39cb52ece3034383530).
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Read {
     /// Record IDs.

@@ -7,7 +7,7 @@ use crate::ffi::{bindings as b, deref_offset};
 /// Sample.
 ///
 /// Fields can be enabled via [`SampleFormat`][crate::config::SampleFormat].
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Sample {
     /// Record IDs.
@@ -684,7 +684,7 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
 }
 
 /// LBR data.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lbr {
     /// The index in the underlying hardware buffer of the most recently
@@ -710,7 +710,7 @@ super::debug!(Lbr {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1436
 /// LBR entry.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Entry {
     pub from: u64,
@@ -739,7 +739,7 @@ pub struct Entry {
 /// Branch types.
 ///
 /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/eb0baf8a0d9259d168523b8e7c436b55ade7c546>
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchType {
     // PERF_BR_*
@@ -829,7 +829,7 @@ pub enum BranchType {
 /// Branch speculation outcome classification.
 ///
 /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/93315e46b000fc80fff5d53c3f444417fb3df6de>
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchSpec {
     // PERF_BR_SPEC_NA
@@ -850,7 +850,7 @@ pub enum BranchSpec {
 /// Branch privilege levels.
 ///
 /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/5402d25aa5710d240040f73fb13d7d5c303ef071>
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BranchPriv {
     // PERF_BR_PRIV_UNKNOWN
@@ -864,7 +864,7 @@ pub enum BranchPriv {
 }
 
 /// Sampling weight.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Weight {
     Full(u64),
@@ -874,7 +874,7 @@ pub enum Weight {
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L322
 /// The sources of any transactional memory aborts.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Txn {
     // PERF_TXN_ELISION
@@ -908,7 +908,7 @@ pub struct Txn {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1286
 /// The source of data associated with the sampled instruction.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DataSource {
     /// Type of opcode.
@@ -941,7 +941,7 @@ pub struct DataSource {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1324
 /// Type of opcode.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemOp {
     // PERF_MEM_OP_NA
@@ -965,7 +965,7 @@ pub struct MemOp {
 /// Memory hierarchy levels.
 ///
 /// This is being deprecated in favour of [`MemLevel2`].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemLevel {
     // PERF_MEM_LVL_NA
@@ -1014,7 +1014,7 @@ pub struct MemLevel {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1376
 /// Snoop mode.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemSnoop {
     // PERF_MEM_SNOOP_NA
@@ -1049,7 +1049,7 @@ pub struct MemSnoop {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1388
 /// Locked instruction.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemLock {
     // PERF_MEM_LOCK_NA
@@ -1062,7 +1062,7 @@ pub struct MemLock {
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1393
 /// TLB access.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemTlb {
     // PERF_MEM_TLB_NA
@@ -1092,7 +1092,7 @@ pub struct MemTlb {
 /// Memory hierarchy levels (V2).
 ///
 /// Since `linux-4.14`: <https://github.com/torvalds/linux/commit/6ae5fa61d27dcb055f4198bcf6c8dbbf1bb33f52>
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemLevel2 {
     // PERF_MEM_LVLNUM_L1
@@ -1159,7 +1159,7 @@ pub enum MemLevel2 {
 /// Access blocked.
 ///
 /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/61b985e3e775a3a75fda04ce7ef1b1aefc4758bc>
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemBlock {
     // PERF_MEM_BLK_NA
@@ -1180,7 +1180,7 @@ pub struct MemBlock {
 /// Hop levels.
 ///
 /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/fec9cc6175d0ec1e13efe12be491d9bd4de62f80>
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemHop {
     // PERF_MEM_HOPS_0
@@ -1208,7 +1208,7 @@ pub enum MemHop {
 }
 
 /// Type of ABI.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Abi {
     /// 32-bit ABI.

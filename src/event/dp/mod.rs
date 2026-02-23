@@ -12,7 +12,7 @@ pub use up::*;
 use super::EventConfig;
 
 /// Dynamic PMU event
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DynamicPmu {
     /// The type value to use can be found in the sysfs filesystem: there is a subdirectory per

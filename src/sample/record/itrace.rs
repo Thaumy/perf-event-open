@@ -62,7 +62,7 @@ use super::{RecordId, Task};
 /// ```
 ///
 /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/ec0d7729bbaed4b9d2d3fada693278e13a3d1368>
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ItraceStart {
     /// Record IDs.

@@ -11,7 +11,7 @@ const TYPE_PATH: &str = "/sys/bus/event_source/devices/uprobe/type";
 const RETPROBE_PATH: &str = "/sys/bus/event_source/devices/kprobe/format/retprobe";
 
 /// User probe event
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Uprobe {
     /// Path to an executable or a library.
     pub path: &'static CStr,
@@ -49,7 +49,7 @@ impl TryFrom<Uprobe> for Event {
 }
 
 /// User return probe event
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Uretprobe {
     /// Path to an executable or a library.
     pub path: &'static CStr,

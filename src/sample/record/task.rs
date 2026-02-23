@@ -51,7 +51,7 @@ use crate::ffi::deref_offset;
 /// ```
 ///
 /// See also [`ExtraRecords::task`][crate::config::ExtraRecord::task].
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Exit {
     /// Record IDs.
@@ -114,7 +114,7 @@ super::debug!(Exit {
 /// See [`Exit`] for examples.
 ///
 /// See also [`ExtraRecords::task`][crate::config::ExtraRecord::task].
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Fork {
     /// Record IDs.

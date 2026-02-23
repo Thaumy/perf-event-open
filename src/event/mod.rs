@@ -8,10 +8,10 @@ pub mod tp;
 /// Unified event type.
 ///
 /// Different events can be converted to this type to get a unified representation.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Event(pub(super) EventConfig);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub(super) struct EventConfig {
     pub ty: u32,
     pub config: u64,

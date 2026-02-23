@@ -2,7 +2,7 @@ use super::EventConfig;
 use crate::ffi::bindings as b;
 
 /// A "raw" implementation-specific event.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Raw {
     /// Event config.

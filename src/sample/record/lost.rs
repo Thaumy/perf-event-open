@@ -57,7 +57,7 @@ use crate::ffi::deref_offset;
 /// }
 /// # });
 /// ```
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LostRecords {
     /// Record IDs.
@@ -105,7 +105,7 @@ super::debug!(LostRecords {
 /// that are discarded by the kernel.
 ///
 /// Since `linux-4.2`: <https://github.com/torvalds/linux/commit/f38b0dbb491a6987e198aa6b428db8692a6480f8>
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LostSamples {
     /// Record IDs.
