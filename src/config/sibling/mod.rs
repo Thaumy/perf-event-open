@@ -15,6 +15,7 @@ pub(crate) mod attr;
 // https://github.com/torvalds/linux/blob/7ff71e6d923969d933e1ba7e0db857782d36cd19/kernel/events/core.c#L12982
 /// Sibling event options.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Opts {
     /// Exclude events with privilege levels.
     ///
@@ -74,6 +75,7 @@ pub struct Opts {
 
 /// Controls the format of [`Stat`][crate::count::Stat].
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StatFormat {
     /// Contains the event ID ([`Stat::id`][crate::count::Stat::id]
     /// and [`SiblingStat::id`][crate::count::SiblingStat::id]).
@@ -115,6 +117,7 @@ impl StatFormat {
 
 /// The action to perform when generating the [sample record][crate::sample::record::sample::Sample].
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct OnSample {
     /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
     pub aux: Option<AuxTracer>,
@@ -135,6 +138,7 @@ pub struct OnSample {
 ///
 /// Since `linux-6.13`: <https://github.com/torvalds/linux/commit/18d92bb57c39504d9da11c6ef604f58eb1d5a117>
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum AuxTracer {
     /// Pause [AUX tracer][crate::sample::auxiliary::AuxTracer].
     Pause,
