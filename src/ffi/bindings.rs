@@ -21,7 +21,8 @@ macro_rules! select {
 }
 
 select! {
-    ["linux-6.13"..            ],
+    ["linux-6.19"..            ],
+    ["linux-6.13".."linux-6.19"],
     ["linux-6.11".."linux-6.13"],
     ["linux-6.8" .."linux-6.11"],
     ["linux-6.6" .."linux-6.8" ],

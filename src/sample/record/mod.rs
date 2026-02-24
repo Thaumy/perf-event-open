@@ -4,6 +4,7 @@ use std::fmt::{Debug, Formatter};
 
 use auxiliary::{Aux, AuxOutputHwId};
 use bpf::BpfEvent;
+use call_chain::CallChainDeferred;
 use cgroup::Cgroup;
 use comm::Comm;
 use ctx::CtxSwitch;
@@ -23,6 +24,7 @@ use crate::ffi::{bindings as b, deref_offset, Attr};
 
 pub mod auxiliary;
 pub mod bpf;
+pub mod call_chain;
 pub mod cgroup;
 pub mod comm;
 pub mod ctx;
@@ -73,6 +75,9 @@ pub enum Record {
     // PERF_RECORD_ITRACE_START
     /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/ec0d7729bbaed4b9d2d3fada693278e13a3d1368>
     ItraceStart(Box<ItraceStart>),
+    // PERF_RECORD_CALLCHAIN_DEFERRED
+    /// Since `linux-6.19`: <https://github.com/torvalds/linux/commit/c69993ecdd4dfde2b7da08b022052a33b203da07>
+    CallChainDeferred(Box<CallChainDeferred>),
 
     // PERF_RECORD_AUX
     /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/68db7e98c3a6ebe7284b6cf14906ed7c55f3f7f0>
@@ -134,6 +139,7 @@ impl Debug for Record {
             CtxSwitch,
             Namespaces,
             ItraceStart,
+            CallChainDeferred,
             Aux,
             AuxOutputHwId,
             Comm,
@@ -480,6 +486,10 @@ impl UnsafeParser {
             b::PERF_RECORD_LOST => from(LostRecords::from_ptr(ptr, sample_id_all)),
             #[cfg(feature = "linux-4.2")]
             b::PERF_RECORD_LOST_SAMPLES => from(LostSamples::from_ptr(ptr, sample_id_all)),
+            #[cfg(feature = "linux-6.19")]
+            b::PERF_RECORD_CALLCHAIN_DEFERRED => {
+                from(CallChainDeferred::from_ptr(ptr, sample_id_all))
+            }
             _ => Record::Unknown(bytes.to_vec()), // For compatibility, not ABI.
         };
 

@@ -378,6 +378,14 @@ unsafe fn parse_call_chain(ptr: &mut *const u8) -> Vec<CallChain> {
         // See: https://github.com/torvalds/linux/commit/f9188e023c248d73f5b4a589b480e065c1864068
         let call_chain = match marker {
             b::PERF_CONTEXT_USER => CallChain::User(take_ips(iter)),
+            #[cfg(feature = "linux-6.19")]
+            b::PERF_CONTEXT_USER_DEFERRED => {
+                // A following cookie is always available to stitch with
+                // the upcoming PERF_RECORD_CALLCHAIN_DEFERRED record.
+                // See: https://github.com/torvalds/linux/blob/v6.19/kernel/events/callchain.c#L262
+                let cookie = iter.next().unwrap_unchecked();
+                CallChain::UserDeferred { cookie }
+            }
             b::PERF_CONTEXT_KERNEL => CallChain::Kernel(take_ips(iter)),
             b::PERF_CONTEXT_HV => CallChain::Hv(take_ips(iter)),
             b::PERF_CONTEXT_GUEST => CallChain::Guest(take_ips(iter)),
@@ -740,6 +748,19 @@ pub enum CallChain {
     // PERF_CONTEXT_USER
     /// Call chain in user context.
     User(Vec<u64>),
+    /// Deferred user call chain.
+    ///
+    /// This is a reference to the upcoming [`CallChainDeferred`][crate::sample::record::call_chain::CallChainDeferred]
+    /// record, which can be stitched to this one to form the full call chain.
+    ///
+    /// See also [`CallChain::defer_user`][crate::config::CallChain::defer_user]
+    /// and [`CallChainDeferred`][crate::sample::record::call_chain::CallChainDeferred].
+    ///
+    /// Since `linux-6.19`: <https://github.com/torvalds/linux/commit/c69993ecdd4dfde2b7da08b022052a33b203da07>
+    UserDeferred {
+        /// Cookie used to match the upcoming deferred call chain.
+        cookie: u64,
+    },
 
     // PERF_CONTEXT_KERNEL
     /// Call chain in kernel context.

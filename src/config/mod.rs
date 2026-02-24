@@ -707,6 +707,21 @@ pub struct CallChain {
     /// Exclude kernel call chains.
     pub exclude_kernel: bool,
 
+    /// Enables deferred unwinding of user call chains.
+    ///
+    /// Only meaningful if [`CallChain::exclude_user`] is `false`.
+    ///
+    /// This can moves the user stack unwind to a faultable context. It becomes
+    /// possible to fault in debug info (.eh_frame, SFrame etc.) that might not
+    /// otherwise be readily available. And secondly, it de-duplicates the user
+    /// call chain where multiple samples happen during the same kernel entry.
+    ///
+    /// See also [`CallChain::UserDeferred`][crate::sample::record::sample::CallChain::UserDeferred]
+    /// and [`CallChainDeferred`][crate::sample::record::call_chain::CallChainDeferred].
+    ///
+    /// Since `linux-6.19`: <https://github.com/torvalds/linux/commit/c69993ecdd4dfde2b7da08b022052a33b203da07>
+    pub defer_user: bool,
+
     /// How many stack frames to report when generating the call chain.
     ///
     /// The maximum frames is specified in `/proc/sys/kernel/perf_event_max_stack`.
@@ -775,6 +790,11 @@ pub struct ExtraRecord {
     ///
     /// Since `linux-4.12`: <https://github.com/torvalds/linux/commit/e422267322cd319e2695a535e47c5b1feeac45eb>
     pub namespaces: bool,
+
+    /// Generate [`CallChainDeferred`][crate::sample::record::call_chain::CallChainDeferred] records.
+    ///
+    /// Since `linux-6.19`: <https://github.com/torvalds/linux/commit/c69993ecdd4dfde2b7da08b022052a33b203da07>
+    pub call_chain_deferred: bool,
 }
 
 /// Controls the format of [`RecordId`][crate::sample::record::RecordId].

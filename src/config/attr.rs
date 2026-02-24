@@ -128,6 +128,8 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
     when!(call_chain, it, {
         attr.set_exclude_callchain_user(it.exclude_user as _);
         attr.set_exclude_callchain_kernel(it.exclude_kernel as _);
+        #[cfg(feature = "linux-6.19")]
+        attr.set_defer_callchain(it.defer_user as _);
         #[cfg(feature = "linux-4.8")]
         (attr.sample_max_stack = it.max_stack_frames);
         #[cfg(not(feature = "linux-4.8"))]
@@ -277,6 +279,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
     when!("linux-5.9", text_poke, set_text_poke);
     when!("linux-4.3", ctx_switch, set_context_switch);
     when!("linux-4.12", namespaces, set_namespaces);
+    when!("linux-6.19", call_chain_deferred, set_defer_output);
 
     attr.set_sample_id_all(opts.record_id_all as _);
 
