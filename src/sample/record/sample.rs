@@ -1,3 +1,4 @@
+use std::iter::Peekable;
 use std::slice;
 
 use super::{RecordId, Task};
@@ -24,7 +25,7 @@ pub struct Sample {
     /// [`Cgroup::id`][crate::sample::record::Cgroup::id].
     pub cgroup: Option<u64>,
     /// Call chain (stack backtrace).
-    pub call_chain: Option<Vec<u64>>,
+    pub call_chain: Option<Vec<CallChain>>,
     /// User stack.
     pub user_stack: Option<Vec<u8>>,
 
@@ -224,12 +225,7 @@ impl Sample {
         let stat = when!(PERF_SAMPLE_READ, {
             Stat::from_ptr_offset(&mut ptr, read_format)
         });
-        let call_chain = when!(PERF_SAMPLE_CALLCHAIN, {
-            let len = deref_offset::<u64>(&mut ptr) as usize;
-            let ips = slice::from_raw_parts(ptr as *const u64, len);
-            ptr = ptr.add(len * size_of::<u64>());
-            ips.to_vec()
-        });
+        let call_chain = when!(PERF_SAMPLE_CALLCHAIN, { parse_call_chain(&mut ptr) });
         let raw = when!(PERF_SAMPLE_RAW, {
             let len = deref_offset::<u32>(&mut ptr) as usize;
             let bytes = slice::from_raw_parts(ptr, len);
@@ -348,6 +344,55 @@ super::debug!(Sample {
     {txn?},
     {weight?},
 });
+
+unsafe fn parse_call_chain(ptr: &mut *const u8) -> Vec<CallChain> {
+    let len = deref_offset::<u64>(ptr) as usize;
+    if len == 0 {
+        return vec![];
+    }
+
+    let slice = slice::from_raw_parts(*ptr as *const u64, len);
+    let mut iter = slice.iter().cloned().peekable();
+    let iter = &mut iter;
+
+    fn take_ips<I>(iter: &mut Peekable<I>) -> Vec<u64>
+    where
+        I: Iterator<Item = u64>,
+    {
+        let mut ips = vec![];
+        while let Some(ip) = iter.peek().cloned() {
+            // marker range: [-4095, -1]
+            if ip.wrapping_add(4095) < 4095 {
+                break;
+            }
+            ips.push(ip);
+            iter.next();
+        }
+        ips
+    }
+
+    let mut call_chains = vec![];
+
+    while let Some(marker) = iter.next() {
+        // Each call chain begins with a marker that indicates the context type.
+        // See: https://github.com/torvalds/linux/commit/f9188e023c248d73f5b4a589b480e065c1864068
+        let call_chain = match marker {
+            b::PERF_CONTEXT_USER => CallChain::User(take_ips(iter)),
+            b::PERF_CONTEXT_KERNEL => CallChain::Kernel(take_ips(iter)),
+            b::PERF_CONTEXT_HV => CallChain::Hv(take_ips(iter)),
+            b::PERF_CONTEXT_GUEST => CallChain::Guest(take_ips(iter)),
+            b::PERF_CONTEXT_GUEST_USER => CallChain::GuestUser(take_ips(iter)),
+            b::PERF_CONTEXT_GUEST_KERNEL => CallChain::GuestKernel(take_ips(iter)),
+            // For compatibility, not ABI.
+            _ => CallChain::Unknown(take_ips(iter)),
+        };
+        call_chains.push(call_chain);
+    }
+
+    *ptr = ptr.add(len * size_of::<u64>());
+
+    call_chains
+}
 
 unsafe fn parse_regs(ptr: &mut *const u8, len: usize) -> Option<(Vec<u64>, Abi)> {
     let abi = deref_offset::<u64>(ptr) as u32;
@@ -686,6 +731,38 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         block,
         hops,
     }
+}
+
+/// Call chains.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum CallChain {
+    // PERF_CONTEXT_USER
+    /// Call chain in user context.
+    User(Vec<u64>),
+
+    // PERF_CONTEXT_KERNEL
+    /// Call chain in kernel context.
+    Kernel(Vec<u64>),
+
+    // PERF_CONTEXT_HV
+    /// Call chain in hypervisor context.
+    Hv(Vec<u64>),
+
+    // PERF_CONTEXT_GUEST
+    /// Call chain in guest context.
+    Guest(Vec<u64>),
+    // PERF_CONTEXT_GUEST_USER
+    /// Call chain in guest user context.
+    GuestUser(Vec<u64>),
+    // PERF_CONTEXT_GUEST_KERNEL
+    /// Call chain in guest kernel context.
+    GuestKernel(Vec<u64>),
+
+    /// Call chain in unknown context.
+    ///
+    /// This is for compatibility, not ABI.
+    Unknown(Vec<u64>),
 }
 
 /// LBR data.
