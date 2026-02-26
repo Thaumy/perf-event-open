@@ -11,7 +11,9 @@ check() {
   cargo fmt --check --all
   cargo build --features "$1"
   cargo build --features "$1" --target "x86_64-unknown-linux-musl"
+  cargo build --features "$1" --target "x86_64-unknown-freebsd"
   cargo clippy --features "$1"
+  cargo clippy --features "$1" --target "x86_64-unknown-freebsd"
   cargo test --features "$1" -q
   echo ''
 }
