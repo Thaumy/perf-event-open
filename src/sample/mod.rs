@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::Result;
+use std::io::{Error, Result};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
@@ -65,7 +65,13 @@ pub struct Sampler {
 
 impl Sampler {
     pub(super) fn new(perf: Arc<File>, attr: &Attr, exp: u8) -> Result<Self> {
-        let len = (1 + 2_usize.pow(exp as _)) * *PAGE_SIZE;
+        let Some(len) = 2_usize
+            .checked_pow(exp as u32)
+            .and_then(|n| n.checked_add(1))
+            .and_then(|n| n.checked_mul(*PAGE_SIZE))
+        else {
+            return Err(Error::other("allocation size overflow"));
+        };
         let arena = Arena::new(&perf, len, 0)?;
 
         Ok(Sampler {
