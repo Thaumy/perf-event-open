@@ -12,12 +12,12 @@ pub use target::*;
 /// features are supported.
 #[allow(unused_macros)]
 macro_rules! unsupported {
-    () => {
-        Err(std::io::ErrorKind::Unsupported)?
-    };
+    () => {{
+        return Err(std::io::ErrorKind::Unsupported.into());
+    }};
     ($bool:expr) => {
         if $bool {
-            Err(std::io::ErrorKind::Unsupported)?
+            return Err(std::io::ErrorKind::Unsupported.into());
         }
     };
 }
