@@ -135,7 +135,7 @@ impl Sampler {
 
     #[cfg(not(feature = "linux-4.7"))]
     pub fn pause(&self) -> Result<()> {
-        crate::config::unsupported!()
+        Err(std::io::ErrorKind::Unsupported.into())
     }
 
     /// Resume the ring-buffer output.
@@ -149,7 +149,7 @@ impl Sampler {
 
     #[cfg(not(feature = "linux-4.7"))]
     pub fn resume(&self) -> Result<()> {
-        crate::config::unsupported!()
+        Err(std::io::ErrorKind::Unsupported.into())
     }
 
     /// Enables the counter until the maximum number of samples has been generated.

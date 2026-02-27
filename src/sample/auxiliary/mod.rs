@@ -97,7 +97,7 @@ impl<'a> AuxTracer<'a> {
 
     #[cfg(not(feature = "linux-4.1"))]
     pub(crate) fn new(_: &File, _: &'a mut Metadata, _: u8) -> Result<Self> {
-        crate::config::unsupported!()
+        Err(std::io::ErrorKind::Unsupported.into())
     }
 
     /// Get an iterator of the AUX area.

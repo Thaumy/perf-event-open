@@ -282,7 +282,7 @@ impl Counter {
     #[cfg(not(feature = "linux-4.16"))]
     pub fn query_bpf(&self, len: u32) -> Result<(Vec<u32>, Option<u32>)> {
         let _ = len;
-        crate::config::unsupported!()
+        Err(std::io::ErrorKind::Unsupported.into())
     }
 
     /// Add an ftrace filter to current event.
@@ -341,6 +341,6 @@ impl Counter {
         E: TryInto<Event, Error = io::Error>,
     {
         let _ = event;
-        crate::config::unsupported!()
+        Err(std::io::ErrorKind::Unsupported.into())
     }
 }
