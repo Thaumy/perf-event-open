@@ -16,6 +16,10 @@ check() {
   echo ''
 }
 
+echo "check publish"
+cargo publish --allow-dirty --dry-run
+echo ''
+
 check serde
 check latest
 check legacy
