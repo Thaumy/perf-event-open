@@ -127,29 +127,27 @@ impl Sampler {
     /// though the ring-buffer remains empty.
     ///
     /// Since `linux-4.7`: <https://github.com/torvalds/linux/commit/86e7972f690c1017fd086cdfe53d8524e68c661c>
-    #[cfg(feature = "linux-4.7")]
     pub fn pause(&self) -> Result<()> {
-        ioctl_arg(&self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as _, 1)?;
-        Ok(())
-    }
-
-    #[cfg(not(feature = "linux-4.7"))]
-    pub fn pause(&self) -> Result<()> {
-        Err(std::io::ErrorKind::Unsupported.into())
+        #[cfg(feature = "linux-4.7")]
+        return {
+            ioctl_arg(&self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as _, 1)?;
+            Ok(())
+        };
+        #[cfg(not(feature = "linux-4.7"))]
+        return Err(std::io::ErrorKind::Unsupported.into());
     }
 
     /// Resume the ring-buffer output.
     ///
     /// Since `linux-4.7`: <https://github.com/torvalds/linux/commit/86e7972f690c1017fd086cdfe53d8524e68c661c>
-    #[cfg(feature = "linux-4.7")]
     pub fn resume(&self) -> Result<()> {
-        ioctl_arg(&self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as _, 0)?;
-        Ok(())
-    }
-
-    #[cfg(not(feature = "linux-4.7"))]
-    pub fn resume(&self) -> Result<()> {
-        Err(std::io::ErrorKind::Unsupported.into())
+        #[cfg(feature = "linux-4.7")]
+        return {
+            ioctl_arg(&self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as _, 0)?;
+            Ok(())
+        };
+        #[cfg(not(feature = "linux-4.7"))]
+        return Err(std::io::ErrorKind::Unsupported.into());
     }
 
     /// Enables the counter until the maximum number of samples has been generated.

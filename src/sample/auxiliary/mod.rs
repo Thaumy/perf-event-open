@@ -78,26 +78,30 @@ pub struct AuxTracer<'a> {
 }
 
 impl<'a> AuxTracer<'a> {
-    #[cfg(feature = "linux-4.1")]
     pub(crate) fn new(perf: &'a File, metadata: &'a mut Metadata, exp: u8) -> Result<Self> {
-        metadata.aux_size = (2_usize.pow(exp as _) * *crate::ffi::PAGE_SIZE) as _;
-        metadata.aux_offset = metadata.data_offset + metadata.data_size;
+        #[cfg(feature = "linux-4.1")]
+        return {
+            metadata.aux_size = (2_usize.pow(exp as _) * *crate::ffi::PAGE_SIZE) as _;
+            metadata.aux_offset = metadata.data_offset + metadata.data_size;
 
-        let arena = Arena::new(perf, metadata.aux_size as _, metadata.aux_offset as _)?;
-        let tail = unsafe { AtomicU64::from_ptr(&mut metadata.aux_tail as _) };
-        let head = unsafe { AtomicU64::from_ptr(&mut metadata.aux_head as _) };
+            let arena = Arena::new(perf, metadata.aux_size as _, metadata.aux_offset as _)?;
+            let tail = unsafe { AtomicU64::from_ptr(&mut metadata.aux_tail as _) };
+            let head = unsafe { AtomicU64::from_ptr(&mut metadata.aux_head as _) };
 
-        Ok(Self {
-            tail,
-            head,
-            arena,
-            perf,
-        })
-    }
-
-    #[cfg(not(feature = "linux-4.1"))]
-    pub(crate) fn new(_: &File, _: &'a mut Metadata, _: u8) -> Result<Self> {
-        Err(std::io::ErrorKind::Unsupported.into())
+            Ok(Self {
+                tail,
+                head,
+                arena,
+                perf,
+            })
+        };
+        #[cfg(not(feature = "linux-4.1"))]
+        return {
+            let _ = perf;
+            let _ = metadata;
+            let _ = exp;
+            Err(std::io::ErrorKind::Unsupported.into())
+        };
     }
 
     /// Get an iterator of the AUX area.

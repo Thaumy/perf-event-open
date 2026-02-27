@@ -233,56 +233,57 @@ impl Counter {
     /// it also indicates how many IDs were lost.
     ///
     /// Since `linux-4.16`: <https://github.com/torvalds/linux/commit/f371b304f12e31fe30207c41ca7754564e0ea4dc>
-    #[cfg(feature = "linux-4.16")]
     pub fn query_bpf(&self, buf_len: u32) -> Result<(Vec<u32>, Option<u32>)> {
-        // struct perf_event_query_bpf {
-        //     u32 ids_len;
-        //     u32 prog_cnt;
-        //     u32 ids[0];
-        // }
+        #[cfg(feature = "linux-4.16")]
+        return {
+            // struct perf_event_query_bpf {
+            //     u32 ids_len;
+            //     u32 prog_cnt;
+            //     u32 ids[0];
+            // }
 
-        use std::mem::MaybeUninit;
-        let mut buf = vec![MaybeUninit::uninit(); (2 + buf_len) as _];
-        buf[0] = MaybeUninit::new(buf_len); // set `ids_len`
+            use std::mem::MaybeUninit;
+            let mut buf = vec![MaybeUninit::uninit(); (2 + buf_len) as _];
+            buf[0] = MaybeUninit::new(buf_len); // set `ids_len`
 
-        match ioctl_argp(
-            &self.perf,
-            b::PERF_IOC_OP_QUERY_BPF as _,
-            buf.as_mut_slice(),
-        ) {
-            Ok(_) => {
-                let prog_cnt = unsafe { buf[1].assume_init() };
-
-                let ids = buf[2..2 + (prog_cnt as usize)].to_vec();
-                let ids = unsafe { transmute::<Vec<_>, Vec<u32>>(ids) };
-
-                Ok((ids, None))
-            }
-            Err(e) => {
-                let option = e.raw_os_error();
-
-                // `option` is always `Some` since `Error` is constructed
-                // by `ioctl_argp` via `Error::last_os_error`.
-                let errno = unsafe { option.unwrap_unchecked() };
-
-                if errno == libc::ENOSPC {
+            match ioctl_argp(
+                &self.perf,
+                b::PERF_IOC_OP_QUERY_BPF as _,
+                buf.as_mut_slice(),
+            ) {
+                Ok(_) => {
                     let prog_cnt = unsafe { buf[1].assume_init() };
 
-                    let ids = buf[2..].to_vec();
+                    let ids = buf[2..2 + (prog_cnt as usize)].to_vec();
                     let ids = unsafe { transmute::<Vec<_>, Vec<u32>>(ids) };
 
-                    return Ok((ids, Some(prog_cnt - buf_len)));
+                    Ok((ids, None))
                 }
+                Err(e) => {
+                    let option = e.raw_os_error();
 
-                Err(e)
+                    // `option` is always `Some` since `Error` is constructed
+                    // by `ioctl_argp` via `Error::last_os_error`.
+                    let errno = unsafe { option.unwrap_unchecked() };
+
+                    if errno == libc::ENOSPC {
+                        let prog_cnt = unsafe { buf[1].assume_init() };
+
+                        let ids = buf[2..].to_vec();
+                        let ids = unsafe { transmute::<Vec<_>, Vec<u32>>(ids) };
+
+                        return Ok((ids, Some(prog_cnt - buf_len)));
+                    }
+
+                    Err(e)
+                }
             }
-        }
-    }
-
-    #[cfg(not(feature = "linux-4.16"))]
-    pub fn query_bpf(&self, len: u32) -> Result<(Vec<u32>, Option<u32>)> {
-        let _ = len;
-        Err(std::io::ErrorKind::Unsupported.into())
+        };
+        #[cfg(not(feature = "linux-4.16"))]
+        return {
+            let _ = buf_len;
+            Err(std::io::ErrorKind::Unsupported.into())
+        };
     }
 
     /// Add an ftrace filter to current event.
@@ -305,42 +306,40 @@ impl Counter {
     /// Currently this is supported only for breakpoint events.
     ///
     /// Since `linux-4.17`: <https://github.com/torvalds/linux/commit/32ff77e8cc9e66cc4fb38098f64fd54cc8f54573>
-    #[cfg(feature = "linux-4.17")]
     pub fn switch_to<E>(&self, event: E) -> Result<()>
     where
         E: TryInto<Event, Error = io::Error>,
     {
-        let Event(event_cfg): Event = event.try_into()?;
+        #[cfg(feature = "linux-4.17")]
+        {
+            let Event(event_cfg): Event = event.try_into()?;
 
-        // We can only access `self.attr` within the same thread,
-        // so there is no potential data race.
-        //
-        // We will only change fields about event config, this will
-        // not break any consumptions or states since these fields
-        // are never used elsewhere after the counter is initialized.
-        //
-        // The following ioctl op just copies the modified attr to kernel space,
-        // so we don't have to worry about the mutable reference.
-        let attr = unsafe { &mut *self.attr.get() };
-        attr.type_ = event_cfg.ty;
-        attr.config = event_cfg.config;
-        attr.__bindgen_anon_3.config1 = event_cfg.config1;
-        attr.__bindgen_anon_4.config2 = event_cfg.config2;
-        #[cfg(feature = "linux-6.3")]
-        (attr.config3 = event_cfg.config3);
-        attr.bp_type = event_cfg.bp_type;
+            // We can only access `self.attr` within the same thread,
+            // so there is no potential data race.
+            //
+            // We will only change fields about event config, this will
+            // not break any consumptions or states since these fields
+            // are never used elsewhere after the counter is initialized.
+            //
+            // The following ioctl op just copies the modified attr to kernel space,
+            // so we don't have to worry about the mutable reference.
+            let attr = unsafe { &mut *self.attr.get() };
+            attr.type_ = event_cfg.ty;
+            attr.config = event_cfg.config;
+            attr.__bindgen_anon_3.config1 = event_cfg.config1;
+            attr.__bindgen_anon_4.config2 = event_cfg.config2;
+            #[cfg(feature = "linux-6.3")]
+            (attr.config3 = event_cfg.config3);
+            attr.bp_type = event_cfg.bp_type;
 
-        ioctl_argp(&self.perf, b::PERF_IOC_OP_MODIFY_ATTRS as _, attr)?;
+            ioctl_argp(&self.perf, b::PERF_IOC_OP_MODIFY_ATTRS as _, attr)?;
 
-        Ok(())
-    }
-
-    #[cfg(not(feature = "linux-4.17"))]
-    pub fn switch_to<E>(&self, event: E) -> Result<()>
-    where
-        E: TryInto<Event, Error = io::Error>,
-    {
-        let _ = event;
-        Err(std::io::ErrorKind::Unsupported.into())
+            Ok(())
+        }
+        #[cfg(not(feature = "linux-4.17"))]
+        return {
+            let _ = event;
+            Err(std::io::ErrorKind::Unsupported.into())
+        };
     }
 }
