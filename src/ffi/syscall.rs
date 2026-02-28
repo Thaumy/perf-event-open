@@ -57,7 +57,8 @@ pub unsafe fn mmap(
     file: &File,
     offset: i64,
 ) -> Result<NonNull<()>> {
-    let ptr = libc::mmap(ptr as _, len, prot, flags, file.as_raw_fd(), offset);
+    let fd = file.as_raw_fd();
+    let ptr = libc::mmap(ptr as _, len, prot, flags, fd, offset);
     if ptr != libc::MAP_FAILED {
         Ok(unsafe { NonNull::new_unchecked(ptr as _) })
     } else {
@@ -84,7 +85,9 @@ pub fn epoll_create1(flags: i32) -> Result<File> {
 }
 
 pub fn epoll_ctl(epoll: &File, op: i32, file: &File, event: &mut epoll_event) -> Result<()> {
-    let result = unsafe { libc::epoll_ctl(epoll.as_raw_fd(), op, file.as_raw_fd(), event as _) };
+    let epfd = epoll.as_raw_fd();
+    let fd = file.as_raw_fd();
+    let result = unsafe { libc::epoll_ctl(epfd, op, fd, event as _) };
     if result != -1 {
         Ok(())
     } else {
@@ -97,14 +100,10 @@ pub fn epoll_wait<'a>(
     events: &'a mut [epoll_event],
     timeout: i32,
 ) -> Result<&'a [epoll_event]> {
-    let len = unsafe {
-        libc::epoll_wait(
-            epoll.as_raw_fd(),
-            events.as_mut_ptr(),
-            events.len() as _,
-            timeout,
-        )
-    };
+    let epfd = epoll.as_raw_fd();
+    let events_ptr = events.as_mut_ptr();
+    let events_len = events.len();
+    let len = unsafe { libc::epoll_wait(epfd, events_ptr, events_len as _, timeout) };
     if len != -1 {
         Ok(&events[..len as _])
     } else {
