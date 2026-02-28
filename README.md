@@ -73,7 +73,7 @@ On my machine, this gives the following output:
 For more use cases, please check the
 [docs](https://docs.rs/perf-event-open/latest/perf_event_open/).
 
-## Kernel compatibility
+## Compatibility
 
 Any Linux kernel since 4.0 is supported.
 
@@ -84,6 +84,10 @@ the target host kernel. These features are backwards compatible, e.g.
 The `legacy` feature is compatible with the oldest LTS kernel that still in
 maintaince, or you can use the `latest` feature if you dont't care about the
 kernel compatibility.
+
+Calling Linux-specific functions (e.g., `Counter::new`) on non-Linux targets
+will return an error, but configuration and profiling result types are
+cross-platform compatible.
 
 ## MSRV
 

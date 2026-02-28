@@ -9,8 +9,7 @@ use iter::{CowIter, Iter};
 use rb::Rb;
 use record::{Parser, UnsafeParser};
 
-use crate::ffi::syscall::ioctl_arg;
-use crate::ffi::{bindings as b, Attr, Metadata, PAGE_SIZE};
+use crate::ffi::{bindings as b, syscall, Attr, Metadata, PAGE_SIZE};
 
 mod arena;
 pub mod auxiliary;
@@ -130,7 +129,7 @@ impl Sampler {
     pub fn pause(&self) -> Result<()> {
         #[cfg(feature = "linux-4.7")]
         return {
-            ioctl_arg(&self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as _, 1)?;
+            syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as u64, 1)?;
             Ok(())
         };
         #[cfg(not(feature = "linux-4.7"))]
@@ -143,7 +142,7 @@ impl Sampler {
     pub fn resume(&self) -> Result<()> {
         #[cfg(feature = "linux-4.7")]
         return {
-            ioctl_arg(&self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as _, 0)?;
+            syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as u64, 0)?;
             Ok(())
         };
         #[cfg(not(feature = "linux-4.7"))]
@@ -266,7 +265,12 @@ impl Sampler {
     /// # unsafe { libc::exit(0) };
     /// ```
     pub fn enable_counter_with(&self, max_samples: u32) -> Result<()> {
-        ioctl_arg(&self.perf, b::PERF_IOC_OP_REFRESH as _, max_samples as _)?;
+        syscall!(
+            ioctl_arg,
+            &self.perf,
+            b::PERF_IOC_OP_REFRESH as u64,
+            max_samples as u64
+        )?;
         Ok(())
     }
 
@@ -276,7 +280,12 @@ impl Sampler {
     /// This means that the new frequency will be applied if the counter was
     /// created with [`SampleOn::Freq`][crate::config::SampleOn], and so will the count.
     pub fn sample_on(&self, freq_or_count: u64) -> Result<()> {
-        ioctl_arg(&self.perf, b::PERF_IOC_OP_PERIOD as _, freq_or_count)?;
+        syscall!(
+            ioctl_arg,
+            &self.perf,
+            b::PERF_IOC_OP_PERIOD as u64,
+            freq_or_count,
+        )?;
         Ok(())
     }
 

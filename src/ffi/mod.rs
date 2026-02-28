@@ -1,7 +1,22 @@
 use std::sync::LazyLock;
 
 pub mod bindings;
-pub mod syscall;
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub mod linux_syscall;
+
+macro_rules! syscall {
+    ($syscall:ident, $($arg:expr),* $(,)?) => {{
+        #[cfg(any(target_os = "linux", target_os = "android"))]
+        let val = $crate::ffi::linux_syscall::$syscall($($arg),*);
+        #[cfg(not(any(target_os = "linux", target_os = "android")))]
+        let val = {
+            $(let _ = $arg;)*
+            Err(std::io::Error::from(std::io::ErrorKind::Unsupported))
+        };
+        val
+    }};
+}
+pub(crate) use syscall;
 
 // Dereferences the pointer and offsets by the size of the
 // pointee type, then returns the dereferenced value.

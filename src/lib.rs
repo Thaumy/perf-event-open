@@ -40,7 +40,7 @@
 //! }
 //! ```
 //!
-//! ## Kernel compatibility
+//! ## Compatibility
 //!
 //! Any Linux kernel since 4.0 is supported.
 //!
@@ -51,6 +51,10 @@
 //! The `legacy` feature is compatible with the oldest LTS kernel that still in
 //! maintaince, or you can use the `latest` feature if you dont't care about the
 //! kernel compatibility.
+//!
+//! Calling Linux-specific functions (e.g., `Counter::new`) on non-Linux targets
+//! will return an error, but configuration and profiling result types are
+//! cross-platform compatible.
 
 pub mod config;
 pub mod count;

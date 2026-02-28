@@ -1,13 +1,10 @@
 use std::fs::File;
 use std::future::Future;
 use std::io::Result;
-use std::mem::{transmute, MaybeUninit};
 use std::pin::Pin;
-use std::sync::mpsc::{sync_channel, SyncSender};
+use std::sync::mpsc::SyncSender;
 use std::task::{Context, Poll, Waker};
-use std::thread;
 
-use crate::ffi::syscall::{epoll_create1, epoll_ctl, epoll_wait};
 use crate::sample::rb::{CowChunk, Rb};
 use crate::sample::record::Parser;
 
@@ -93,44 +90,58 @@ impl<'a> CowIter<'a> {
 
     /// Creates an asynchronous iterator.
     pub fn into_async(self) -> Result<AsyncCowIter<'a>> {
-        let epoll = epoll_create1(libc::O_CLOEXEC)?;
-        let mut event = libc::epoll_event {
-            events: (libc::EPOLLIN | libc::EPOLLHUP) as _,
-            u64: 0,
-        };
-        epoll_ctl(&epoll, libc::EPOLL_CTL_ADD, self.perf, &mut event)?;
+        #[cfg(any(target_os = "linux", target_os = "android"))]
+        return {
+            use std::mem::{transmute, MaybeUninit};
+            use std::sync::mpsc::sync_channel;
+            use std::thread;
 
-        let (tx, rx) = sync_channel::<Waker>(1);
+            use crate::ffi::linux_syscall::{epoll_create1, epoll_ctl, epoll_wait};
 
-        thread::spawn(move || {
-            let mut events = {
-                let src = [MaybeUninit::<libc::epoll_event>::uninit()];
-                // We don't care which event triggers epoll because we only monitor one event
-                // but `epoll_wait` requires a non-empty buffer
-                unsafe { transmute::<[_; 1], [_; 1]>(src) }
+            let epoll = epoll_create1(libc::O_CLOEXEC)?;
+            let mut event = libc::epoll_event {
+                events: (libc::EPOLLIN | libc::EPOLLHUP) as _,
+                u64: 0,
             };
-            'exit: while let Ok(waker) = rx.recv() {
-                loop {
-                    match epoll_wait(&epoll, &mut events, -1).map(|it| it[0].events as _) {
-                        Ok(libc::EPOLLIN) => {
-                            waker.wake();
-                            break;
+            epoll_ctl(&epoll, libc::EPOLL_CTL_ADD, self.perf, &mut event)?;
+
+            let (tx, rx) = sync_channel::<Waker>(1);
+
+            thread::spawn(move || {
+                let mut events = {
+                    let src = [MaybeUninit::<libc::epoll_event>::uninit()];
+                    // We don't care which event triggers epoll because we only monitor one event
+                    // but `epoll_wait` requires a non-empty buffer
+                    unsafe { transmute::<[_; 1], [_; 1]>(src) }
+                };
+                'exit: while let Ok(waker) = rx.recv() {
+                    loop {
+                        match epoll_wait(&epoll, &mut events, -1).map(|it| it[0].events as _) {
+                            Ok(libc::EPOLLIN) => {
+                                waker.wake();
+                                break;
+                            }
+                            Ok(libc::EPOLLHUP) => {
+                                drop(rx);
+                                waker.wake();
+                                break 'exit;
+                            }
+                            _ => (), // Error can only be `EINTR`, ignore it and try again.
                         }
-                        Ok(libc::EPOLLHUP) => {
-                            drop(rx);
-                            waker.wake();
-                            break 'exit;
-                        }
-                        _ => (), // Error can only be `EINTR`, ignore it and try again.
                     }
                 }
-            }
-        });
+            });
 
-        Ok(AsyncCowIter {
-            inner: self,
-            waker: tx,
-        })
+            Ok(AsyncCowIter {
+                inner: self,
+                waker: tx,
+            })
+        };
+        #[cfg(not(any(target_os = "linux", target_os = "android")))]
+        return {
+            let _ = self.perf;
+            Err(std::io::ErrorKind::Unsupported.into())
+        };
     }
 }
 
