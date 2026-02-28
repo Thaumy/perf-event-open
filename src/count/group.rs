@@ -10,8 +10,7 @@ use super::{Counter, Stat};
 use crate::config::sibling::attr::from;
 use crate::config::sibling::Opts;
 use crate::event::Event;
-use crate::ffi::bindings as b;
-use crate::ffi::syscall::{ioctl_arg, perf_event_open};
+use crate::ffi::{bindings as b, syscall};
 
 /// Counter group.
 ///
@@ -116,7 +115,14 @@ impl CounterGroup {
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L992
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12926
         let flags = leader.target.flags | b::PERF_FLAG_FD_CLOEXEC as u64;
-        let perf = perf_event_open(&attr, leader.target.pid, leader.target.cpu, group_fd, flags)?;
+        let perf = syscall!(
+            perf_event_open,
+            &attr,
+            leader.target.pid,
+            leader.target.cpu,
+            group_fd,
+            flags
+        )?;
         // `group::StatFormat` has no `PERF_FORMAT_GROUP` for sibling event,
         // so set `group_size` to 1 is safe.
         let read_buf = vec![0; Stat::read_buf_size(1, attr.read_format)];
@@ -153,30 +159,33 @@ impl CounterGroup {
 
     /// Enables all counters in the group.
     pub fn enable(&self) -> Result<()> {
-        ioctl_arg(
+        syscall!(
+            ioctl_arg,
             &self.leader.perf,
-            b::PERF_IOC_OP_ENABLE as _,
-            b::PERF_IOC_FLAG_GROUP as _,
+            b::PERF_IOC_OP_ENABLE as u64,
+            b::PERF_IOC_FLAG_GROUP as u64,
         )?;
         Ok(())
     }
 
     /// Disables all counters in the group.
     pub fn disable(&self) -> Result<()> {
-        ioctl_arg(
+        syscall!(
+            ioctl_arg,
             &self.leader.perf,
-            b::PERF_IOC_OP_DISABLE as _,
-            b::PERF_IOC_FLAG_GROUP as _,
+            b::PERF_IOC_OP_DISABLE as u64,
+            b::PERF_IOC_FLAG_GROUP as u64,
         )?;
         Ok(())
     }
 
     /// Clears the counts of all counters in the group.
     pub fn clear_count(&self) -> Result<()> {
-        ioctl_arg(
+        syscall!(
+            ioctl_arg,
             &self.leader.perf,
-            b::PERF_IOC_OP_RESET as _,
-            b::PERF_IOC_FLAG_GROUP as _,
+            b::PERF_IOC_OP_RESET as u64,
+            b::PERF_IOC_FLAG_GROUP as u64,
         )?;
         Ok(())
     }

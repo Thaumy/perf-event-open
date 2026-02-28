@@ -13,9 +13,6 @@ const HEADERS_DIR: &str = "headers";
 const BINDINGS_DIR: &str = "src/ffi/bindings";
 
 fn main() -> Result<()> {
-    #[cfg(not(any(target_os = "linux", target_os = "android")))]
-    unimplemented!("`perf_event_open` syscall can only be used in linux or android target");
-
     println!("cargo:rerun-if-changed={}", BINDINGS_DIR);
 
     if Path::new(BINDINGS_DIR).exists() {

@@ -11,8 +11,7 @@ use super::sample::Sampler;
 use crate::config::attr::from;
 use crate::config::{Opts, Target};
 use crate::event::Event;
-use crate::ffi::syscall::{ioctl_arg, ioctl_argp, perf_event_open, prctl, read};
-use crate::ffi::{bindings as b, Attr};
+use crate::ffi::{bindings as b, syscall, Attr};
 
 pub mod group;
 mod stat;
@@ -92,7 +91,7 @@ impl Counter {
         let target = target.into();
         let attr = from(event.try_into()?.0, opts.borrow())?;
         let flags = target.flags | b::PERF_FLAG_FD_CLOEXEC as u64;
-        let perf = perf_event_open(&attr, target.pid, target.cpu, -1, flags)?;
+        let perf = syscall!(perf_event_open, &attr, target.pid, target.cpu, -1, flags)?;
         // Now there is only one event in the group, if in the future
         // this counter becomes the group leader, `CounterGroup::add`
         // will allocate a new buffer if `PERF_FORMAT_GROUP` is enabled.
@@ -108,12 +107,18 @@ impl Counter {
 
     /// Enables all counters created by the current process.
     pub fn enable_all() -> Result<()> {
-        prctl(libc::PR_TASK_PERF_EVENTS_ENABLE)
+        #[cfg(any(target_os = "linux", target_os = "android"))]
+        return crate::ffi::linux_syscall::prctl(libc::PR_TASK_PERF_EVENTS_ENABLE);
+        #[cfg(not(any(target_os = "linux", target_os = "android")))]
+        return Err(std::io::ErrorKind::Unsupported.into());
     }
 
     /// Disables all counters created by the current process.
     pub fn disable_all() -> Result<()> {
-        prctl(libc::PR_TASK_PERF_EVENTS_DISABLE)
+        #[cfg(any(target_os = "linux", target_os = "android"))]
+        return crate::ffi::linux_syscall::prctl(libc::PR_TASK_PERF_EVENTS_DISABLE);
+        #[cfg(not(any(target_os = "linux", target_os = "android")))]
+        return Err(std::io::ErrorKind::Unsupported.into());
     }
 
     /// Create a sampler for this counter.
@@ -163,7 +168,7 @@ impl Counter {
     /// This is the same as [`Stat::id`], [`SiblingStat::id`] and [`RecordId::id`][crate::sample::record::RecordId::id].
     pub fn id(&self) -> Result<u64> {
         let mut id = 0;
-        ioctl_argp(&self.perf, b::PERF_IOC_OP_ID as _, &mut id)?;
+        syscall!(ioctl_argp, &self.perf, b::PERF_IOC_OP_ID as u64, &mut id)?;
         Ok(id)
     }
 
@@ -171,7 +176,7 @@ impl Counter {
     ///
     /// Counter will start to accumulate event counts.
     pub fn enable(&self) -> Result<()> {
-        ioctl_arg(&self.perf, b::PERF_IOC_OP_ENABLE as _, 0)?;
+        syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_ENABLE as u64, 0)?;
         Ok(())
     }
 
@@ -179,7 +184,7 @@ impl Counter {
     ///
     /// Counter will stop to accumulate event counts.
     pub fn disable(&self) -> Result<()> {
-        ioctl_arg(&self.perf, b::PERF_IOC_OP_DISABLE as _, 0)?;
+        syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_DISABLE as u64, 0)?;
         Ok(())
     }
 
@@ -188,7 +193,7 @@ impl Counter {
     /// This will only clear the event counts in the statistics,
     /// other fields (such as `time_enabled`) are not affected.
     pub fn clear_count(&self) -> Result<()> {
-        ioctl_arg(&self.perf, b::PERF_IOC_OP_RESET as _, 0)?;
+        syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_RESET as u64, 0)?;
         Ok(())
     }
 
@@ -198,7 +203,7 @@ impl Counter {
         // since `Counter` is not `Sync`.
         let buf = unsafe { &mut *self.read_buf.get() };
 
-        read(&self.perf, buf)?;
+        syscall!(read, &self.perf, buf)?;
         let buf = buf.as_mut_slice();
         let buf = unsafe { transmute::<&mut [_], &mut [u8]>(buf) };
 
@@ -216,10 +221,11 @@ impl Counter {
     /// The argument is a BPF program file that was created by a previous
     /// [`bpf`](https://man7.org/linux/man-pages/man2/bpf.2.html) system call.
     pub fn attach_bpf(&self, file: &File) -> Result<()> {
-        ioctl_arg(
+        syscall!(
+            ioctl_arg,
             &self.perf,
-            b::PERF_IOC_OP_SET_BPF as _,
-            file.as_raw_fd() as _,
+            b::PERF_IOC_OP_SET_BPF as u64,
+            file.as_raw_fd() as u64,
         )?;
         Ok(())
     }
@@ -246,12 +252,13 @@ impl Counter {
             let mut buf = vec![MaybeUninit::uninit(); (2 + buf_len) as _];
             buf[0] = MaybeUninit::new(buf_len); // set `ids_len`
 
-            match ioctl_argp(
+            match syscall!(
+                ioctl_argp,
                 &self.perf,
-                b::PERF_IOC_OP_QUERY_BPF as _,
+                b::PERF_IOC_OP_QUERY_BPF as u64,
                 buf.as_mut_slice(),
             ) {
-                Ok(_) => {
+                Ok::<i32, _>(_) => {
                     let prog_cnt = unsafe { buf[1].assume_init() };
 
                     let ids = buf[2..2 + (prog_cnt as usize)].to_vec();
@@ -294,7 +301,12 @@ impl Counter {
         // so we don't have to worry about the mutable reference.
         let argp = unsafe { &mut *ptr };
 
-        ioctl_argp(&self.perf, b::PERF_IOC_OP_SET_FILTER as _, argp)?;
+        syscall!(
+            ioctl_argp,
+            &self.perf,
+            b::PERF_IOC_OP_SET_FILTER as u64,
+            argp
+        )?;
         Ok(())
     }
 
@@ -332,7 +344,12 @@ impl Counter {
             (attr.config3 = event_cfg.config3);
             attr.bp_type = event_cfg.bp_type;
 
-            ioctl_argp(&self.perf, b::PERF_IOC_OP_MODIFY_ATTRS as _, attr)?;
+            syscall!(
+                ioctl_argp,
+                &self.perf,
+                b::PERF_IOC_OP_MODIFY_ATTRS as u64,
+                attr
+            )?;
 
             Ok(())
         }
