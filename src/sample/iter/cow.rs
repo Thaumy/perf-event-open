@@ -92,7 +92,7 @@ impl<'a> CowIter<'a> {
     pub fn into_async(self) -> Result<AsyncCowIter<'a>> {
         #[cfg(any(target_os = "linux", target_os = "android"))]
         return {
-            use std::mem::{transmute, MaybeUninit};
+            use std::mem::MaybeUninit;
             use std::sync::mpsc::sync_channel;
             use std::thread;
 
@@ -108,12 +108,10 @@ impl<'a> CowIter<'a> {
             let (tx, rx) = sync_channel::<Waker>(1);
 
             thread::spawn(move || {
-                let mut events = {
-                    let src = [MaybeUninit::<libc::epoll_event>::uninit()];
-                    // We don't care which event triggers epoll because we only monitor one event
-                    // but `epoll_wait` requires a non-empty buffer
-                    unsafe { transmute::<[_; 1], [_; 1]>(src) }
-                };
+                // We don't care which event triggers epoll because we only monitor one event
+                // but `epoll_wait` requires a non-empty buffer
+                let mut events = [MaybeUninit::uninit()];
+
                 'exit: while let Ok(waker) = rx.recv() {
                     loop {
                         match epoll_wait(&epoll, &mut events, -1).map(|it| it[0].events as _) {

@@ -1,7 +1,9 @@
 use std::fs::File;
 use std::io::{Error, Result};
+use std::mem::MaybeUninit;
 use std::os::fd::{AsRawFd, FromRawFd};
 use std::ptr::NonNull;
+use std::slice;
 
 use libc::epoll_event;
 
@@ -97,15 +99,15 @@ pub fn epoll_ctl(epoll: &File, op: i32, file: &File, event: &mut epoll_event) ->
 
 pub fn epoll_wait<'a>(
     epoll: &File,
-    events: &'a mut [epoll_event],
+    events: &'a mut [MaybeUninit<epoll_event>],
     timeout: i32,
 ) -> Result<&'a [epoll_event]> {
     let epfd = epoll.as_raw_fd();
-    let events_ptr = events.as_mut_ptr();
+    let events_ptr = events.as_mut_ptr() as *mut _;
     let events_len = events.len();
     let len = unsafe { libc::epoll_wait(epfd, events_ptr, events_len as _, timeout) };
     if len != -1 {
-        Ok(&events[..len as _])
+        Ok(unsafe { slice::from_raw_parts(events_ptr, len as _) })
     } else {
         Err(Error::last_os_error())
     }
