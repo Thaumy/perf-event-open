@@ -113,6 +113,24 @@ pub fn epoll_wait<'a>(
     }
 }
 
+pub fn eventfd(initval: u32, flags: i32) -> Result<File> {
+    let fd = unsafe { libc::eventfd(initval, flags) };
+    if fd != -1 {
+        Ok(unsafe { File::from_raw_fd(fd as _) })
+    } else {
+        Err(Error::last_os_error())
+    }
+}
+
+pub fn eventfd_write(event: &File, value: u64) -> Result<()> {
+    let result = unsafe { libc::eventfd_write(event.as_raw_fd(), value) };
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(Error::last_os_error())
+    }
+}
+
 pub fn prctl(option: i32) -> Result<()> {
     let result = unsafe { libc::prctl(option) };
     if result != -1 {

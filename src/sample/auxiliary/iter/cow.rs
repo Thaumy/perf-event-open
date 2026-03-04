@@ -3,9 +3,13 @@ use std::future::Future;
 use std::io::Result;
 use std::num::NonZeroUsize;
 use std::pin::Pin;
-use std::sync::mpsc::SyncSender;
-use std::task::{Context, Poll, Waker};
+use std::sync::atomic::{AtomicU8, Ordering};
+use std::sync::Arc;
+use std::task::{Context, Poll};
 
+use futures::task::AtomicWaker;
+
+use crate::ffi::syscall;
 use crate::sample::auxiliary::rb::Rb;
 use crate::sample::rb::CowChunk;
 
@@ -39,10 +43,10 @@ impl<'a> CowIter<'a> {
         #[cfg(any(target_os = "linux", target_os = "android"))]
         return {
             use std::mem::MaybeUninit;
-            use std::sync::mpsc::sync_channel;
+            use std::sync::atomic::{AtomicU8, Ordering};
             use std::thread;
 
-            use crate::ffi::linux_syscall::{epoll_create1, epoll_ctl, epoll_wait};
+            use crate::ffi::linux_syscall::{epoll_create1, epoll_ctl, epoll_wait, eventfd};
 
             let epoll = epoll_create1(libc::O_CLOEXEC)?;
             let mut event = libc::epoll_event {
@@ -51,35 +55,51 @@ impl<'a> CowIter<'a> {
             };
             epoll_ctl(&epoll, libc::EPOLL_CTL_ADD, self.perf, &mut event)?;
 
-            let (tx, rx) = sync_channel::<Waker>(1);
+            let close = eventfd(0, libc::EFD_NONBLOCK | libc::EFD_CLOEXEC)?;
+            let mut event = libc::epoll_event {
+                events: libc::EPOLLIN as _,
+                u64: 1,
+            };
+            epoll_ctl(&epoll, libc::EPOLL_CTL_ADD, &close, &mut event)?;
 
-            thread::spawn(move || {
-                // We don't care which event triggers epoll because we only monitor one event
-                // but `epoll_wait` requires a non-empty buffer
-                let mut events = [MaybeUninit::uninit()];
+            let wait = Arc::new(Wait {
+                close,
+                state: AtomicU8::new(Wait::STATE_WAIT),
+                waker: AtomicWaker::new(),
+            });
 
-                'exit: while let Ok(waker) = rx.recv() {
+            thread::spawn({
+                let wait = Arc::clone(&wait);
+                move || {
+                    let mut events = [MaybeUninit::uninit()];
+
                     loop {
-                        match epoll_wait(&epoll, &mut events, -1).map(|it| it[0].events as _) {
-                            Ok(libc::EPOLLIN) => {
-                                waker.wake();
+                        let Ok(event) = epoll_wait(&epoll, &mut events, -1).map(|it| &it[0]) else {
+                            continue; // Error can only be `EINTR`, ignore it and try again.
+                        };
+                        if event.u64 == 1 {
+                            break; // Async iter was dropped.
+                        }
+                        match event.events as _ {
+                            libc::EPOLLIN => {
+                                wait.state.store(Wait::STATE_WAKE, Ordering::Relaxed);
+                                wait.waker.wake();
+                            }
+                            libc::EPOLLHUP => {
+                                wait.state.store(Wait::STATE_HANG, Ordering::Relaxed);
+                                wait.waker.wake();
                                 break;
                             }
-                            Ok(libc::EPOLLHUP) => {
-                                drop(rx);
-                                waker.wake();
-                                break 'exit;
-                            }
-                            _ => (), // Error can only be `EINTR`, ignore it and try again.
+                            #[cfg(debug_assertions)]
+                            _ => unreachable!(),
+                            #[cfg(not(debug_assertions))]
+                            _ => unsafe { std::hint::unreachable_unchecked() },
                         }
                     }
                 }
             });
 
-            Ok(AsyncCowIter {
-                inner: self,
-                waker: tx,
-            })
+            Ok(AsyncCowIter { inner: self, wait })
         };
         #[cfg(not(any(target_os = "linux", target_os = "android")))]
         return {
@@ -89,10 +109,22 @@ impl<'a> CowIter<'a> {
     }
 }
 
+pub struct Wait {
+    close: File,
+    state: AtomicU8,
+    waker: AtomicWaker,
+}
+
+impl Wait {
+    const STATE_WAIT: u8 = 0;
+    const STATE_WAKE: u8 = 1;
+    const STATE_HANG: u8 = 2;
+}
+
 /// Asynchronous COW AUX area iterator.
 pub struct AsyncCowIter<'a> {
     inner: CowIter<'a>,
-    waker: SyncSender<Waker>,
+    wait: Arc<Wait>,
 }
 
 impl AsyncCowIter<'_> {
@@ -119,12 +151,35 @@ impl AsyncCowIter<'_> {
             return Poll::Ready(Some(f(cc)));
         }
 
-        let waker = cx.waker().clone();
-        match this.waker.send(waker) {
-            Ok(()) => Poll::Pending,
-            // The task we were monitoring exited, so the epoll thread died.
-            // No more data needs to be produced.
-            Err(_) => Poll::Ready(None),
+        let wait = &this.wait;
+
+        wait.waker.register(cx.waker());
+        loop {
+            break match wait.state.compare_exchange_weak(
+                Wait::STATE_WAKE,
+                Wait::STATE_WAIT,
+                Ordering::Relaxed,
+                Ordering::Relaxed,
+            ) {
+                Err(Wait::STATE_WAIT) => Poll::Pending,
+                Ok(Wait::STATE_WAKE) => {
+                    if let Some(cc) = this.inner.rb.lending_pop(max_chunk_len) {
+                        Poll::Ready(Some(f(cc)))
+                    } else {
+                        Poll::Pending
+                    }
+                }
+                Err(Wait::STATE_WAKE) => {
+                    continue; // Spurious fail, try again.
+                }
+                Err(Wait::STATE_HANG) => {
+                    Poll::Ready(this.inner.rb.lending_pop(max_chunk_len).map(f))
+                }
+                #[cfg(debug_assertions)]
+                _ => unreachable!(),
+                #[cfg(not(debug_assertions))]
+                _ => unsafe { std::hint::unreachable_unchecked() },
+            };
         }
     }
 
@@ -163,5 +218,11 @@ impl AsyncCowIter<'_> {
         }
 
         Fut(self, Some(f), max_chunk_len).await
+    }
+}
+
+impl Drop for AsyncCowIter<'_> {
+    fn drop(&mut self) {
+        let _: Result<()> = syscall!(eventfd_write, &self.wait.close, 1);
     }
 }

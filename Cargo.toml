@@ -52,6 +52,7 @@ build = "build/main.rs"
 [dependencies]
 libc = "0.2"
 serde = { version = "1", features = ["derive"], optional = true }
+futures = "0.3"
 arrayvec = "0.7"
 thiserror = "2"
 
