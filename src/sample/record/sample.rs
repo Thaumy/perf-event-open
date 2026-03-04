@@ -6,7 +6,8 @@ use crate::ffi::{bindings as b, deref_offset};
 
 /// Sample.
 ///
-/// Fields can be enabled via [`SampleFormat`][crate::config::SampleFormat].
+/// Fields can be enabled via [`SampleFormat`][crate::config::SampleFormat],
+/// but enabled fields may still be `None` for compatibility reasons.
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Sample {
@@ -362,7 +363,7 @@ unsafe fn parse_regs(ptr: &mut *const u8, len: usize) -> Option<(Vec<u64>, Abi)>
     let abi = match abi {
         b::PERF_SAMPLE_REGS_ABI_32 => Abi::_32,
         b::PERF_SAMPLE_REGS_ABI_64 => Abi::_64,
-        _ => unimplemented!(),
+        _ => return None,
     };
 
     Some((regs.to_vec(), abi))
