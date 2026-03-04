@@ -461,7 +461,10 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
                 b::PERF_BR_SPEC_WRONG_PATH => BranchSpec::Wrong,
                 b::PERF_BR_NON_SPEC_CORRECT_PATH => BranchSpec::NoSpecCorrect,
                 b::PERF_BR_SPEC_CORRECT_PATH => BranchSpec::Correct,
+                #[cfg(debug_assertions)]
                 _ => unreachable!(),
+                #[cfg(not(debug_assertions))]
+                _ => unsafe { std::hint::unreachable_unchecked() },
             },
             #[cfg(not(feature = "linux-6.1"))]
             branch_spec: BranchSpec::Na,
