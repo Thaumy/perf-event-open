@@ -8,7 +8,7 @@ use super::{get_retprobe_bit, get_type, DynamicPmu, Error};
 use crate::event::Event;
 
 const TYPE_PATH: &str = "/sys/bus/event_source/devices/uprobe/type";
-const RETPROBE_PATH: &str = "/sys/bus/event_source/devices/kprobe/format/retprobe";
+const RETPROBE_PATH: &str = "/sys/bus/event_source/devices/uprobe/format/retprobe";
 
 /// User probe event
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
