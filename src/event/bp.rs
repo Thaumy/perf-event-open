@@ -99,7 +99,7 @@ super::try_from!(Breakpoint, value, {
     let event_cfg = EventConfig {
         ty: b::PERF_TYPE_BREAKPOINT,
         config: 0,
-        config1: 0,
+        config1: value.addr,
         config2: bp_len,
         config3: 0,
         bp_type,
