@@ -486,13 +486,14 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
     }
 
     let layouts = slice::from_raw_parts(*ptr as *const Layout, len).iter();
+    *ptr = ptr.add(len * size_of::<Layout>());
+
     // https://github.com/torvalds/linux/commit/571d91dcadfa3cef499010b4eddb9b58b0da4d24
     #[cfg(feature = "linux-6.8")]
     let has_counters = branch_sample_type & b::PERF_SAMPLE_BRANCH_COUNTERS as u64 > 0;
     #[cfg(not(feature = "linux-6.8"))]
     let has_counters = false;
     let entries = if has_counters {
-        *ptr = ptr.add(len * size_of::<Layout>());
         layouts
             .map(|it| to_entry(it, Some(deref_offset(ptr))))
             .collect()
