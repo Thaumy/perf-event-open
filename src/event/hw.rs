@@ -113,7 +113,17 @@ super::try_from!(Hardware, value, {
                 OpResult::Miss => b::PERF_COUNT_HW_CACHE_RESULT_MISS,
                 OpResult::Access => b::PERF_COUNT_HW_CACHE_RESULT_ACCESS,
             } as u64;
-            id | (op << 8) | (op_result << 16)
+
+            let event_config = EventConfig {
+                ty: b::PERF_TYPE_HW_CACHE,
+                config: id | (op << 8) | (op_result << 16),
+                config1: 0,
+                config2: 0,
+                config3: 0,
+                bp_type: 0,
+            };
+
+            return Ok(Self(event_config));
         }
 
         Hardware::CacheMiss => b::PERF_COUNT_HW_CACHE_MISSES as _,
