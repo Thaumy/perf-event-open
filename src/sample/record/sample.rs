@@ -900,10 +900,10 @@ pub struct Txn {
     /// Conflicts with other threads.
     pub conflict: bool,
     // PERF_TXN_CAPACITY_READ
-    /// Transaction write capacity overflow.
+    /// Transaction read capacity overflow.
     pub capacity_read: bool,
     // PERF_TXN_CAPACITY_WRITE
-    /// Transaction read capacity overflow.
+    /// Transaction write capacity overflow.
     pub capacity_write: bool,
     // (flags & PERF_TXN_ABORT_MASK) >> PERF_TXN_ABORT_SHIFT
     /// User-specified abort code.
