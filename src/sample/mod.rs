@@ -105,7 +105,7 @@ impl Sampler {
     /// Create an AUX tracer for this sampler.
     ///
     /// The AUX tracer needs a ring-buffer to store data,
-    /// and 1 + 2^`exp` pages will be allocated for this.
+    /// and 2^`exp` pages will be allocated for this.
     ///
     /// Multiple calls to this method just duplicates the existing AUX tracer,
     /// AUX tracers from the same sampler shares the same ring-buffer in the
