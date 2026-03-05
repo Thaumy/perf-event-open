@@ -59,6 +59,8 @@ impl Namespaces {
         mut ptr: *const u8,
         sample_id_all: Option<super::SampleType>,
     ) -> Self {
+        use std::slice;
+
         use super::SampleType;
         use crate::ffi::{bindings as b, deref_offset};
 
@@ -77,6 +79,8 @@ impl Namespaces {
             tid: deref_offset(&mut ptr),
         };
 
+        let nr_namespaces: u64 = deref_offset(&mut ptr);
+
         #[repr(C)]
         #[derive(Clone, Copy)]
         struct Layout {
@@ -91,7 +95,7 @@ impl Namespaces {
                 }
             }
         }
-        let nss: [Layout; b::NR_NAMESPACES as _] = deref_offset(&mut ptr);
+        let nss: &[Layout] = slice::from_raw_parts(ptr as _, nr_namespaces as _);
 
         let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
 
