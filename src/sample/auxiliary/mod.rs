@@ -81,7 +81,17 @@ impl<'a> AuxTracer<'a> {
     pub(crate) fn new(perf: &'a File, metadata: &'a mut Metadata, exp: u8) -> Result<Self> {
         #[cfg(feature = "linux-4.1")]
         return {
-            metadata.aux_size = (2_usize.pow(exp as _) * *crate::ffi::PAGE_SIZE) as _;
+            use std::io::Error;
+
+            use crate::ffi::PAGE_SIZE;
+
+            let Some(len) = 2_usize
+                .checked_pow(exp as u32)
+                .and_then(|n| n.checked_mul(*PAGE_SIZE))
+            else {
+                return Err(Error::other("allocation size overflow"));
+            };
+            metadata.aux_size = len as _;
             metadata.aux_offset = metadata.data_offset + metadata.data_size;
 
             let arena = Arena::new(perf, metadata.aux_size as _, metadata.aux_offset as _)?;
