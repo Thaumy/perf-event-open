@@ -24,7 +24,7 @@ impl Cpu {
 ///
 /// Construct with pid or tid.
 ///
-/// `Proc(0)` indicates the current process.
+/// `Proc(0)` indicates the current thread.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Proc(pub u32);
@@ -35,7 +35,7 @@ impl Proc {
     /// This is an alias for [`All`].
     pub const ALL: All = All;
 
-    /// Monitor current process.
+    /// Monitor the current thread.
     pub const CURRENT: Proc = Proc(0);
 }
 
