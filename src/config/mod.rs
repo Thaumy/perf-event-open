@@ -819,6 +819,9 @@ pub struct WakeUp {
 
 /// When to wake up asynchronous iterators.
 ///
+/// This threshold is a hint from user. The kernel reserves the right
+/// to perform wake-ups independently based on its own scheduling policies.
+///
 /// "wake up" means notifying the async runtime to schedule the
 /// asynchronous iterator's future to be pulled in the next round.
 ///
@@ -860,12 +863,15 @@ pub struct WakeUp {
 pub enum WakeUpOn {
     /// Wake up on every N bytes available.
     ///
-    /// `Bytes(0)` means never wake up.
+    /// When set to zero, the kernel automatically determines the wake-up
+    /// threshold (typically half the ring buffer size). Values exceeding the
+    /// ring buffer size are capped to the buffer's size.
     Bytes(u64),
 
     /// Wake up on every N samples available.
     ///
-    /// `Samples(0)` means never wake up.
+    /// The kernel may still trigger a wake-up earlier, typically when the
+    /// ring buffer usage reaches half its size in bytes.
     Samples(u64),
 }
 
