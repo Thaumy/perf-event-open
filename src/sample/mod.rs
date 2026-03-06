@@ -204,7 +204,7 @@ impl Sampler {
     /// use std::os::fd::AsRawFd;
     /// use std::ptr::null_mut;
     /// use std::sync::atomic::AtomicBool;
-    /// use std::sync::atomic::Ordering as MemOrd;
+    /// use std::sync::atomic::Ordering;
     ///
     /// const MAX_SAMPLES: usize = 3;
     ///
@@ -231,8 +231,8 @@ impl Sampler {
     /// fn handler(num: i32, info: *const libc::siginfo_t) {
     ///     assert_eq!(num, libc::SIGIO);
     ///     match unsafe { *info }.si_code {
-    ///         1 => IN.store(true, MemOrd::Relaxed),  // POLL_IN
-    ///         6 => HUP.store(true, MemOrd::Relaxed), // POLL_HUP
+    ///         1 => IN.store(true, Ordering::Relaxed),  // POLL_IN
+    ///         6 => HUP.store(true, Ordering::Relaxed), // POLL_HUP
     ///         _ => unreachable!(),
     ///     }
     /// }
@@ -250,8 +250,8 @@ impl Sampler {
     ///
     /// let iter = &mut sampler.iter();
     /// let mut count = 0;
-    /// while !HUP.load(MemOrd::Relaxed) {
-    ///     while IN.swap(false, MemOrd::Relaxed) {
+    /// while !HUP.load(Ordering::Relaxed) {
+    ///     while IN.swap(false, Ordering::Relaxed) {
     ///         count += iter.count();
     ///     }
     /// }
