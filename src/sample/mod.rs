@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{Error, Result};
+use std::ptr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
@@ -293,12 +294,15 @@ impl Sampler {
     /// This means that the new frequency will be applied if the counter was
     /// created with [`SampleOn::Freq`][crate::config::SampleOn], and so will the count.
     pub fn sample_on(&self, freq_or_count: u64) -> Result<()> {
+        // The following ioctl op simply copies the value to
+        // kernel space, so it does not violate immutability.
+        let addr = ptr::from_ref(&freq_or_count) as u64;
         syscall!(
             unsafe,
             ioctl_arg,
             &self.perf,
             b::PERF_IOC_OP_PERIOD as u64,
-            freq_or_count,
+            addr,
         )?;
         Ok(())
     }
