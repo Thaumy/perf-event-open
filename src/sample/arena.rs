@@ -1,7 +1,9 @@
 use std::fs::File;
 use std::io::Result;
-use std::ptr::NonNull;
+use std::ptr::{null_mut, NonNull};
 use std::slice;
+
+use crate::ffi::syscall;
 
 pub struct Arena {
     ptr: NonNull<u8>,
@@ -10,32 +12,24 @@ pub struct Arena {
 
 impl Arena {
     pub fn new(file: &File, len: usize, offset: usize) -> Result<Self> {
-        #[cfg(any(target_os = "linux", target_os = "android"))]
-        return {
-            let prot = libc::PROT_READ | libc::PROT_WRITE;
-            // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6582
-            let flags = libc::MAP_SHARED;
-            let ptr = unsafe {
-                crate::ffi::linux_syscall::mmap(
-                    std::ptr::null_mut(),
-                    len,
-                    prot,
-                    flags,
-                    file,
-                    offset as _,
-                )
-            }?
-            .cast();
+        let prot = libc::PROT_READ | libc::PROT_WRITE;
+        // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6582
+        let flags = libc::MAP_SHARED;
+        let ptr: NonNull<()> = syscall!(
+            unsafe,
+            mmap,
+            null_mut::<()>(),
+            len,
+            prot,
+            flags,
+            file,
+            offset as i64,
+        )?;
 
-            Ok(Self { ptr, len })
-        };
-        #[cfg(not(any(target_os = "linux", target_os = "android")))]
-        return {
-            let _ = file;
-            let _ = len;
-            let _ = offset;
-            Err(std::io::ErrorKind::Unsupported.into())
-        };
+        Ok(Self {
+            ptr: ptr.cast(),
+            len,
+        })
     }
 
     pub fn as_slice(&self) -> &[u8] {
@@ -45,14 +39,11 @@ impl Arena {
 
 impl Drop for Arena {
     fn drop(&mut self) {
-        #[cfg(any(target_os = "linux", target_os = "android"))]
-        if let Err(e) =
-            unsafe { crate::ffi::linux_syscall::munmap(self.ptr.as_ptr() as _, self.len) }
+        if let Result::<()>::Err(e) =
+            syscall!(unsafe, munmap, self.ptr.as_ptr() as *mut (), self.len)
         {
             panic!("Failed to unmap arena: {}", e)
         }
-        #[cfg(not(any(target_os = "linux", target_os = "android")))]
-        panic!("Failed to unmap arena: {}", std::io::ErrorKind::Unsupported);
     }
 }
 

@@ -5,6 +5,16 @@ pub mod bindings;
 pub mod linux_syscall;
 
 macro_rules! syscall {
+    (unsafe, $syscall:ident, $($arg:expr),* $(,)?) => {{
+        #[cfg(any(target_os = "linux", target_os = "android"))]
+        let val = unsafe { $crate::ffi::linux_syscall::$syscall($($arg),*) };
+        #[cfg(not(any(target_os = "linux", target_os = "android")))]
+        let val = {
+            $(let _ = $arg;)*
+            Err(std::io::Error::from(std::io::ErrorKind::Unsupported))
+        };
+        val
+    }};
     ($syscall:ident, $($arg:expr),* $(,)?) => {{
         #[cfg(any(target_os = "linux", target_os = "android"))]
         let val = $crate::ffi::linux_syscall::$syscall($($arg),*);
