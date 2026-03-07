@@ -160,6 +160,7 @@ impl CounterGroup {
     /// Enables all counters in the group.
     pub fn enable(&self) -> Result<()> {
         syscall!(
+            unsafe,
             ioctl_arg,
             &self.leader.perf,
             b::PERF_IOC_OP_ENABLE as u64,
@@ -171,6 +172,7 @@ impl CounterGroup {
     /// Disables all counters in the group.
     pub fn disable(&self) -> Result<()> {
         syscall!(
+            unsafe,
             ioctl_arg,
             &self.leader.perf,
             b::PERF_IOC_OP_DISABLE as u64,
@@ -182,6 +184,7 @@ impl CounterGroup {
     /// Clears the counts of all counters in the group.
     pub fn clear_count(&self) -> Result<()> {
         syscall!(
+            unsafe,
             ioctl_arg,
             &self.leader.perf,
             b::PERF_IOC_OP_RESET as u64,

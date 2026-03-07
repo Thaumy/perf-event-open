@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::{self, Error, ErrorKind, Result};
 use std::mem::transmute;
 use std::os::fd::AsRawFd;
+use std::ptr;
 use std::sync::Arc;
 
 use super::sample::Sampler;
@@ -168,7 +169,16 @@ impl Counter {
     /// This is the same as [`Stat::id`], [`SiblingStat::id`] and [`RecordId::id`][crate::sample::record::RecordId::id].
     pub fn id(&self) -> Result<u64> {
         let mut id = 0;
-        syscall!(ioctl_argp, &self.perf, b::PERF_IOC_OP_ID as u64, &mut id)?;
+
+        let id_addr = ptr::from_mut(&mut id) as u64;
+        syscall!(
+            unsafe,
+            ioctl_arg,
+            &self.perf,
+            b::PERF_IOC_OP_ID as u64,
+            id_addr
+        )?;
+
         Ok(id)
     }
 
@@ -176,7 +186,13 @@ impl Counter {
     ///
     /// Counter will start to accumulate event counts.
     pub fn enable(&self) -> Result<()> {
-        syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_ENABLE as u64, 0)?;
+        syscall!(
+            unsafe,
+            ioctl_arg,
+            &self.perf,
+            b::PERF_IOC_OP_ENABLE as u64,
+            0
+        )?;
         Ok(())
     }
 
@@ -184,7 +200,13 @@ impl Counter {
     ///
     /// Counter will stop to accumulate event counts.
     pub fn disable(&self) -> Result<()> {
-        syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_DISABLE as u64, 0)?;
+        syscall!(
+            unsafe,
+            ioctl_arg,
+            &self.perf,
+            b::PERF_IOC_OP_DISABLE as u64,
+            0
+        )?;
         Ok(())
     }
 
@@ -193,7 +215,13 @@ impl Counter {
     /// This will only clear the event counts in the statistics,
     /// other fields (such as `time_enabled`) are not affected.
     pub fn clear_count(&self) -> Result<()> {
-        syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_RESET as u64, 0)?;
+        syscall!(
+            unsafe,
+            ioctl_arg,
+            &self.perf,
+            b::PERF_IOC_OP_RESET as u64,
+            0
+        )?;
         Ok(())
     }
 
@@ -221,11 +249,13 @@ impl Counter {
     /// The argument is a BPF program file that was created by a previous
     /// [`bpf`](https://man7.org/linux/man-pages/man2/bpf.2.html) system call.
     pub fn attach_bpf(&self, file: &File) -> Result<()> {
+        let fd = file.as_raw_fd();
         syscall!(
+            unsafe,
             ioctl_arg,
             &self.perf,
             b::PERF_IOC_OP_SET_BPF as u64,
-            file.as_raw_fd() as u64,
+            fd as u64,
         )?;
         Ok(())
     }
@@ -252,11 +282,13 @@ impl Counter {
             let mut buf = vec![MaybeUninit::uninit(); (2 + buf_len) as _];
             buf[0] = MaybeUninit::new(buf_len); // set `ids_len`
 
+            let buf_addr = buf.as_mut_ptr() as u64;
             match syscall!(
-                ioctl_argp,
+                unsafe,
+                ioctl_arg,
                 &self.perf,
                 b::PERF_IOC_OP_QUERY_BPF as u64,
-                buf.as_mut_slice(),
+                buf_addr,
             ) {
                 Ok::<i32, _>(_) => {
                     let prog_cnt = unsafe { buf[1].assume_init() };
@@ -270,7 +302,7 @@ impl Counter {
                     let option = e.raw_os_error();
 
                     // `option` is always `Some` since `Error` is constructed
-                    // by `ioctl_argp` via `Error::last_os_error`.
+                    // by `ioctl_arg` via `Error::last_os_error`.
                     let errno = unsafe { option.unwrap_unchecked() };
 
                     if errno == libc::ENOSPC {
@@ -295,17 +327,15 @@ impl Counter {
 
     /// Add an ftrace filter to current event.
     pub fn with_ftrace_filter(&self, filter: &CStr) -> Result<()> {
-        let ptr = filter.as_ptr() as *mut i8;
-
-        // The following ioctl op just copies the bytes to kernel space,
-        // so we don't have to worry about the mutable reference.
-        let argp = unsafe { &mut *ptr };
-
+        // The following ioctl op simply copies the filter bytes to
+        // kernel space, so it does not violate immutability.
+        let filter_addr = filter.as_ptr() as u64;
         syscall!(
-            ioctl_argp,
+            unsafe,
+            ioctl_arg,
             &self.perf,
             b::PERF_IOC_OP_SET_FILTER as u64,
-            argp
+            filter_addr
         )?;
         Ok(())
     }
@@ -344,11 +374,13 @@ impl Counter {
             (attr.config3 = event_cfg.config3);
             attr.bp_type = event_cfg.bp_type;
 
+            let attr_addr = ptr::from_mut(attr) as u64;
             syscall!(
-                ioctl_argp,
+                unsafe,
+                ioctl_arg,
                 &self.perf,
                 b::PERF_IOC_OP_MODIFY_ATTRS as u64,
-                attr
+                attr_addr
             )?;
 
             Ok(())

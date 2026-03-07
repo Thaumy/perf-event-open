@@ -19,19 +19,9 @@ pub fn perf_event_open(attr: &Attr, pid: i32, cpu: i32, group_fd: i32, flags: u6
     }
 }
 
-pub fn ioctl_arg(file: &File, op: u64, arg: u64) -> Result<i32> {
+pub unsafe fn ioctl_arg(file: &File, op: u64, arg: u64) -> Result<i32> {
     let fd = file.as_raw_fd();
     let result = unsafe { libc::ioctl(fd, op as _, arg) };
-    if result != -1 {
-        Ok(result)
-    } else {
-        Err(Error::last_os_error())
-    }
-}
-
-pub fn ioctl_argp<T: ?Sized>(file: &File, op: u64, argp: &mut T) -> Result<i32> {
-    let fd = file.as_raw_fd();
-    let result = unsafe { libc::ioctl(fd, op as _, argp) };
     if result != -1 {
         Ok(result)
     } else {

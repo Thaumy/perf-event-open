@@ -129,7 +129,13 @@ impl Sampler {
     pub fn pause(&self) -> Result<()> {
         #[cfg(feature = "linux-4.7")]
         return {
-            syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as u64, 1)?;
+            syscall!(
+                unsafe,
+                ioctl_arg,
+                &self.perf,
+                b::PERF_IOC_OP_PAUSE_OUTPUT as u64,
+                1
+            )?;
             Ok(())
         };
         #[cfg(not(feature = "linux-4.7"))]
@@ -142,7 +148,13 @@ impl Sampler {
     pub fn resume(&self) -> Result<()> {
         #[cfg(feature = "linux-4.7")]
         return {
-            syscall!(ioctl_arg, &self.perf, b::PERF_IOC_OP_PAUSE_OUTPUT as u64, 0)?;
+            syscall!(
+                unsafe,
+                ioctl_arg,
+                &self.perf,
+                b::PERF_IOC_OP_PAUSE_OUTPUT as u64,
+                0
+            )?;
             Ok(())
         };
         #[cfg(not(feature = "linux-4.7"))]
@@ -266,6 +278,7 @@ impl Sampler {
     /// ```
     pub fn enable_counter_with(&self, max_samples: u32) -> Result<()> {
         syscall!(
+            unsafe,
             ioctl_arg,
             &self.perf,
             b::PERF_IOC_OP_REFRESH as u64,
@@ -281,6 +294,7 @@ impl Sampler {
     /// created with [`SampleOn::Freq`][crate::config::SampleOn], and so will the count.
     pub fn sample_on(&self, freq_or_count: u64) -> Result<()> {
         syscall!(
+            unsafe,
             ioctl_arg,
             &self.perf,
             b::PERF_IOC_OP_PERIOD as u64,
