@@ -27,7 +27,7 @@ impl<'a> Rb<'a> {
         // About acquire:
         // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L720
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L99
-        let head = self.head.load(MemOrd::Acquire) % size as u64;
+        let head = self.head.load(MemOrd::Acquire) & (size - 1) as u64;
 
         let chunk_len = {
             let len = match tail.cmp(&head) {
@@ -41,7 +41,7 @@ impl<'a> Rb<'a> {
             }
         };
 
-        let new_tail = (tail + chunk_len) % size as u64;
+        let new_tail = (tail + chunk_len) & (size - 1) as u64;
 
         let chunk = match size as i64 - (tail + chunk_len) as i64 {
             d if d >= 0 => {
