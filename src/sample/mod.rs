@@ -81,7 +81,7 @@ impl Sampler {
         })
     }
 
-    /// Returns a record iterator over the kernel ring-buffer.
+    /// Returns a record iterator over the kernel ring buffer.
     pub fn iter(&self) -> Iter<'_> {
         let alloc = self.arena.as_slice();
         let metadata = unsafe { &mut *(alloc.as_ptr() as *mut Metadata) };
@@ -105,11 +105,11 @@ impl Sampler {
 
     /// Create an AUX tracer for this sampler.
     ///
-    /// The AUX tracer needs a ring-buffer to store data,
+    /// The AUX tracer needs a ring buffer to store data,
     /// and 2^`exp` pages will be allocated for this.
     ///
     /// Multiple calls to this method just duplicates the existing AUX tracer,
-    /// AUX tracers from the same sampler shares the same ring-buffer in the
+    /// AUX tracers from the same sampler shares the same ring buffer in the
     /// kernel space, so `exp` should be the same.
     pub fn aux_tracer(&self, exp: u8) -> Result<AuxTracer<'_>> {
         let alloc = self.arena.as_slice();
@@ -117,14 +117,14 @@ impl Sampler {
         AuxTracer::new(&self.perf, metadata, exp)
     }
 
-    /// Pause the ring-buffer output.
+    /// Pause the ring buffer output.
     ///
-    /// A paused ring-buffer does not prevent generation of samples, but simply
+    /// A paused ring buffer does not prevent generation of samples, but simply
     /// discards them. The discarded samples are considered lost, and cause a
     /// [`LostRecords`][record::lost::LostRecords] to be generated when possible.
     ///
     /// An overflow signal may still be triggered by the discarded sample even
-    /// though the ring-buffer remains empty.
+    /// though the ring buffer remains empty.
     ///
     /// Since `linux-4.7`: <https://github.com/torvalds/linux/commit/86e7972f690c1017fd086cdfe53d8524e68c661c>
     pub fn pause(&self) -> Result<()> {
@@ -143,7 +143,7 @@ impl Sampler {
         return Err(std::io::ErrorKind::Unsupported.into());
     }
 
-    /// Resume the ring-buffer output.
+    /// Resume the ring buffer output.
     ///
     /// Since `linux-4.7`: <https://github.com/torvalds/linux/commit/86e7972f690c1017fd086cdfe53d8524e68c661c>
     pub fn resume(&self) -> Result<()> {

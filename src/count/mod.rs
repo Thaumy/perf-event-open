@@ -123,7 +123,7 @@ impl Counter {
 
     /// Create a sampler for this counter.
     ///
-    /// The sampler needs a ring-buffer to store metadata and records,
+    /// The sampler needs a ring buffer to store metadata and records,
     /// and 1 + 2^`exp` pages will be allocated for this.
     ///
     /// A counter cannot have multiple samplers simultaneously.

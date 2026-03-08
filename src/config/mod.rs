@@ -1032,7 +1032,7 @@ ExtraRecord::mmap          1 mmap2                     include mmap with inode d
 false                      1 comm_exec                 flag comm events that are due to an exec
 Opts::clock_time           1 use_clockid               use @clockid for time fields
 ExtraRecord::ctx_switch    1 context_switch            context switch data
-false                      1 write_backward            Write ring-buffer from end to beginning
+false                      1 write_backward            Write ring buffer from end to beginning
 ExtraRecord::namespaces    1 namespaces                include namespaces data
 ExtraRecord::ksymbol       1 ksymbol                   include ksymbol events
 ExtraRecord::bpf_event     1 bpf_event                 include bpf events

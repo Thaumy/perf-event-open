@@ -42,7 +42,7 @@ use crate::ffi::deref_offset;
 /// let sampler = counter.sampler(5).unwrap();
 ///
 /// counter.enable().unwrap();
-/// // Pause the ring-buffer output, discarded samples are considered lost.
+/// // Pause the ring buffer output, discarded samples are considered lost.
 /// sampler.pause().unwrap();
 /// thread::sleep(Duration::from_millis(10));
 /// sampler.resume().unwrap();

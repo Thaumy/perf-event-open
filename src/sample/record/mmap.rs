@@ -113,7 +113,7 @@ impl Mmap {
     // };
     //
     // `PERF_RECORD_MMAP` and `PERF_RECORD_MMAP2` shares the same output and will never appear together
-    // in the same ring-buffer since kernel replaces `PERF_RECORD_MMAP` with `PERF_RECORD_MMAP2` and
+    // in the same ring buffer since kernel replaces `PERF_RECORD_MMAP` with `PERF_RECORD_MMAP2` and
     // extends the output if `attr.mmap2` was enabled.
     //
     // Call chain: `perf_event_mmap` -> `perf_event_mmap_event` -> `perf_event_mmap_output`

@@ -15,7 +15,7 @@ use crate::sample::record::Parser;
 /// COW (copy-on-write) record iterator.
 ///
 /// This type allows you to access the raw bytes of record in the
-/// underlying ring-buffer directly without copy it to the outside.
+/// underlying ring buffer directly without copy it to the outside.
 pub struct CowIter<'a> {
     pub(in crate::sample) rb: Rb<'a>,
     pub(in crate::sample) perf: &'a File,
@@ -27,7 +27,7 @@ impl<'a> CowIter<'a> {
     ///
     /// If sampling is in happening, operations in the closure should be
     /// quick and cheap. Slow iteration of raw bytes may throttle kernel
-    /// threads from outputting new data to the ring-buffer, and heavy
+    /// threads from outputting new data to the ring buffer, and heavy
     /// operations may affect the performance of the target process.
     ///
     /// # Examples

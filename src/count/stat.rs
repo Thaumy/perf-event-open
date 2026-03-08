@@ -27,8 +27,8 @@ pub struct Stat {
 
     /// The number of lost records.
     ///
-    /// If the sampler ring-buffer has no more space to hold the new records
-    /// or the ring-buffer output is paused, the records are considered lost.
+    /// If the sampler ring buffer has no more space to hold the new records
+    /// or the ring buffer output is paused, the records are considered lost.
     ///
     /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: Option<u64>,
@@ -170,8 +170,8 @@ pub struct SiblingStat {
 
     /// The number of lost records.
     ///
-    /// If the sampler ring-buffer has no more space to hold the new records
-    /// or the ring-buffer output is paused, the records are considered lost.
+    /// If the sampler ring buffer has no more space to hold the new records
+    /// or the ring buffer output is paused, the records are considered lost.
     ///
     /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: Option<u64>,
