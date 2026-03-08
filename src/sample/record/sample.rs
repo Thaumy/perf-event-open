@@ -892,7 +892,7 @@ pub struct Txn {
     /// Aborts caused by current thread.
     pub is_sync: bool,
     // PERF_TXN_ASYNC
-    /// Aborts caused by other theads.
+    /// Aborts caused by other threads.
     pub is_async: bool,
     // PERF_TXN_RETRY
     /// Retryable transaction.

@@ -147,7 +147,7 @@ impl Counter {
             // We prohibit users from creating multiple samplers per counter to
             // avoid the data race. Creating multiple samplers on the same counter
             // is usually useless, while the `Send` impl is much more useful.
-            let error = "There is already an sampler attached to this counter.";
+            let error = "There is already a sampler attached to this counter.";
             Err(Error::new(ErrorKind::AlreadyExists, error))
         }
     }

@@ -29,7 +29,7 @@ impl<'a> CowIter<'a> {
     ///
     /// If AUX area tracing is in happening, operations in the closure should
     /// be quick and cheap. Slow iteration of raw bytes may throttle kernel
-    /// threads from outputting new data to the AUX area, and heavyd operations
+    /// threads from outputting new data to the AUX area, and heavy operations
     /// may affect the performance of the target process.
     pub fn next<F, R>(&mut self, f: F, max_chunk_len: Option<NonZeroUsize>) -> Option<R>
     where

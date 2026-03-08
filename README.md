@@ -18,7 +18,7 @@ performance engineering utilities.
 
 ## Example
 
-Count how many instructions executed for the (inefficient) fibonacci caculation
+Count how many instructions executed for the (inefficient) fibonacci calculation
 and samples the user stack for it.
 
 ```rust
@@ -82,7 +82,7 @@ the target host kernel. These features are backwards compatible, e.g.
 `linux-6.11` works with Linux 6.12 but may not work with Linux 6.10.
 
 The `legacy` feature is compatible with the oldest LTS kernel that still in
-maintaince, or you can use the `latest` feature if you dont't care about the
+maintenance, or you can use the `latest` feature if you don't care about the
 kernel compatibility.
 
 Calling Linux-specific functions (e.g., `Counter::new`) on non-Linux targets

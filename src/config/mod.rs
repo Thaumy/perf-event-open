@@ -693,7 +693,7 @@ pub enum Repr {
     // PERF_SAMPLE_WEIGHT_STRUCT
     /// Represent weight value as [`Vars`][crate::sample::record::sample::Weight::Vars].
     ///
-    /// Since`linux-5.12`: <https://github.com/torvalds/linux/commit/2a6c6b7d7ad346f0679d0963cb19b3f0ea7ef32c>
+    /// Since `linux-5.12`: <https://github.com/torvalds/linux/commit/2a6c6b7d7ad346f0679d0963cb19b3f0ea7ef32c>
     Vars,
 }
 

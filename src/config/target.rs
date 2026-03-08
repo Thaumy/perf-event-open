@@ -53,9 +53,9 @@ pub struct Cgroup<'a>(pub &'a File);
 ///
 /// To create an event target, combine these types in a tuple: [`Proc`] (or [`Cgroup`]), [`Cpu`] and [`All`].
 ///
-/// For example, we want to monitor process with pid 12345 on all CPUs: `(Pid(12345), Cpu::ALL)`.
-/// The order of types in the tuples is not senstive because we impl `Into<Target>` for these
-/// swapped tuples, e.g. `(Cpu::ALL, Pid(12345))` has the same semantics as the example above.
+/// For example, we want to monitor process with pid 12345 on all CPUs: `(Proc(12345), Cpu::ALL)`.
+/// The order of types in the tuples is not sensitive because we impl `Into<Target>` for these
+/// swapped tuples, e.g. `(Cpu::ALL, Proc(12345))` has the same semantics as the example above.
 ///
 /// This design limits what we can monitor at compile time. For example, the kernel not support
 /// monitoring any process on all CPUs, or a cgroup on all CPUs.

@@ -88,8 +88,8 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts) -> Result<Attr> {
     attr.set_precise_ip(opts.sample_skid.as_precise_ip() as _);
 
     // The internal variant `__PERF_SAMPLE_CALLCHAIN_EARLY`(Linux 4.18-6.0) widens
-    // other enum variants from u32 to u64, so we need to convert the veriant to u64
-    // before assigning it to `attr.sample_type`. We liverage the type system here to
+    // other enum variants from u32 to u64, so we need to convert the variant to u64
+    // before assigning it to `attr.sample_type`. We leverage the type system here to
     // infer the type of `sample_type` and then assign it to `attr.sample_type` to
     // avoid clippy's noise about unnecessary cast from `linux-4.18` to `linux-6.0`.
     // For more information about `__PERF_SAMPLE_CALLCHAIN_EARLY`, see:

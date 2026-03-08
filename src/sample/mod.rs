@@ -21,7 +21,7 @@ pub mod record;
 /// Event sampler.
 ///
 /// This type provides the event sampling function of `perf_event_open`,
-/// which can capture the context when the event happens, helpling us to
+/// which can capture the context when the event happens, helping us to
 /// gain in-depth understanding of the system status at that time,
 /// similar to the `perf record` command.
 ///

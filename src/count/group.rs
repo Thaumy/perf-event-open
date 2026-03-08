@@ -66,7 +66,7 @@ pub struct CounterGroup {
     //
     // - A sendable `CounterGroup` could leave some references of sibling
     // counters (such as `Arc<Counter>`) using `add()` operation in one
-    // thread, and get those refernces via `siblings()` in the other thread,
+    // thread, and get those references via `siblings()` in the other thread,
     // which potentially breaks the `!Sync` bound for `Counter`.
     //
     // - We could send `Counter` and consume it by `CounterGroup::from` to
