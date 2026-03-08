@@ -405,7 +405,12 @@ impl UnsafeParser {
         T: Borrow<[u8]>,
     {
         let bytes = bytes.borrow();
-        let ptr = &mut bytes.as_ptr();
+        let mut ptr = bytes.as_ptr();
+        debug_assert!(
+            (ptr as *const u64).is_aligned(),
+            "`bytes` is not 8-byte aligned"
+        );
+        let ptr = &mut ptr;
 
         // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L824
         // struct perf_event_header {
