@@ -280,10 +280,10 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     match opts.wake_up.on {
         WakeUpOn::Bytes(n) => {
             then!(set_watermark);
-            attr.__bindgen_anon_2.wakeup_watermark = n as _;
+            attr.__bindgen_anon_2.wakeup_watermark = n;
         }
         WakeUpOn::Samples(n) => {
-            attr.__bindgen_anon_2.wakeup_events = n as _;
+            attr.__bindgen_anon_2.wakeup_events = n;
         }
     }
 

@@ -866,13 +866,13 @@ pub enum WakeUpOn {
     /// When set to zero, the kernel automatically determines the wake-up
     /// threshold (typically half the ring buffer size). Values exceeding the
     /// ring buffer size are capped to the buffer's size.
-    Bytes(u64),
+    Bytes(u32),
 
     /// Wake up on every N samples available.
     ///
     /// The kernel may still trigger a wake-up earlier, typically when the
     /// ring buffer usage reaches half its size in bytes.
-    Samples(u64),
+    Samples(u32),
 }
 
 impl Default for WakeUpOn {
