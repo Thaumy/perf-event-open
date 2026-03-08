@@ -396,7 +396,8 @@ impl UnsafeParser {
     ///
     /// # Safety
     ///
-    /// `bytes` must be created by the same sampler as this parser.
+    /// `bytes` must be created by the same sampler as this parser and must
+    /// be 8-byte aligned.
     ///
     /// See also [`Parser`].
     pub unsafe fn parse<T>(&self, bytes: T) -> (Priv, Record)
