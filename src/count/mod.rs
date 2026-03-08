@@ -3,7 +3,6 @@ use std::cell::UnsafeCell;
 use std::ffi::CStr;
 use std::fs::File;
 use std::io::{self, Error, ErrorKind, Result};
-use std::mem::transmute;
 use std::os::fd::AsRawFd;
 use std::ptr;
 use std::sync::Arc;
@@ -232,10 +231,8 @@ impl Counter {
         let buf = unsafe { &mut *self.read_buf.get() };
 
         syscall!(read, &self.perf, buf)?;
-        let buf = buf.as_mut_slice();
-        let buf = unsafe { transmute::<&mut [_], &mut [u8]>(buf) };
-
         let ptr = buf.as_ptr();
+
         // We only change the attr fields related to event config,
         // there is nothing about `read_format`.
         let read_format = unsafe { &*self.attr.get() }.read_format;
@@ -272,13 +269,14 @@ impl Counter {
     pub fn query_bpf(&self, buf_len: u32) -> Result<(Vec<u32>, Option<u32>)> {
         #[cfg(feature = "linux-4.16")]
         return {
+            use std::mem::{transmute, MaybeUninit};
+
             // struct perf_event_query_bpf {
             //     u32 ids_len;
             //     u32 prog_cnt;
             //     u32 ids[0];
             // }
 
-            use std::mem::MaybeUninit;
             let mut buf = vec![MaybeUninit::uninit(); (2 + buf_len) as _];
             buf[0] = MaybeUninit::new(buf_len); // set `ids_len`
 
