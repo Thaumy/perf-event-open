@@ -1,6 +1,6 @@
 # perf-event-open
 
-Full-featured high-level wrapper for the `perf_event_open` system call.
+Full-featured support for the `perf_event_open` syscall.
 
 [![Crates.io][crates-badge]][crates-url]
 [![MIT licensed][license-badge]][license-url]

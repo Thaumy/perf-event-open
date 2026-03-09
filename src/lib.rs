@@ -1,4 +1,4 @@
-//! Full-featured high-level wrapper for the `perf_event_open` system call.
+//! Full-featured support for the `perf_event_open` syscall.
 //!
 //! ## Example
 //!
