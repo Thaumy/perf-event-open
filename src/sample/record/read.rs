@@ -4,6 +4,8 @@ use crate::ffi::deref_offset;
 
 /// Inherited task statistics.
 ///
+/// Can be enabled by [`ExtraRecord::read`][crate::config::ExtraRecord::read].
+///
 /// This allows a per-task stat on an inherited process hierarchy.
 ///
 /// # Examples

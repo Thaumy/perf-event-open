@@ -4,6 +4,8 @@ use super::RecordId;
 
 /// Kernel symbol event.
 ///
+/// Can be enabled by [`ExtraRecord::ksymbol`][crate::config::ExtraRecord::ksymbol].
+///
 /// # Examples
 ///
 /// ```rust, no_run

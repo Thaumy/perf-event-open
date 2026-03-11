@@ -9,6 +9,8 @@ const BPF_TAG_SIZE: u32 = 8;
 
 /// BPF event.
 ///
+/// Can be enabled by [`ExtraRecord::bpf_event`][crate::config::ExtraRecord::bpf_event].
+///
 /// # Examples
 ///
 /// Running this example may require root privileges.

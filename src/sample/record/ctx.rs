@@ -2,6 +2,8 @@ use super::{RecordId, Task};
 
 /// Process context switched.
 ///
+/// Can be enabled by [`ExtraRecord::ctx_switch`][crate::config::ExtraRecord::ctx_switch].
+///
 /// # Examples
 ///
 /// ```rust

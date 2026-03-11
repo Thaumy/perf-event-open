@@ -2,6 +2,8 @@ use super::{RecordId, Task};
 
 /// Namespace information for the new task.
 ///
+/// Can be enabled by [`ExtraRecord::namespaces`][crate::config::ExtraRecord::namespaces].
+///
 /// # Examples
 ///
 /// ```rust, no_run

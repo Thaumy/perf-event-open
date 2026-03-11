@@ -12,6 +12,8 @@ const BUILD_ID_SIZE_MAX: usize = 20;
 ///
 /// This is useful if we want to correlate user-space IPs to code.
 ///
+/// Can be enabled by [`ExtraRecord::mmap`][crate::config::ExtraRecord::mmap].
+///
 /// # Examples
 ///
 /// ```rust

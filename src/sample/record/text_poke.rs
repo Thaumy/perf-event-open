@@ -2,6 +2,8 @@ use super::RecordId;
 
 /// Records changes to kernel text i.e. self-modified code.
 ///
+/// Can be enabled by [`ExtraRecord::text_poke`][crate::config::ExtraRecord::text_poke].
+///
 /// # Examples
 ///
 /// Running this example may require root privileges.

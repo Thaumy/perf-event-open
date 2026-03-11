@@ -5,6 +5,8 @@ use crate::ffi::{bindings as b, deref_offset};
 
 /// Process name (comm) has been changed.
 ///
+/// Can be enabled by [`ExtraRecord::comm`][crate::config::ExtraRecord::comm].
+///
 /// # Examples
 ///
 /// ```rust

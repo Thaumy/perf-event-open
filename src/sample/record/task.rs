@@ -3,6 +3,8 @@ use crate::ffi::deref_offset;
 
 /// Process exited.
 ///
+/// Can be enabled by [`ExtraRecord::task`][crate::config::ExtraRecord::task].
+///
 /// Please check module-level docs for examples.
 ///
 /// # Examples
@@ -49,8 +51,6 @@ use crate::ffi::deref_offset;
 /// # assert!(vec.iter().any(|(_, it)| matches!(it, Record::Fork(_))));
 /// # assert!(vec.iter().any(|(_, it)| matches!(it, Record::Exit(_))));
 /// ```
-///
-/// See also [`ExtraRecords::task`][crate::config::ExtraRecord::task].
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Exit {
@@ -113,7 +113,7 @@ super::debug!(Exit {
 ///
 /// See [`Exit`] for examples.
 ///
-/// See also [`ExtraRecords::task`][crate::config::ExtraRecord::task].
+/// Can be enabled by [`ExtraRecord::task`][crate::config::ExtraRecord::task].
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Fork {

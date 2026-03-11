@@ -4,6 +4,8 @@ use super::RecordId;
 
 /// Process created a new cgroup.
 ///
+/// Can be enabled by [`ExtraRecord::cgroup`][crate::config::ExtraRecord::cgroup].
+///
 /// # Examples
 ///
 /// Running this example may require root privileges.
