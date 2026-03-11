@@ -394,13 +394,16 @@ impl UnsafeParser {
 
     /// Parse record bytes into record type.
     ///
+    /// This also returns the number of bytes parsed. This is useful
+    /// when you need to parse records in a contiguous buffer.
+    ///
     /// # Safety
     ///
     /// `bytes` must be created by the same sampler as this parser and must
     /// be 8-byte aligned.
     ///
     /// See also [`Parser`].
-    pub unsafe fn parse<T>(&self, bytes: T) -> (Priv, Record)
+    pub unsafe fn parse<T>(&self, bytes: T) -> (Priv, Record, usize)
     where
         T: Borrow<[u8]>,
     {
@@ -422,8 +425,9 @@ impl UnsafeParser {
         let ty: u32 = deref_offset(ptr);
         let misc: u16 = deref_offset(ptr);
         let record_priv = Priv::from_misc(misc);
+        let size: u16 = deref_offset(ptr);
 
-        let ptr = ptr.add(size_of::<u16>()); // skip `size`
+        let ptr = *ptr;
         let sample_id_all = self.sample_id_all.then_some(SampleType(self.sample_type));
 
         fn from<T>(t: T) -> Record
@@ -479,7 +483,7 @@ impl UnsafeParser {
             _ => Record::Unknown(bytes.to_vec()), // For compatibility, not ABI.
         };
 
-        (record_priv, record)
+        (record_priv, record, size as usize)
     }
 }
 
@@ -496,7 +500,8 @@ impl Parser {
     /// Parse [`CowChunk`] into record type.
     pub fn parse(&self, chunk: CowChunk<'_>) -> (Priv, Record) {
         let bytes = chunk.as_bytes();
-        unsafe { self.0.parse(bytes) }
+        let (p, r, _) = unsafe { self.0.parse(bytes) };
+        (p, r)
     }
 
     /// Returns the underlying unsafe record parser.
