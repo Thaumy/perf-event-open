@@ -5,8 +5,6 @@ use crate::ffi::deref_offset;
 ///
 /// Can be enabled by [`ExtraRecord::task`][crate::config::ExtraRecord::task].
 ///
-/// Please check module-level docs for examples.
-///
 /// # Examples
 ///
 /// ```rust
