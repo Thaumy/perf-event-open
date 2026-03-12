@@ -114,7 +114,6 @@ pub struct Opts {
     ///
     /// let (pid_tx, pid_rx) = channel();
     /// let handle = thread::spawn(move || {
-    ///     # // Fork to avoid signal handler conflicts.
     ///     unsafe {
     ///         let child = libc::fork();
     ///         if child > 0 {
@@ -129,7 +128,6 @@ pub struct Opts {
     ///     unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) };
     ///
     ///     let result = std::panic::catch_unwind(|| {
-    ///
     ///         static SPIN: AtomicBool = AtomicBool::new(true);
     ///
     ///         fn handler(num: i32, info: *const libc::siginfo_t) {
@@ -325,7 +323,7 @@ impl StatFormat {
 /// Here is an example:
 ///
 /// ```rust
-/// // Fork to avoid signal handler conflicts.
+/// # // Fork to avoid signal handler conflicts.
 /// # unsafe {
 /// #     let child = libc::fork();
 /// #     if child > 0 {
@@ -393,7 +391,7 @@ impl StatFormat {
 /// # if result.is_err() {
 /// #     unsafe { libc::abort() };
 /// # }
-///
+/// #
 /// # unsafe { libc::exit(0) };
 /// ```
 ///
