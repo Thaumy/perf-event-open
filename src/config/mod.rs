@@ -100,7 +100,7 @@ pub struct Opts {
     /// # #[cfg(not(feature = "linux-5.13"))]
     /// # return;
     /// #
-    /// use std::mem::{transmute, MaybeUninit};
+    /// use std::mem::transmute;
     /// use std::ptr::null_mut;
     /// use std::sync::atomic::{AtomicBool, Ordering};
     /// use std::sync::mpsc::channel;
@@ -141,7 +141,7 @@ pub struct Opts {
     ///
     ///         let act = libc::sigaction {
     ///             sa_sigaction: handler as _,
-    ///             sa_mask: unsafe { MaybeUninit::zeroed().assume_init() },
+    ///             sa_mask: unsafe { std::mem::zeroed() },
     ///             sa_flags: libc::SA_SIGINFO,
     ///             sa_restorer: None,
     ///         };
@@ -339,7 +339,6 @@ impl StatFormat {
 /// # unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) };
 /// #
 /// # let result = std::panic::catch_unwind(|| {
-/// use std::mem::MaybeUninit;
 /// use std::os::fd::AsRawFd;
 /// use std::ptr::null_mut;
 /// use std::sync::atomic::AtomicBool;
@@ -376,7 +375,7 @@ impl StatFormat {
 /// }
 /// let act = libc::sigaction {
 ///     sa_sigaction: handler as _,
-///     sa_mask: unsafe { MaybeUninit::zeroed().assume_init() },
+///     sa_mask: unsafe { std::mem::zeroed() },
 ///     sa_flags: libc::SA_SIGINFO,
 ///     sa_restorer: None,
 /// };

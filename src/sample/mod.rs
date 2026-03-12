@@ -213,7 +213,6 @@ impl Sampler {
     /// use perf_event_open::config::{Cpu, Opts, Proc, SampleOn};
     /// use perf_event_open::count::Counter;
     /// use perf_event_open::event::sw::Software;
-    /// use std::mem::MaybeUninit;
     /// use std::os::fd::AsRawFd;
     /// use std::ptr::null_mut;
     /// use std::sync::atomic::AtomicBool;
@@ -252,7 +251,7 @@ impl Sampler {
     ///
     /// let act = libc::sigaction {
     ///     sa_sigaction: handler as _,
-    ///     sa_mask: unsafe { MaybeUninit::zeroed().assume_init() },
+    ///     sa_mask: unsafe { std::mem::zeroed() },
     ///     sa_flags: libc::SA_SIGINFO,
     ///     sa_restorer: None,
     /// };

@@ -11,8 +11,6 @@ use crate::ffi::deref_offset;
 /// # Examples
 ///
 /// ```rust
-/// use std::mem::MaybeUninit;
-///
 /// use perf_event_open::config::{Cpu, Inherit, Opts, Proc};
 /// use perf_event_open::count::Counter;
 /// use perf_event_open::event::sw::Software;
@@ -37,7 +35,7 @@ use crate::ffi::deref_offset;
 ///         assert_eq!(code, 0);
 ///     } else {
 ///         // schedule child processes on CPU 0
-///         let mut set = MaybeUninit::zeroed().assume_init();
+///         let mut set = unsafe { std::mem::zeroed() };
 ///         libc::CPU_SET(0, &mut set);
 ///         let tid = libc::gettid();
 ///         let set_size = size_of_val(&set);
