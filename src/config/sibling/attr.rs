@@ -320,8 +320,8 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
         match opts.on_sample.aux {
             // pause and resume are mutually exclusive, see:
             // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12332
-            Some(crate::config::sibling::AuxTracer::Pause) => aux_action.set_aux_pause(1),
-            Some(crate::config::sibling::AuxTracer::Resume) => aux_action.set_aux_resume(1),
+            Some(super::AuxTracer::Pause) => aux_action.set_aux_pause(1),
+            Some(super::AuxTracer::Resume) => aux_action.set_aux_resume(1),
             None => (),
         }
     }
