@@ -998,76 +998,81 @@ pub struct Mmap {
 pub struct UseBuildId(pub bool);
 
 /*
-EventConifg::ty           u32 type_
-size_of::<Attr>           u32 size
-EventConifg::config       u64 config
-SampleOn                  u64 __bindgen_anon_1    sample method union
-{Sample, RecordId}Format  u64 sample_type
-Opts::stat_format         u64 read_format
--                         ZST _bitfield_align_1
-(See below)               u64 _bitfield_1         option bits
-WakeUpOn                  u32 __bindgen_anon_2    wakeup on union
-Breakpoint::ty            u32 bp_type
-EventConifg::config1      u64 __bindgen_anon_3    config1 union
-EventConifg::config2      u64 __bindgen_anon_4    config2 union
-Lbr                       u64 branch_sample_type
-SampleFormat::user_regs   u64 sample_regs_user
-SampleFormat::user_stack  u32 sample_stack_user
-Clock                     i32 clockid
-SampleFormat::intr_regs   u64 sample_regs_intr
-WakeUp::on_aux_bytes      u32 aux_watermark
-SampleFormat::call_chain  u16 sample_max_stack
--                         u16 __reserved_2
-SampleFormat::aux         u32 aux_sample_size
-(See below)               u32 __bindgen_anon_5    aux action bits
-SigData                   u64 sig_data
-EventConfig::config3      u64 config3
+perf_event_attr layout
+EventConfig::ty              u32 type_
+size_of::<Attr>              u32 size
+EventConfig::config          u64 config
+SampleOn                     u64 __bindgen_anon_1    sample method union
+{Sample, RecordId}Format     u64 sample_type
+Opts::stat_format            u64 read_format
+-                            ZST _bitfield_align_1
+(See below)                  u64 _bitfield_1         option bits
+WakeUpOn                     u32 __bindgen_anon_2    wakeup on union
+Breakpoint::ty               u32 bp_type
+EventConfig::config1         u64 __bindgen_anon_3    config1 union
+EventConfig::config2         u64 __bindgen_anon_4    config2 union
+Lbr                          u64 branch_sample_type
+SampleFormat::user_regs      u64 sample_regs_user
+SampleFormat::user_stack     u32 sample_stack_user
+Clock                        i32 clockid
+SampleFormat::intr_regs      u64 sample_regs_intr
+WakeUp::on_aux_bytes         u32 aux_watermark
+CallChain::max_stack_frames  u16 sample_max_stack
+-                            u16 __reserved_2
+SampleFormat::aux            u32 aux_sample_size
+(See below)                  u32 __bindgen_anon_5    aux action bits
+SigData                      u64 sig_data
+EventConfig::config3         u64 config3
 */
 
 /*
-Opts::auto_start           1 disabled                  off by default
-Opts::inherit              1 inherit                   children inherit it
-Opts::pin_on_pmu           1 pinned                    must always be on PMU
-Opts::only_group           1 exclusive                 only group on PMU
-Priv::user                 1 exclude_user              don't count user
-Priv::kernel               1 exclude_kernel            ditto kernel
-Priv::hv                   1 exclude_hv                ditto hypervisor
-Priv::idle                 1 exclude_idle              don't count when idle
-ExtraRecord::mmap          1 mmap                      include mmap data
-ExtraRecord::comm          1 comm                      include comm data
-SampleOn::Freq             1 freq                      use freq, not period
-ExtraRecord::read          1 inherit_stat              per task counts
-Opts::on_execve            1 enable_on_exec            next exec enables
-ExtraRecord::task          1 task                      trace fork/exit
-WakeUpOn                   1 watermark                 wakeup_watermark
-IpSkid                     2 precise_ip                skid constraint
-ExtraRecord::mmap          1 mmap_data                 non-exec mmap data
-Opts::record_id_all        1 sample_id_all             sample_type all events
-Priv::host                 1 exclude_host              don't count in host
-Priv::guest                1 exclude_guest             don't count in guest
-SampleFormat::call_chain   1 exclude_callchain_kernel  exclude kernel callchains
-SampleFormat::call_chain   1 exclude_callchain_user    exclude user callchains
-ExtraRecord::mmap          1 mmap2                     include mmap with inode data
-false                      1 comm_exec                 flag comm events that are due to an exec
-Opts::clock_time           1 use_clockid               use @clockid for time fields
-ExtraRecord::ctx_switch    1 context_switch            context switch data
-false                      1 write_backward            Write ring buffer from end to beginning
-ExtraRecord::namespaces    1 namespaces                include namespaces data
-ExtraRecord::ksymbol       1 ksymbol                   include ksymbol events
-ExtraRecord::bpf_event     1 bpf_event                 include bpf events
-sibling::Opts::aux_output  1 aux_output                generate AUX records instead of events
-ExtraRecord::cgroup        1 cgroup                    include cgroup events
-ExtraRecord::text_poke     1 text_poke                 include text poke events
-ExtraRecord::mmap          1 build_id                  use build id in mmap2 events
-Inherit                    1 inherit_thread            children only inherit if cloned with CLONE_THREAD
-Opts::on_execve            1 remove_on_exec            event is removed from task on exec
-Opts::sigtrap_on_sample    1 sigtrap                   send synchronous SIGTRAP on event
--                         26 __reserved_1
+_bitfield_1 layout
+Opts::enable                      1 disabled                  off by default
+Opts::inherit                     1 inherit                   children inherit it
+Opts::pin_on_pmu                  1 pinned                    must always be on PMU
+Opts::only_group                  1 exclusive                 only group on PMU
+Priv::user                        1 exclude_user              don't count user
+Priv::kernel                      1 exclude_kernel            ditto kernel
+Priv::hv                          1 exclude_hv                ditto hypervisor
+Priv::idle                        1 exclude_idle              don't count when idle
+Mmap::code                        1 mmap                      include mmap data
+ExtraRecord::comm                 1 comm                      include comm data
+SampleOn::Freq                    1 freq                      use freq, not period
+ExtraRecord::read                 1 inherit_stat              per task counts
+OnExecve::Enable                  1 enable_on_exec            next exec enables
+ExtraRecord::task                 1 task                      trace fork/exit
+WakeUpOn                          1 watermark                 wakeup_watermark
+SampleSkid                        2 precise_ip                skid constraint
+Mmap::data                        1 mmap_data                 non-exec mmap data
+Opts::record_id_all               1 sample_id_all             sample_type all events
+Priv::host                        1 exclude_host              don't count in host
+Priv::guest                       1 exclude_guest             don't count in guest
+CallChain::exclude_kernel         1 exclude_callchain_kernel  exclude kernel callchains
+CallChain::exclude_user           1 exclude_callchain_user    exclude user callchains
+Mmap::ext                         1 mmap2                     include mmap with inode data
+false                             1 comm_exec                 flag comm events that are due to an exec
+Opts::timer                       1 use_clockid               use @clockid for time fields
+ExtraRecord::ctx_switch           1 context_switch            context switch data
+false                             1 write_backward            Write ring buffer from end to beginning
+ExtraRecord::namespaces           1 namespaces                include namespaces data
+ExtraRecord::ksymbol              1 ksymbol                   include ksymbol events
+ExtraRecord::bpf_event            1 bpf_event                 include bpf events
+sibling::Opts::aux_output         1 aux_output                generate AUX records instead of events
+ExtraRecord::cgroup               1 cgroup                    include cgroup events
+ExtraRecord::text_poke            1 text_poke                 include text poke events
+UseBuildId                        1 build_id                  use build id in mmap2 events
+Inherit::NewThread                1 inherit_thread            children only inherit if cloned with CLONE_THREAD
+OnExecve::Remove                  1 remove_on_exec            event is removed from task on exec
+Opts::sigtrap_on_sample           1 sigtrap                   send synchronous SIGTRAP on event
+CallChain::defer_user             1 defer_callchain           request PERF_RECORD_CALLCHAIN_DEFERRED records
+ExtraRecord::call_chain_deferred  1 defer_output              output PERF_RECORD_CALLCHAIN_DEFERRED records
+-                                24 __reserved_1
 */
 
 /*
-Opts::pause_aux     1 aux_start_paused   start AUX area tracing paused
-sibling::AuxTracer  1 aux_pause          on overflow, pause AUX area tracing
-sibling::AuxTracer  1 aux_resume         on overflow, resume AUX area tracing
--                  29	__reserved_3
+__bindgen_anon_5 layout
+Opts::pause_aux    1 aux_start_paused   start AUX area tracing paused
+AuxTracer::Pause   1 aux_pause          on overflow, pause AUX area tracing
+AuxTracer::Resume  1 aux_resume         on overflow, resume AUX area tracing
+-                 29 __reserved_3
 */
