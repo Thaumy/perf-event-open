@@ -4,12 +4,12 @@ use std::os::fd::AsRawFd;
 use crate::ffi::bindings as b;
 
 /// Monitor all processes (if [`Proc`] is not set) or all CPUs (if [`Cpu`] is not set).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct All;
 
 /// Which CPU to monitor.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Cpu(pub u32);
 
@@ -25,7 +25,7 @@ impl Cpu {
 /// Construct with pid or tid.
 ///
 /// `Proc(0)` indicates the current thread.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Proc(pub u32);
 
@@ -46,7 +46,7 @@ impl Proc {
 ///
 /// cgroup monitoring is available only for system-wide events and may therefore require
 /// extra permissions.
-#[derive(Clone, Copy, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Cgroup<'a>(pub &'a File);
 
 /// Event target, the process (or cgroup) and CPU to monitor.

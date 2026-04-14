@@ -84,7 +84,7 @@ impl Namespaces {
         let nr_namespaces: u64 = deref_offset(&mut ptr);
 
         #[repr(C)]
-        #[derive(Clone, Copy)]
+        #[derive(Copy, Clone)]
         struct Layout {
             dev: u64,
             inode: u64,
