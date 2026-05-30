@@ -33,7 +33,7 @@
         RUSTFMT = "${rust-toolchain "nightly" "2025-12-08"}/bin/rustfmt";
 
         nativeBuildInputs = [
-          (rust-toolchain "stable" "1.80.0")
+          (rust-toolchain "stable" "1.80.1")
         ];
 
         checkPhase = "./check.sh";
