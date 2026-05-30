@@ -1,6 +1,6 @@
 {
   inputs = {
-    pkgs.url = "github:NixOS/nixpkgs/eb6cf22e8ee7d1307705d8cac7c1f81b8135c2ca"; # 25-4-3
+    pkgs.url = "github:NixOS/nixpkgs/295c3f1c2ac1a55504373727cd6cafb26fb6b047"; # 26-5-23
     rust-overlay = {
       url = "github:oxalica/rust-overlay/40b0a3a193e0840c76174b4a322874c8f6dd0a63"; # 26-5-29
       inputs.nixpkgs.follows = "pkgs";
