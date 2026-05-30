@@ -15,25 +15,25 @@
         overlays = [ (import inputs.rust-overlay) ];
       };
 
-      rust-toolchain = channel: version:
-        pkgs.rust-bin."${channel}"."${version}".complete.override {
-          extensions = [ "rust-src" ];
-          targets = [
-            "x86_64-unknown-linux-gnu"
-            "x86_64-unknown-linux-musl"
-            "x86_64-unknown-freebsd"
-          ];
-        };
+      rustfmt = pkgs.rust-bin.nightly."2025-12-08".rustfmt;
+      rust-toolchain = pkgs.rust-bin.stable."1.80.1".complete.override {
+        extensions = [ "rust-src" ];
+        targets = [
+          "x86_64-unknown-linux-gnu"
+          "x86_64-unknown-linux-musl"
+          "x86_64-unknown-freebsd"
+        ];
+      };
     in
     {
       devShells.default = pkgs.mkShell {
         name = "perf-event-open";
 
         # Use nightly fmt for better style
-        RUSTFMT = "${rust-toolchain "nightly" "2025-12-08"}/bin/rustfmt";
+        RUSTFMT = "${rustfmt}/bin/rustfmt";
 
         nativeBuildInputs = [
-          (rust-toolchain "stable" "1.80.1")
+          rust-toolchain
         ];
 
         checkPhase = "./check.sh";
