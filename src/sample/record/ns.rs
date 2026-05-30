@@ -98,6 +98,7 @@ impl Namespaces {
             }
         }
         let nss: &[Layout] = slice::from_raw_parts(ptr as _, nr_namespaces as _);
+        ptr = ptr.add(nr_namespaces as usize * size_of::<Layout>());
 
         let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
 
