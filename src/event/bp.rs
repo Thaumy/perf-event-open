@@ -1,3 +1,4 @@
+use std::ffi::c_long;
 use std::io::Result;
 
 use super::EventConfig;
@@ -94,7 +95,7 @@ super::try_from!(Breakpoint, value, {
         Type::R(l) => (b::HW_BREAKPOINT_R, l.as_bp_len()?),
         Type::W(l) => (b::HW_BREAKPOINT_W, l.as_bp_len()?),
         Type::Rw(l) => (b::HW_BREAKPOINT_RW, l.as_bp_len()?),
-        Type::X => (b::HW_BREAKPOINT_X, 0),
+        Type::X => (b::HW_BREAKPOINT_X, size_of::<c_long>() as u64),
     };
     let event_cfg = EventConfig {
         ty: b::PERF_TYPE_BREAKPOINT,
