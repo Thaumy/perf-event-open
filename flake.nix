@@ -15,7 +15,7 @@
         overlays = [ (import inputs.rust-overlay) ];
       };
 
-      rustfmt = pkgs.rust-bin.nightly."2025-12-08".rustfmt;
+      rustfmt = pkgs.rust-bin.nightly."2026-05-29".rustfmt;
       rust-toolchain = pkgs.rust-bin.stable."1.80.1".complete.override {
         extensions = [ "rust-src" ];
         targets = [
