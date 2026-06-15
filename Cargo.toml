@@ -14,7 +14,8 @@ build = "build/main.rs"
 
 [features]
 "serde" = ["dep:serde", "arrayvec/serde"]
-"latest" = ["linux-6.19"]
+"latest" = ["linux-7.0"]
+"linux-7.0" = ["linux-6.19"]
 "linux-6.19" = ["linux-6.13"]
 "linux-6.13" = ["linux-6.11"]
 "linux-6.11" = ["linux-6.8"]
