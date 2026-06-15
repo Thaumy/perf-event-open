@@ -592,7 +592,8 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
     // mem_snoopx  38-39  2 bits, snoop mode, ext
     // mem_blk     40-42  3 bits, access blocked
     // mem_hops    43-45  3 bits, hop level
-    // mem_rsvd    46-63 18 bits, reserved
+    // mem_region  46-50  5 bits, cache/memory region
+    // mem_rsvd    51-63 13 bits, reserved
 
     macro_rules! when {
         ($shifted:expr, $flag:ident) => {
@@ -728,6 +729,32 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
     #[cfg(not(feature = "linux-5.16"))]
     let hops = MemHop::Unknown;
 
+    #[cfg(feature = "linux-7.0")]
+    let shifted = bits >> b::PERF_MEM_REGION_SHIFT;
+    #[cfg(feature = "linux-7.0")]
+    let region = match (shifted & 0b11111) as u32 {
+        b::PERF_MEM_REGION_NA => MemRegion::Na,
+        b::PERF_MEM_REGION_RSVD => MemRegion::Reserved,
+        b::PERF_MEM_REGION_L_SHARE => MemRegion::LocalShare,
+        b::PERF_MEM_REGION_L_NON_SHARE => MemRegion::LocalNonShare,
+        b::PERF_MEM_REGION_O_IO => MemRegion::OtherIo,
+        b::PERF_MEM_REGION_O_SHARE => MemRegion::OtherShare,
+        b::PERF_MEM_REGION_O_NON_SHARE => MemRegion::OtherNonShare,
+        b::PERF_MEM_REGION_MMIO => MemRegion::Mmio,
+        b::PERF_MEM_REGION_MEM0 => MemRegion::Mem0,
+        b::PERF_MEM_REGION_MEM1 => MemRegion::Mem1,
+        b::PERF_MEM_REGION_MEM2 => MemRegion::Mem2,
+        b::PERF_MEM_REGION_MEM3 => MemRegion::Mem3,
+        b::PERF_MEM_REGION_MEM4 => MemRegion::Mem4,
+        b::PERF_MEM_REGION_MEM5 => MemRegion::Mem5,
+        b::PERF_MEM_REGION_MEM6 => MemRegion::Mem6,
+        b::PERF_MEM_REGION_MEM7 => MemRegion::Mem7,
+        // For compatibility, not ABI.
+        _ => MemRegion::Unknown,
+    };
+    #[cfg(not(feature = "linux-7.0"))]
+    let region = MemRegion::Unknown;
+
     DataSource {
         op,
         level,
@@ -738,6 +765,7 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         remote,
         block,
         hops,
+        region,
     }
 }
 
@@ -1040,6 +1068,10 @@ pub struct DataSource {
     ///
     /// Since `linux-5.16`: <https://github.com/torvalds/linux/commit/fec9cc6175d0ec1e13efe12be491d9bd4de62f80>
     pub hops: MemHop,
+    /// Cache/memory region.
+    ///
+    /// Since `linux-7.0`: <https://github.com/torvalds/linux/commit/d2bdcde9626cbea0c44a6aaa33b440c8adf81e09>
+    pub region: MemRegion,
 }
 
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1324
@@ -1304,6 +1336,70 @@ pub enum MemHop {
     ///
     /// Since `linux-5.17`: <https://github.com/torvalds/linux/commit/cb1c4aba055f928ffae0c868e8dfe08eeab302e7>
     Board,
+    /// Unknown.
+    ///
+    /// This is for compatibility, not ABI.
+    Unknown,
+}
+
+// https://github.com/torvalds/linux/blob/v7.0/include/uapi/linux/perf_event.h#L1453
+/// Cache/memory region.
+///
+/// The `Local*` and `Other*` variants indicate whether the access was served
+/// by the local or another caching agent (CA).
+///
+/// Since `linux-7.0`: <https://github.com/torvalds/linux/commit/d2bdcde9626cbea0c44a6aaa33b440c8adf81e09>
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum MemRegion {
+    // PERF_MEM_REGION_NA
+    /// Not available.
+    Na,
+    // PERF_MEM_REGION_RSVD
+    /// Reserved.
+    Reserved,
+    // PERF_MEM_REGION_L_SHARE
+    /// Local CA shared cache.
+    LocalShare,
+    // PERF_MEM_REGION_L_NON_SHARE
+    /// Local CA non-shared cache.
+    LocalNonShare,
+    // PERF_MEM_REGION_O_IO
+    /// Other CA I/O agent.
+    OtherIo,
+    // PERF_MEM_REGION_O_SHARE
+    /// Other CA shared cache.
+    OtherShare,
+    // PERF_MEM_REGION_O_NON_SHARE
+    /// Other CA non-shared cache.
+    OtherNonShare,
+    // PERF_MEM_REGION_MMIO
+    /// MMIO.
+    Mmio,
+    // PERF_MEM_REGION_MEM0
+    /// Memory region 0.
+    Mem0,
+    // PERF_MEM_REGION_MEM1
+    /// Memory region 1.
+    Mem1,
+    // PERF_MEM_REGION_MEM2
+    /// Memory region 2.
+    Mem2,
+    // PERF_MEM_REGION_MEM3
+    /// Memory region 3.
+    Mem3,
+    // PERF_MEM_REGION_MEM4
+    /// Memory region 4.
+    Mem4,
+    // PERF_MEM_REGION_MEM5
+    /// Memory region 5.
+    Mem5,
+    // PERF_MEM_REGION_MEM6
+    /// Memory region 6.
+    Mem6,
+    // PERF_MEM_REGION_MEM7
+    /// Memory region 7.
+    Mem7,
     /// Unknown.
     ///
     /// This is for compatibility, not ABI.
