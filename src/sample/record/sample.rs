@@ -675,6 +675,8 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
         b::PERF_MEM_LVLNUM_L2_MHB => MemLevel2::L2Mhb,
         #[cfg(feature = "linux-6.11")]
         b::PERF_MEM_LVLNUM_MSC => MemLevel2::Msc,
+        #[cfg(feature = "linux-7.0")]
+        b::PERF_MEM_LVLNUM_L0 => MemLevel2::L0,
         #[cfg(feature = "linux-6.6")]
         b::PERF_MEM_LVLNUM_UNC => MemLevel2::Unc,
         #[cfg(feature = "linux-6.1")]
@@ -1230,6 +1232,11 @@ pub struct MemTlb {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MemLevel2 {
+    // PERF_MEM_LVLNUM_L0
+    /// L0.
+    ///
+    /// Since `linux-7.0`: <https://github.com/torvalds/linux/commit/d2bdcde9626cbea0c44a6aaa33b440c8adf81e09>
+    L0,
     // PERF_MEM_LVLNUM_L1
     /// L1.
     L1,
