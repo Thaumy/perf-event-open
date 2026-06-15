@@ -50,6 +50,7 @@ where
 
     bindgen::Builder::default()
         .rust_target(env!("CARGO_PKG_RUST_VERSION").parse::<RustTarget>()?)
+        .disable_header_comment()
         .derive_default(true)
         .generate_comments(false)
         .prepend_enum_name(false)
