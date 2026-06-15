@@ -54,24 +54,21 @@ println!("{} instructions retired", instrs);
 for it in sampler.iter() {
     println!("{:-?}", it);
 }
+
+// Example output:
+// 73973233 instructions retired
+// (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+// (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+// (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+// (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+// (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+// (User, Sample { record_id: RecordId { .. }, user_stack: [2, 0, 0, 0, 0, 0, 0, 0], .. })
+// (User, Sample { record_id: RecordId { .. }, user_stack: [1, 0, 0, 0, 0, 0, 0, 0], .. })
+// (User, Sample { record_id: RecordId { .. }, user_stack: [1, 0, 0, 0, 0, 0, 0, 0], .. })
 ```
 
-On my machine, this gives the following output:
-
-```text
-73973233 instructions retired
-(Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
-(Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
-(Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
-(Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
-(Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
-(User, Sample { record_id: RecordId { .. }, user_stack: [2, 0, 0, 0, 0, 0, 0, 0], .. })
-(User, Sample { record_id: RecordId { .. }, user_stack: [1, 0, 0, 0, 0, 0, 0, 0], .. })
-(User, Sample { record_id: RecordId { .. }, user_stack: [1, 0, 0, 0, 0, 0, 0, 0], .. })
-```
-
-For more use cases, please check the
-[docs](https://docs.rs/perf-event-open/latest/perf_event_open/).
+For more use cases, please refer to
+[documentation](https://docs.rs/perf-event-open/latest/perf_event_open/).
 
 ## Compatibility
 

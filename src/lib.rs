@@ -38,6 +38,17 @@
 //! for it in sampler.iter() {
 //!     println!("{:-?}", it);
 //! }
+//!
+//! // Example output:
+//! // 73973233 instructions retired
+//! // (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+//! // (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+//! // (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+//! // (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+//! // (Kernel, Sample { record_id: RecordId { .. }, user_stack: [16, 0, 0, 0, 0, 0, 0, 0], .. })
+//! // (User, Sample { record_id: RecordId { .. }, user_stack: [2, 0, 0, 0, 0, 0, 0, 0], .. })
+//! // (User, Sample { record_id: RecordId { .. }, user_stack: [1, 0, 0, 0, 0, 0, 0, 0], .. })
+//! // (User, Sample { record_id: RecordId { .. }, user_stack: [1, 0, 0, 0, 0, 0, 0, 0], .. })
 //! ```
 //!
 //! ## Compatibility
