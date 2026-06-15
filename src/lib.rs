@@ -48,9 +48,8 @@
 //! the target host kernel. These features are backwards compatible, e.g.
 //! `linux-6.11` works with Linux 6.12 but may not work with Linux 6.10.
 //!
-//! The `legacy` feature is compatible with the oldest LTS kernel that still in
-//! maintenance, or you can use the `latest` feature if you don't care about the
-//! kernel compatibility.
+//! The `latest` feature is an alias for the latest `linux-` feature; only choose it
+//! if you don't care about kernel compatibility.
 //!
 //! Calling Linux-specific functions (e.g., `Counter::new`) on non-Linux targets
 //! will return an error, but configuration and profiling result types are

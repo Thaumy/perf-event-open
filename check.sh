@@ -24,7 +24,6 @@ echo ''
 
 check serde
 check latest
-check legacy
 check linux-6.13
 check linux-6.11
 check linux-6.8
