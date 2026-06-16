@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io::Result;
 use std::ptr::{null_mut, NonNull};
-use std::slice;
 
 use crate::ffi::syscall;
 
@@ -32,8 +31,12 @@ impl Arena {
         })
     }
 
-    pub fn as_slice(&self) -> &[u8] {
-        unsafe { slice::from_raw_parts(self.ptr.as_ptr(), self.len) }
+    pub fn as_ptr(&self) -> *mut u8 {
+        self.ptr.as_ptr()
+    }
+
+    pub fn len(&self) -> usize {
+        self.len
     }
 }
 
