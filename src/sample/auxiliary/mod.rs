@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Result;
+use std::slice;
 use std::sync::atomic::AtomicU64;
 
 use iter::{CowIter, Iter};
@@ -78,7 +79,7 @@ pub struct AuxTracer<'a> {
 }
 
 impl<'a> AuxTracer<'a> {
-    pub(crate) fn new(perf: &'a File, metadata: &'a mut Metadata, exp: u8) -> Result<Self> {
+    pub(crate) fn new(perf: &'a File, metadata: *mut Metadata, exp: u8) -> Result<Self> {
         #[cfg(feature = "linux-4.1")]
         return {
             use std::io::Error;
@@ -91,12 +92,13 @@ impl<'a> AuxTracer<'a> {
             else {
                 return Err(Error::other("allocation size overflow"));
             };
-            metadata.aux_size = len as _;
-            metadata.aux_offset = metadata.data_offset + metadata.data_size;
+            let aux_offset = unsafe { (*metadata).data_offset + (*metadata).data_size };
+            unsafe { (*metadata).aux_size = len as _ };
+            unsafe { (*metadata).aux_offset = aux_offset };
 
-            let arena = Arena::new(perf, metadata.aux_size as _, metadata.aux_offset as _)?;
-            let tail = unsafe { AtomicU64::from_ptr(&mut metadata.aux_tail as _) };
-            let head = unsafe { AtomicU64::from_ptr(&mut metadata.aux_head as _) };
+            let arena = Arena::new(perf, len, aux_offset as _)?;
+            let tail = unsafe { AtomicU64::from_ptr(&mut (*metadata).aux_tail) };
+            let head = unsafe { AtomicU64::from_ptr(&mut (*metadata).aux_head) };
 
             Ok(Self {
                 tail,
@@ -116,8 +118,12 @@ impl<'a> AuxTracer<'a> {
 
     /// Get an iterator of the AUX area.
     pub fn iter(&self) -> Iter<'_> {
+        let rb_ptr = self.arena.as_ptr();
+        let rb_len = self.arena.len();
+        let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
+
         Iter(CowIter {
-            rb: Rb::new(self.arena.as_slice(), self.tail, self.head),
+            rb: Rb::new(rb_alloc, self.tail, self.head),
             perf: self.perf,
         })
     }

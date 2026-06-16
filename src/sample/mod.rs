@@ -1,8 +1,8 @@
 use std::fs::File;
 use std::io::{Error, Result};
-use std::ptr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::{ptr, slice};
 
 use arena::Arena;
 use auxiliary::AuxTracer;
@@ -83,14 +83,22 @@ impl Sampler {
 
     /// Returns a record iterator over the kernel ring buffer.
     pub fn iter(&self) -> Iter<'_> {
-        let alloc = self.arena.as_slice();
-        let metadata = unsafe { &mut *(alloc.as_ptr() as *mut Metadata) };
+        let arena_ptr = self.arena.as_ptr();
+
+        // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6212
+        let page_size = *PAGE_SIZE;
+        let rb_ptr = unsafe { arena_ptr.add(page_size) };
+        let rb_len = self.arena.len() - page_size;
+        let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
+
+        let metadata = arena_ptr as *mut Metadata;
+
         let rb = Rb::new(
-            // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6212
-            &alloc[*PAGE_SIZE..],
-            unsafe { AtomicU64::from_ptr(&mut metadata.data_tail as _) },
-            unsafe { AtomicU64::from_ptr(&mut metadata.data_head as _) },
+            rb_alloc,
+            unsafe { AtomicU64::from_ptr(&mut (*metadata).data_tail) },
+            unsafe { AtomicU64::from_ptr(&mut (*metadata).data_head) },
         );
+
         Iter(CowIter {
             rb,
             perf: &self.perf,
@@ -112,8 +120,7 @@ impl Sampler {
     /// AUX tracers from the same sampler shares the same ring buffer in the
     /// kernel space, so `exp` should be the same.
     pub fn aux_tracer(&self, exp: u8) -> Result<AuxTracer<'_>> {
-        let alloc = self.arena.as_slice();
-        let metadata = unsafe { &mut *(alloc.as_ptr() as *mut Metadata) };
+        let metadata = self.arena.as_ptr() as *mut Metadata;
         AuxTracer::new(&self.perf, metadata, exp)
     }
 
@@ -307,20 +314,14 @@ impl Sampler {
         Ok(())
     }
 
-    fn metadata_inner(&self) -> *mut Metadata {
-        let alloc_ptr = self.arena.as_slice().as_ptr();
-        alloc_ptr as *mut Metadata
-    }
-
     /// Counter's enabled time.
     ///
     /// Same as [time][crate::count::Stat::time_enabled] returned by
     /// [`Counter::stat`][crate::count::Counter::stat], but much cheaper
     /// since the value is read from memory instead of system call.
     pub fn counter_time_enabled(&self) -> u64 {
-        let metadata = self.metadata_inner();
-        let metadata = unsafe { &mut *metadata };
-        let time_enabled = unsafe { AtomicU64::from_ptr(&mut metadata.time_enabled as _) };
+        let metadata = self.arena.as_ptr() as *mut Metadata;
+        let time_enabled = unsafe { AtomicU64::from_ptr(&mut (*metadata).time_enabled) };
         time_enabled.load(Ordering::Relaxed)
     }
 
@@ -330,9 +331,8 @@ impl Sampler {
     /// [`Counter::stat`][crate::count::Counter::stat], but much cheaper
     /// since the value is read from memory instead of system call.
     pub fn counter_time_running(&self) -> u64 {
-        let metadata = self.metadata_inner();
-        let metadata = unsafe { &mut *metadata };
-        let time_running = unsafe { AtomicU64::from_ptr(&mut metadata.time_running as _) };
+        let metadata = self.arena.as_ptr() as *mut Metadata;
+        let time_running = unsafe { AtomicU64::from_ptr(&mut (*metadata).time_running) };
         time_running.load(Ordering::Relaxed)
     }
 }
