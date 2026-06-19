@@ -12,6 +12,47 @@ pub use up::*;
 use super::EventConfig;
 
 /// Dynamic PMU event
+///
+/// # Examples
+///
+/// Access a PMU exposed under `/sys/bus/event_source/devices` directly.
+/// Here we use the always-available `software` PMU to count page faults:
+///
+/// ```rust
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::dp::DynamicPmu;
+///
+/// let type_path = "/sys/bus/event_source/devices/software/type";
+/// let ty = std::fs::read_to_string(type_path)
+///     .unwrap()
+///     .trim()
+///     .parse()
+///     .unwrap();
+///
+/// let event = DynamicPmu {
+///     ty,
+///     config: 2, // PERF_COUNT_SW_PAGE_FAULTS
+///     config1: 0,
+///     config2: 0,
+///     config3: 0,
+/// };
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let counter = Counter::new(event, target, Opts::default()).unwrap();
+///
+/// counter.enable().unwrap(); // Start the counter.
+/// // Touch every page of a fresh allocation to trigger page faults.
+/// let mut buf = vec![0u8; 4096 * 1024];
+/// for page in buf.chunks_mut(4096) {
+///     page[0] = 1;
+/// }
+/// std::hint::black_box(&buf);
+/// counter.disable().unwrap(); // Stop the counter.
+///
+/// let faults = counter.stat().unwrap().count;
+/// println!("{} page faults", faults);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DynamicPmu {
