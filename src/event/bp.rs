@@ -8,6 +8,37 @@ use crate::ffi::bindings as b;
 ///
 /// Breakpoints can be read/write accesses to an address as well as
 /// execution of an instruction address.
+///
+/// # Examples
+///
+/// Count writes to a variable by watching its address:
+///
+/// ```rust
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::bp::{Breakpoint, Len, Type};
+///
+/// let mut var = 0u64;
+///
+/// // Count 8-byte writes to the address of `var`.
+/// let event = Breakpoint {
+///     ty: Type::W(Len::_8),
+///     addr: &var as *const u64 as u64,
+/// };
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let counter = Counter::new(event, target, Opts::default()).unwrap();
+///
+/// counter.enable().unwrap(); // Start the counter.
+/// for i in 0..10 {
+///     var = i;
+///     std::hint::black_box(var);
+/// }
+/// counter.disable().unwrap(); // Stop the counter.
+///
+/// let writes = counter.stat().unwrap().count;
+/// assert_eq!(writes, 10);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Breakpoint {
