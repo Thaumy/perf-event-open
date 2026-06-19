@@ -2,6 +2,35 @@ use super::EventConfig;
 use crate::ffi::bindings as b;
 
 /// A "raw" implementation-specific event.
+///
+/// # Examples
+///
+/// Raw event encodings are CPU-specific; consult your processor's manual
+/// (e.g. the Intel SDM or AMD PPR) for the event and umask values.
+///
+/// ```rust, no_run
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::raw::Raw;
+///
+/// // Retired instructions on most Intel and AMD CPUs (event 0xc0, umask 0x00).
+/// let event = Raw {
+///     config: 0xc0,
+///     config1: 0,
+///     config2: 0,
+///     config3: 0,
+/// };
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let counter = Counter::new(event, target, Opts::default()).unwrap();
+///
+/// counter.enable().unwrap(); // Start the counter.
+/// std::hint::black_box((0..1_000_u64).sum::<u64>());
+/// counter.disable().unwrap(); // Stop the counter.
+///
+/// let count = counter.stat().unwrap().count;
+/// println!("raw event count: {}", count);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Raw {
