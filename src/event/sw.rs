@@ -2,6 +2,33 @@ use super::EventConfig;
 use crate::ffi::bindings as b;
 
 /// Software events provided by the kernel.
+///
+/// # Examples
+///
+/// Count page faults triggered by touching freshly allocated memory:
+///
+/// ```rust
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::sw::Software;
+///
+/// let event = Software::PageFault;
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let counter = Counter::new(event, target, Opts::default()).unwrap();
+///
+/// counter.enable().unwrap(); // Start the counter.
+/// // Touch every page of a fresh allocation to trigger page faults.
+/// let mut buf = vec![0u8; 4096 * 1024];
+/// for page in buf.chunks_mut(4096) {
+///     page[0] = 1;
+/// }
+/// std::hint::black_box(&buf);
+/// counter.disable().unwrap(); // Stop the counter.
+///
+/// let faults = counter.stat().unwrap().count;
+/// println!("{} page faults", faults);
+/// ```
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Software {
