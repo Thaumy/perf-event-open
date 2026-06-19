@@ -4,6 +4,33 @@ use crate::ffi::bindings as b;
 /// Generalized hardware CPU events.
 ///
 /// Not all of these are available on all platforms.
+///
+/// # Examples
+///
+/// Count L1 data cache read misses while walking a large buffer:
+///
+/// ```rust
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::hw::{Hardware, Op, OpResult, Type};
+///
+/// // Count L1 data cache read misses on the current process, all CPUs.
+/// let event = Hardware::Cache(Type::L1d, Op::Read, OpResult::Miss);
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let counter = Counter::new(event, target, Opts::default()).unwrap();
+///
+/// counter.enable().unwrap(); // Start the counter.
+/// let mut buf = vec![0_u8; 1024];
+/// for i in (0..buf.len()).step_by(64) {
+///     buf[i] = buf[i].wrapping_add(1);
+/// }
+/// std::hint::black_box(&buf);
+/// counter.disable().unwrap(); // Stop the counter.
+///
+/// let misses = counter.stat().unwrap().count;
+/// println!("{} L1 data cache read misses", misses);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Hardware {
