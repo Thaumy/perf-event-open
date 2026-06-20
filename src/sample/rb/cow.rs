@@ -8,8 +8,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 /// so it is necessary to drop this type as early as possible to
 /// avoid the ring buffer being stuck due to insufficient space.
 pub struct CowChunk<'a> {
-    pub(in crate::sample) tail: &'a AtomicU64,
-    pub(in crate::sample) new_tail: u64,
+    pub(in crate::sample) raw_tail: &'a AtomicU64,
+    pub(in crate::sample) new_raw_tail: u64,
     pub(in crate::sample) chunk: Cow<'a, [u8]>,
 }
 
@@ -36,7 +36,7 @@ impl Drop for CowChunk<'_> {
     fn drop(&mut self) {
         if let Cow::Borrowed(_) = self.chunk {
             // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L723
-            self.tail.store(self.new_tail, Ordering::Release);
+            self.raw_tail.store(self.new_raw_tail, Ordering::Release);
         }
     }
 }

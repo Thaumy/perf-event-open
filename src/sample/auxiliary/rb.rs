@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::cmp::Ordering as Ord;
 use std::num::NonZeroUsize;
 use std::ptr::copy_nonoverlapping;
 use std::slice;
@@ -9,13 +8,17 @@ use crate::sample::rb::CowChunk;
 
 pub struct Rb<'a> {
     alloc: &'a [u8],
-    tail: &'a AtomicU64,
-    head: &'a AtomicU64,
+    raw_tail: &'a AtomicU64,
+    raw_head: &'a AtomicU64,
 }
 
 impl<'a> Rb<'a> {
-    pub fn new(alloc: &'a [u8], tail: &'a AtomicU64, head: &'a AtomicU64) -> Self {
-        Self { alloc, tail, head }
+    pub fn new(alloc: &'a [u8], raw_tail: &'a AtomicU64, raw_head: &'a AtomicU64) -> Self {
+        Self {
+            alloc,
+            raw_tail,
+            raw_head,
+        }
     }
 
     pub fn lending_pop(&self, max_chunk_len: Option<NonZeroUsize>) -> Option<CowChunk<'a>> {
@@ -23,25 +26,23 @@ impl<'a> Rb<'a> {
         let size = self.alloc.len();
 
         // Thread safe since no more threads set the tail
-        let tail = unsafe { *self.tail.as_ptr() };
+        let raw_tail = unsafe { *self.raw_tail.as_ptr() };
         // About acquire:
         // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L720
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L99
-        let head = self.head.load(MemOrd::Acquire) & (size - 1) as u64;
+        let raw_head = self.raw_head.load(MemOrd::Acquire);
 
-        let chunk_len = {
-            let len = match tail.cmp(&head) {
-                Ord::Less => head - tail,
-                Ord::Greater => size as u64 + head - tail,
-                Ord::Equal => return None,
-            };
-            match max_chunk_len {
-                Some(max) => len.min(max.get() as _),
-                None => len,
-            }
+        let data_len = raw_head.wrapping_sub(raw_tail) & (size as u64 - 1);
+        if data_len == 0 {
+            return None;
+        }
+        let chunk_len = match max_chunk_len {
+            Some(max) => data_len.min(max.get() as _),
+            None => data_len,
         };
 
-        let new_tail = (tail + chunk_len) & (size - 1) as u64;
+        let tail = raw_tail & (size as u64 - 1);
+        let new_raw_tail = raw_tail.wrapping_add(chunk_len);
 
         let chunk = match size as i64 - (tail + chunk_len) as i64 {
             d if d >= 0 => {
@@ -67,15 +68,15 @@ impl<'a> Rb<'a> {
                 }
 
                 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L723
-                self.tail.store(new_tail, MemOrd::Release);
+                self.raw_tail.store(new_raw_tail, MemOrd::Release);
 
                 Cow::Owned(buf)
             }
         };
 
         Some(CowChunk {
-            tail: self.tail,
-            new_tail,
+            raw_tail: self.raw_tail,
+            new_raw_tail,
             chunk,
         })
     }

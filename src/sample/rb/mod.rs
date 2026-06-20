@@ -10,13 +10,17 @@ mod cow;
 
 pub(super) struct Rb<'a> {
     alloc: &'a [u8],
-    tail: &'a AtomicU64,
-    head: &'a AtomicU64,
+    raw_tail: &'a AtomicU64,
+    raw_head: &'a AtomicU64,
 }
 
 impl<'a> Rb<'a> {
-    pub fn new(alloc: &'a [u8], tail: &'a AtomicU64, head: &'a AtomicU64) -> Self {
-        Self { alloc, tail, head }
+    pub fn new(alloc: &'a [u8], raw_tail: &'a AtomicU64, raw_head: &'a AtomicU64) -> Self {
+        Self {
+            alloc,
+            raw_tail,
+            raw_head,
+        }
     }
 
     pub fn lending_pop(&self) -> Option<CowChunk<'a>> {
@@ -24,15 +28,17 @@ impl<'a> Rb<'a> {
         let size = self.alloc.len();
 
         // Thread safe since no more threads set the tail
-        let tail = unsafe { *self.tail.as_ptr() };
+        let raw_tail = unsafe { *self.raw_tail.as_ptr() };
         // About acquire:
         // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L720
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L99
-        let head = self.head.load(MemOrd::Acquire) & (size - 1) as u64;
+        let raw_head = self.raw_head.load(MemOrd::Acquire);
 
-        if tail == head {
+        if raw_tail == raw_head {
             return None;
         }
+
+        let tail = raw_tail & (size as u64 - 1);
 
         // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L824
         // struct perf_event_header {
@@ -60,7 +66,7 @@ impl<'a> Rb<'a> {
             }
         };
 
-        let new_tail = (tail + chunk_len as u64) & (size - 1) as u64;
+        let new_raw_tail = raw_tail.wrapping_add(chunk_len as u64);
 
         let chunk = match size as i64 - (tail + chunk_len as u64) as i64 {
             d if d >= 0 => {
@@ -86,15 +92,15 @@ impl<'a> Rb<'a> {
                 }
 
                 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L723
-                self.tail.store(new_tail, MemOrd::Release);
+                self.raw_tail.store(new_raw_tail, MemOrd::Release);
 
                 Cow::Owned(buf)
             }
         };
 
         Some(CowChunk {
-            tail: self.tail,
-            new_tail,
+            raw_tail: self.raw_tail,
+            new_raw_tail,
             chunk,
         })
     }
