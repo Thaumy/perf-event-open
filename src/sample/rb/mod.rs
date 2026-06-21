@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::alloc::{alloc, handle_alloc_error, Layout};
 use std::cmp::Ordering as Ord;
 use std::ptr::copy_nonoverlapping;
 use std::slice;
@@ -66,19 +66,21 @@ impl<'a> Rb<'a> {
             }
         };
 
-        let new_raw_tail = raw_tail.wrapping_add(chunk_len as u64);
-
-        let chunk = match size as i64 - (tail + chunk_len as u64) as i64 {
+        Some(match size as i64 - (tail + chunk_len as u64) as i64 {
             d if d >= 0 => {
-                let buf = unsafe {
+                let chunk = unsafe {
                     let ptr = rb_ptr.add(tail as _);
                     slice::from_raw_parts(ptr, chunk_len as _)
                 };
-                Cow::Borrowed(buf)
+
+                unsafe { CowChunk::borrowed(self.raw_tail, chunk) }
             }
             d => {
-                let mut buf = Vec::with_capacity(chunk_len as _);
-                let buf_ptr = buf.as_mut_ptr();
+                let buf_layout = unsafe { Layout::from_size_align_unchecked(chunk_len as _, 64) };
+                let buf_ptr = unsafe { alloc(buf_layout) };
+                if buf_ptr.is_null() {
+                    handle_alloc_error(buf_layout)
+                }
 
                 unsafe {
                     let hi_part_ptr = rb_ptr.add(tail as _);
@@ -88,20 +90,13 @@ impl<'a> Rb<'a> {
                     let lo_part_ptr = rb_ptr;
                     let lo_part_len = -d as _;
                     copy_nonoverlapping(lo_part_ptr, buf_ptr.add(hi_part_len), lo_part_len);
-                    buf.set_len(chunk_len as _);
                 }
 
                 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L723
-                self.raw_tail.store(new_raw_tail, MemOrd::Release);
+                self.raw_tail.fetch_add(chunk_len as _, MemOrd::Release);
 
-                Cow::Owned(buf)
+                unsafe { CowChunk::owned(buf_ptr, buf_layout) }
             }
-        };
-
-        Some(CowChunk {
-            raw_tail: self.raw_tail,
-            new_raw_tail,
-            chunk,
         })
     }
 }
