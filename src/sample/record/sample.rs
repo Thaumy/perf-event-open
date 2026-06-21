@@ -380,11 +380,14 @@ unsafe fn parse_call_chain(ptr: &mut *const u8) -> Vec<CallChain> {
             b::PERF_CONTEXT_USER => CallChain::User(take_ips(iter)),
             #[cfg(feature = "linux-6.19")]
             b::PERF_CONTEXT_USER_DEFERRED => {
-                // A following cookie is always available to stitch with
-                // the upcoming PERF_RECORD_CALLCHAIN_DEFERRED record.
-                // See: https://github.com/torvalds/linux/blob/v6.19/kernel/events/callchain.c#L262
-                let cookie = iter.next().unwrap_unchecked();
-                CallChain::UserDeferred { cookie }
+                // If we reached perf_event_max_contexts_per_stack, the
+                // following cookie will be unavailable. We discard the
+                // PERF_CONTEXT_USER_DEFERRED in this case.
+                // See: https://github.com/torvalds/linux/blob/v6.19/include/linux/perf_event.h#L1750
+                match iter.next() {
+                    Some(cookie) => CallChain::UserDeferred { cookie },
+                    None => break,
+                }
             }
             b::PERF_CONTEXT_KERNEL => CallChain::Kernel(take_ips(iter)),
             b::PERF_CONTEXT_HV => CallChain::Hv(take_ips(iter)),
