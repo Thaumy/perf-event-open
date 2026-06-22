@@ -11,6 +11,37 @@ const TYPE_PATH: &str = "/sys/bus/event_source/devices/kprobe/type";
 const RETPROBE_PATH: &str = "/sys/bus/event_source/devices/kprobe/format/retprobe";
 
 /// Kernel probe event
+///
+/// # Examples
+///
+/// Count calls to the kernel function `do_sys_openat2` (which handles the
+/// `openat` syscall) by opening files.
+///
+/// Running this example may require root privileges.
+///
+/// ```rust, no_run
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::dp::Kprobe;
+///
+/// // Probe the entry of `do_sys_openat2`.
+/// let event = Kprobe::Symbol {
+///     name: c"do_sys_openat2",
+///     offset: 0,
+/// };
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let counter = Counter::new(event, target, Opts::default()).unwrap();
+///
+/// counter.enable().unwrap(); // Start the counter.
+/// for _ in 0..10 {
+///     let _ = std::fs::File::open("/proc/self/status");
+/// }
+/// counter.disable().unwrap(); // Stop the counter.
+///
+/// let hits = counter.stat().unwrap().count;
+/// println!("{} calls to do_sys_openat2", hits);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Kprobe {
     /// Symbol + offset where the probe is inserted.
@@ -59,6 +90,36 @@ impl TryFrom<Kprobe> for Event {
 }
 
 /// Kernel return probe event
+///
+/// # Examples
+///
+/// Count returns from the kernel function `do_sys_openat2` by opening files.
+///
+/// Running this example may require root privileges.
+///
+/// ```rust, no_run
+/// use perf_event_open::config::{Cpu, Opts, Proc};
+/// use perf_event_open::count::Counter;
+/// use perf_event_open::event::dp::Kretprobe;
+///
+/// // Probe the return of `do_sys_openat2`.
+/// let event = Kretprobe::Symbol {
+///     name: c"do_sys_openat2",
+///     offset: 0,
+/// };
+/// let target = (Proc::CURRENT, Cpu::ALL);
+///
+/// let counter = Counter::new(event, target, Opts::default()).unwrap();
+///
+/// counter.enable().unwrap(); // Start the counter.
+/// for _ in 0..10 {
+///     let _ = std::fs::File::open("/proc/self/status");
+/// }
+/// counter.disable().unwrap(); // Stop the counter.
+///
+/// let hits = counter.stat().unwrap().count;
+/// println!("{} returns from do_sys_openat2", hits);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Kretprobe {
     /// Symbol + offset where the probe is inserted.
