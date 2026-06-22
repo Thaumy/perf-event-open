@@ -225,12 +225,20 @@ impl Counter {
     }
 
     /// Returns counter statistics.
+    ///
+    /// Returns an [`UnexpectedEof`][std::io::ErrorKind::UnexpectedEof] error if
+    /// the event is in an error state, for example a pinned event that could
+    /// not be scheduled onto the CPU.
     pub fn stat(&self) -> Result<Stat> {
         // There could be only up to one reference to `read_buf` at the same time,
         // since `Counter` is not `Sync`.
         let buf = unsafe { &mut *self.read_buf.get() };
 
-        syscall!(read, &self.perf, buf)?;
+        let n: Result<usize> = syscall!(read, &self.perf, buf);
+        // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L5799
+        if n? == 0 {
+            return Err(ErrorKind::UnexpectedEof.into());
+        }
         let ptr = buf.as_ptr();
 
         // We only change the attr fields related to event config,
