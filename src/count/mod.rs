@@ -110,7 +110,7 @@ impl Counter {
         #[cfg(any(target_os = "linux", target_os = "android"))]
         return crate::ffi::linux_syscall::prctl(libc::PR_TASK_PERF_EVENTS_ENABLE);
         #[cfg(not(any(target_os = "linux", target_os = "android")))]
-        return Err(std::io::ErrorKind::Unsupported.into());
+        return Err(ErrorKind::Unsupported.into());
     }
 
     /// Disables all counters created by the current process.
@@ -118,7 +118,7 @@ impl Counter {
         #[cfg(any(target_os = "linux", target_os = "android"))]
         return crate::ffi::linux_syscall::prctl(libc::PR_TASK_PERF_EVENTS_DISABLE);
         #[cfg(not(any(target_os = "linux", target_os = "android")))]
-        return Err(std::io::ErrorKind::Unsupported.into());
+        return Err(ErrorKind::Unsupported.into());
     }
 
     /// Create a sampler for this counter.
@@ -226,7 +226,7 @@ impl Counter {
 
     /// Returns counter statistics.
     ///
-    /// Returns an [`UnexpectedEof`][std::io::ErrorKind::UnexpectedEof] error if
+    /// Returns an [`UnexpectedEof`][ErrorKind::UnexpectedEof] error if
     /// the event is in an error state, for example a pinned event that could
     /// not be scheduled onto the CPU.
     pub fn stat(&self) -> Result<Stat> {
@@ -327,7 +327,7 @@ impl Counter {
         #[cfg(not(feature = "linux-4.16"))]
         return {
             let _ = buf_len;
-            Err(std::io::ErrorKind::Unsupported.into())
+            Err(ErrorKind::Unsupported.into())
         };
     }
 
@@ -394,7 +394,7 @@ impl Counter {
         #[cfg(not(feature = "linux-4.17"))]
         return {
             let _ = event;
-            Err(std::io::ErrorKind::Unsupported.into())
+            Err(ErrorKind::Unsupported.into())
         };
     }
 }
