@@ -285,8 +285,13 @@ impl Counter {
             //     u32 ids[0];
             // }
 
-            let mut buf = vec![MaybeUninit::uninit(); (2 + buf_len) as _];
-            buf[0] = MaybeUninit::new(buf_len); // set `ids_len`
+            let ids_len = buf_len;
+            let buf_len = 2_usize.saturating_add(ids_len as _);
+            let mut buf = vec![MaybeUninit::uninit(); buf_len];
+            // It's impossible to overflow the buffer when
+            // ids_len + 2 > usize::MAX, because the machine can never have
+            // that many memory addresses.
+            buf[0] = MaybeUninit::new(ids_len); // set `ids_len`
 
             let buf_addr = buf.as_mut_ptr() as u64;
             match syscall!(
@@ -317,7 +322,7 @@ impl Counter {
                         let ids = buf[2..].to_vec();
                         let ids = unsafe { transmute::<Vec<_>, Vec<u32>>(ids) };
 
-                        return Ok((ids, Some(prog_cnt - buf_len)));
+                        return Ok((ids, Some(prog_cnt - ids_len)));
                     }
 
                     Err(e)
