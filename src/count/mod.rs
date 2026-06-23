@@ -304,6 +304,11 @@ impl Counter {
                 Ok::<i32, _>(_) => {
                     let prog_cnt = unsafe { buf[1].assume_init() };
 
+                    // https://github.com/torvalds/linux/blob/v6.13/kernel/bpf/core.c#L2731
+                    if ids_len == 0 {
+                        return Ok((vec![], Some(prog_cnt).filter(|n| *n > 0)));
+                    }
+
                     let ids = buf[2..2 + (prog_cnt as usize)].to_vec();
                     let ids = unsafe { transmute::<Vec<_>, Vec<u32>>(ids) };
 
