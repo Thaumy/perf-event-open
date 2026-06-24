@@ -3,7 +3,6 @@ use std::cell::UnsafeCell;
 use std::ffi::CStr;
 use std::fs::File;
 use std::io::{self, Error, ErrorKind, Result};
-use std::os::fd::AsRawFd;
 use std::ptr;
 use std::sync::Arc;
 
@@ -253,16 +252,27 @@ impl Counter {
     ///
     /// The argument is a BPF program file that was created by a previous
     /// [`bpf`](https://man7.org/linux/man-pages/man2/bpf.2.html) system call.
+    ///
+    /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/2541517c32be2531e0da59dfd7efc1ce844644f5>
     pub fn attach_bpf(&self, file: &File) -> Result<()> {
-        let fd = file.as_raw_fd();
-        syscall!(
-            unsafe,
-            ioctl_arg,
-            &self.perf,
-            b::PERF_IOC_OP_SET_BPF as u64,
-            fd as u64,
-        )?;
-        Ok(())
+        #[cfg(feature = "linux-4.1")]
+        {
+            use std::os::fd::AsRawFd;
+            let fd = file.as_raw_fd();
+            syscall!(
+                unsafe,
+                ioctl_arg,
+                &self.perf,
+                b::PERF_IOC_OP_SET_BPF as u64,
+                fd as u64,
+            )?;
+            Ok(())
+        }
+        #[cfg(not(feature = "linux-4.1"))]
+        return {
+            let _ = file;
+            Err(ErrorKind::Unsupported.into())
+        };
     }
 
     /// Querying which BPF programs are attached to the
