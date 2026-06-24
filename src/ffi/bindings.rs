@@ -52,5 +52,6 @@ select! {
     ["linux-4.3" .."linux-4.4" ],
     ["linux-4.2" .."linux-4.3" ],
     ["linux-4.1" .."linux-4.2" ],
-    [            .."linux-4.1" ],
+    ["linux-4.0" .."linux-4.1" ],
+    [            .."linux-4.0" ],
 }
