@@ -19,8 +19,8 @@ pub(crate) mod attr;
 pub struct Opts {
     /// Exclude events with privilege levels.
     ///
-    /// For example, if we set [`Priv::user`] to `true` here,
-    /// events that happen in user space will not be counted.
+    /// For example, if we set [`Priv::user`] to `true` here, events that happen in
+    /// user space will not be counted.
     pub exclude: Priv,
 
     /// Controls the inherit behavior.
@@ -61,8 +61,8 @@ pub struct Opts {
     /// Enable sibling event to generate data for leader AUX event.
     ///
     /// In some cases, ordinary (non-AUX) events can generate data for AUX events.
-    /// For example, PEBS events can come out as records in the Intel PT stream
-    /// instead of their usual DS records, if configured to do so.
+    /// For example, PEBS events can come out as records in the Intel PT stream instead
+    /// of their usual DS records, if configured to do so.
     ///
     /// This requires the group leader to be an AUX event.
     ///
@@ -87,7 +87,7 @@ pub struct StatFormat {
     /// Contains the [running time][crate::count::Stat::time_running] of the counter.
     pub time_running: bool,
 
-    /// Contains the number of lost records ([`Stat::lost_records`][crate::count::Stat::lost_records].
+    /// Contains the number of lost records ([`Stat::lost_records`][crate::count::Stat::lost_records]
     /// and [`SiblingStat::lost_records`][crate::count::SiblingStat::lost_records]).
     ///
     /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
@@ -124,8 +124,8 @@ pub struct OnSample {
 
     // Must be used together with `remove_on_exec`:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12538
-    /// Enables synchronous signal delivery of `SIGTRAP` to the target
-    /// process on event overflow.
+    /// Enables synchronous signal delivery of `SIGTRAP` to the target process on event
+    /// overflow.
     ///
     /// Same as [`Opts::sigtrap_on_sample`][super::Opts::sigtrap_on_sample],
     /// but for sibling events.

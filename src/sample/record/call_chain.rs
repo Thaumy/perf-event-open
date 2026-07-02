@@ -2,8 +2,7 @@ use super::RecordId;
 
 /// Deferred call chain.
 ///
-/// Needs to be stitched to the previous incomplete call chain
-/// to form the full one.
+/// Must be stitched to the previous incomplete call chain to form the full one.
 ///
 /// Can be enabled by [`ExtraRecord::call_chain_deferred`][crate::config::ExtraRecord::call_chain_deferred].
 ///

@@ -34,7 +34,8 @@ use crate::ffi::bindings as b;
 pub enum Software {
     /// This reports the CPU clock, a high-resolution per-CPU timer.
     CpuClock,
-    /// This reports a clock count specific to the task that is running (in nanoseconds).
+    /// This reports a clock count specific to the task that is running
+    /// (in nanoseconds).
     TaskClock,
 
     /// The number of page faults.
@@ -46,20 +47,22 @@ pub enum Software {
 
     /// The number of emulation faults.
     ///
-    /// The kernel sometimes traps on unimplemented instructions and emulates them for
-    /// user space. This can negatively impact performance.
+    /// The kernel sometimes traps on unimplemented instructions and emulates them
+    /// for user space. This can negatively impact performance.
     EmuFault,
     /// The number of alignment faults.
     ///
-    /// These happen when unaligned memory accesses happen; the kernel can handle these but
-    /// it reduces performance. This happens only on some architectures (never on x86).
+    /// These happen when unaligned memory accesses happen; the kernel can handle these
+    /// but it reduces performance. This happens only on some architectures
+    /// (never on x86).
     AlignFault,
 
-    /// This number of context switches.
+    /// The number of context switches.
     CtxSwitch,
     /// This counts context switches to a task in a different cgroup.
     ///
-    /// In other words, if the next task is in the same cgroup, it won't count the switch.
+    /// In other words, if the next task is in the same cgroup, it won't count
+    /// the switch.
     ///
     /// Since `linux-5.13`: <https://github.com/torvalds/linux/commit/d0d1dd628527c77db2391ce0293c1ed344b2365f>
     CgroupSwitch,

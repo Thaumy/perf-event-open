@@ -14,8 +14,8 @@ use crate::sample::record::Parser;
 
 /// COW (copy-on-write) record iterator.
 ///
-/// This type allows you to access the raw bytes of record in the
-/// underlying ring buffer directly without copy it to the outside.
+/// This type allows you to access the raw bytes of a record in the underlying
+/// ring buffer directly without copying them out.
 pub struct CowIter<'a> {
     pub(in crate::sample) rb: Rb<'a>,
     pub(in crate::sample) perf: &'a File,
@@ -25,10 +25,10 @@ pub struct CowIter<'a> {
 impl<'a> CowIter<'a> {
     /// Advances the iterator and returns the next value.
     ///
-    /// If sampling is in happening, operations in the closure should be
-    /// quick and cheap. Slow iteration of raw bytes may throttle kernel
-    /// threads from outputting new data to the ring buffer, and heavy
-    /// operations may affect the performance of the target process.
+    /// If sampling is active, operations in the closure should be quick and cheap.
+    /// Slow iteration of raw bytes may throttle kernel threads from outputting new data
+    /// to the ring buffer, and heavy operations may affect the performance of
+    /// the target process.
     ///
     /// # Examples
     ///
@@ -42,7 +42,7 @@ impl<'a> CowIter<'a> {
     ///
     /// let mut opts = Opts::default();
     /// opts.sample_on = SampleOn::Count(50_000); // 50us
-    /// opts.sample_format.user_stack = Some(Size(8)); // Dump 8-bytes user stack in sample.
+    /// opts.sample_format.user_stack = Some(Size(8)); // Dump an 8-byte user stack in each sample.
     ///
     /// let counter = Counter::new(event, target, &opts).unwrap();
     /// let sampler = counter.sampler(5).unwrap();

@@ -5,8 +5,8 @@ use crate::ffi::bindings as b;
 ///
 /// # Examples
 ///
-/// Raw event encodings are CPU-specific; consult your processor's manual
-/// (e.g. the Intel SDM or AMD PPR) for the event and umask values.
+/// Raw event encodings are CPU-specific; consult your processor's manual (e.g.
+/// the Intel SDM or AMD PPR) for the event and umask values.
 ///
 /// ```rust, no_run
 /// use perf_event_open::config::{Cpu, Opts, Proc};

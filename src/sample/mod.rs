@@ -41,10 +41,10 @@ pub mod record;
 /// let target = (Proc::ALL, Cpu(0));
 ///
 /// let mut opts = Opts::default();
-/// opts.sample_format.user_stack = Some(Size(32)); // Dump 32-bytes user stack.
+/// opts.sample_format.user_stack = Some(Size(32)); // Dump a 32-byte user stack.
 ///
 /// let counter = Counter::new(event, target, opts).unwrap();
-/// let sampler = counter.sampler(10).unwrap(); // Allocate 2^10 pages to store samples.
+/// let sampler = counter.sampler(10).unwrap(); // Use 2^10 pages for the sample ring buffer.
 ///
 /// counter.enable().unwrap();
 /// thread::sleep(Duration::from_millis(10));
@@ -113,12 +113,12 @@ impl Sampler {
 
     /// Create an AUX tracer for this sampler.
     ///
-    /// The AUX tracer needs a ring buffer to store data,
-    /// and 2^`exp` pages will be allocated for this.
+    /// The AUX tracer needs a ring buffer to store data, and 2^`exp` pages will
+    /// be allocated for this.
     ///
-    /// Multiple calls to this method just duplicates the existing AUX tracer,
-    /// AUX tracers from the same sampler shares the same ring buffer in the
-    /// kernel space, so `exp` should be the same.
+    /// Multiple calls to this method duplicate the existing AUX tracer. AUX tracers
+    /// from the same sampler share the same ring buffer in the kernel space, so `exp`
+    /// should be the same.
     pub fn aux_tracer(&self, exp: u8) -> Result<AuxTracer<'_>> {
         let metadata = self.arena.as_ptr() as *mut Metadata;
         AuxTracer::new(&self.perf, metadata, exp)
@@ -196,8 +196,8 @@ impl Sampler {
     /// assert_eq!(sampler.iter().count(), 10);
     /// ```
     ///
-    /// Furthermore, we can capture the overflow events by enabling I/O signaling from
-    /// the perf event fd.
+    /// Furthermore, we can capture the overflow events by enabling I/O signaling
+    /// from the perf event fd.
     ///
     /// On each overflow, `POLL_IN` is indicated if `max_samples` has not been reached.
     /// Otherwise, `POLL_HUP` is indicated.

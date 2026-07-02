@@ -32,10 +32,10 @@ let target = (Proc::CURRENT, Cpu::ALL);
 
 let mut opts = Opts::default();
 opts.sample_on = SampleOn::Freq(1000); // 1000 samples per second.
-opts.sample_format.user_stack = Some(Size(8)); // Dump 8-bytes user stack in sample.
+opts.sample_format.user_stack = Some(Size(8)); // Dump an 8-byte user stack in each sample.
 
 let counter = Counter::new(event, target, opts).unwrap();
-let sampler = counter.sampler(10).unwrap(); // Allocate 2^10 pages to store samples.
+let sampler = counter.sampler(10).unwrap(); // Use 2^10 pages for the sample ring buffer.
 
 counter.enable().unwrap(); // Start the counter.
 fn fib(n: usize) -> usize {
@@ -74,12 +74,12 @@ For more use cases, please refer to
 
 Any Linux kernel since 4.0 is supported.
 
-Please use the Linux version features to ensure your binary is compatible with
-the target host kernel. These features are backwards compatible, e.g.
+Please use the Linux version features to ensure your binary is compatible
+with the target host kernel. These features are backwards compatible, e.g.
 `linux-6.11` works with Linux 6.12 but may not work with Linux 6.10.
 
-The `latest` feature is an alias for the latest `linux-` feature; only choose it
-if you don't care about kernel compatibility.
+The `latest` feature is an alias for the latest `linux-` feature;
+only choose it if you don't care about kernel compatibility.
 
 Calling Linux-specific functions (e.g., `Counter::new`) on non-Linux targets
 will return an error, but configuration and profiling result types are
@@ -87,8 +87,8 @@ cross-platform compatible.
 
 ## MSRV
 
-We will keep the MSRV (minimum supported rust version) as little as possible if
-no dependencies require a higher MSRV, currently
+We will keep the MSRV (minimum supported rust version) as little as possible
+if no dependencies require a higher MSRV, currently
 [1.80.0](https://releases.rs/docs/1.80.0).
 
 ## License

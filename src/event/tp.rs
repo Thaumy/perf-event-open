@@ -38,7 +38,8 @@ use crate::ffi::bindings as b;
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Tracepoint {
-    /// Tracepoint ID from under debugfs `tracing/events/*/*/id` if ftrace is enabled in the kernel.
+    /// Tracepoint ID from under debugfs `tracing/events/*/*/id` if ftrace is
+    /// enabled in the kernel.
     pub id: u64,
 }
 

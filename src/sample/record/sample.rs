@@ -62,14 +62,14 @@ pub struct Sample {
 
     /// Raw data.
     ///
-    /// This raw data is opaque with respect to the ABI. The ABI doesn't
-    /// make any promises with respect to the stability of its content,
-    /// it may vary depending on event, hardware, and kernel version.
+    /// This raw data is opaque with respect to the ABI. The ABI doesn't make
+    /// any promises with respect to the stability of its content, it may vary
+    /// depending on event, hardware, and kernel version.
     pub raw: Option<Vec<u8>>,
     /// LBR data.
     ///
-    /// This provides a record of recent branches, as provided by
-    /// CPU branch sampling hardware (such as Intel LBR).
+    /// This provides a record of recent branches, as provided by CPU branch sampling
+    /// hardware (such as Intel LBR).
     ///
     /// Not all hardware supports this feature.
     pub lbr: Option<Lbr>,
@@ -829,12 +829,11 @@ pub enum CallChain {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lbr {
     /// The index in the underlying hardware buffer of the most recently
-    /// captured taken branch.
+    /// captured taken branch. It is useful for reconstructing the call stack.
     ///
-    /// It is very useful for reconstructing the call stack.
-    /// For example, in Intel LBR call stack mode, the depth of reconstructed
-    /// LBR call stack limits to the number of LBR registers. With the low level
-    /// index information, perf tool may stitch the stacks of two samples.
+    /// For example, in Intel LBR call stack mode, the depth of reconstructed LBR
+    /// call stack limits to the number of LBR registers. With the low level index
+    /// information, perf tool may stitch the stacks of two samples.
     /// The reconstructed LBR call stack can break the hardware limitation.
     ///
     /// Since `linux-5.7`: <https://github.com/torvalds/linux/commit/bbfd5e4fab63703375eafaf241a0c696024a59e1>
@@ -1109,7 +1108,7 @@ pub struct MemOp {
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L1338
 /// Memory hierarchy levels.
 ///
-/// This is being deprecated in favour of [`MemLevel2`].
+/// This is superseded by [`MemLevel2`].
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemLevel {
@@ -1186,8 +1185,8 @@ pub struct MemSnoop {
     ///
     /// Since `linux-6.1`: <https://github.com/torvalds/linux/commit/cfef80bad4cf79cdc964a53c98254dfa462be83f>
     ///
-    /// NOTE: This feature was first available in the perf tool in Linux 6.0,
-    /// so it seems we should enable it in feature `linux-6.0`:
+    /// Perf tooling gained support for this in Linux 6.0, but the UAPI flag
+    /// used here is available since Linux 6.1:
     /// <https://github.com/torvalds/linux/commit/2e21bcf0514a3623b41962bf424dec061c02ebc6>
     pub peer: bool,
 }
@@ -1360,8 +1359,8 @@ pub enum MemHop {
 // https://github.com/torvalds/linux/blob/v7.0/include/uapi/linux/perf_event.h#L1453
 /// Cache/memory region.
 ///
-/// The `Local*` and `Other*` variants indicate whether the access was served
-/// by the local or another caching agent (CA).
+/// The `Local*` and `Other*` variants indicate whether the access was served by the
+/// local or another caching agent (CA).
 ///
 /// Since `linux-7.0`: <https://github.com/torvalds/linux/commit/d2bdcde9626cbea0c44a6aaa33b440c8adf81e09>
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]

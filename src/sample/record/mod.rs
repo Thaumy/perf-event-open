@@ -42,8 +42,8 @@ pub mod throttle;
 // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L847
 /// Record types.
 ///
-/// This type and all record types can be formatted with the `{:-?}`
-/// formatter for compact debugging displays.
+/// This type and all record types can be formatted with the `{:-?}` formatter
+/// for compact debugging displays.
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Record {
@@ -405,13 +405,13 @@ impl UnsafeParser {
 
     /// Parse record bytes into record type.
     ///
-    /// This also returns the number of bytes parsed. This is useful
-    /// when you need to parse records in a contiguous buffer.
+    /// This also returns the number of bytes parsed. This is useful when you need to
+    /// parse records in a contiguous buffer.
     ///
     /// # Safety
     ///
-    /// `bytes` must be created by the same sampler as this parser and must
-    /// be 8-byte aligned.
+    /// `bytes` must be created by the same sampler as this parser and must be 8-byte
+    /// aligned.
     ///
     /// See also [`Parser`].
     pub unsafe fn parse<T>(&self, bytes: T) -> (Priv, Record, usize)
@@ -505,9 +505,9 @@ impl UnsafeParser {
 /// Record parser.
 ///
 /// This type can only be accessed within the closure scope of COW record iterators,
-/// parse [`CowChunk`] with this parser is always safe since the closure scope ensures
-/// that the `CowChunk` and the underlying unsafe parser are created from the same
-/// sampler.
+/// parse [`CowChunk`] with this parser is always safe since the closure scope
+/// ensures that the `CowChunk` and the underlying unsafe parser are created
+/// from the same sampler.
 #[derive(Debug)]
 pub struct Parser(pub(in crate::sample) UnsafeParser);
 

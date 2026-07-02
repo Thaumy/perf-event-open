@@ -16,10 +16,10 @@
 //!
 //! let mut opts = Opts::default();
 //! opts.sample_on = SampleOn::Freq(1000); // 1000 samples per second.
-//! opts.sample_format.user_stack = Some(Size(8)); // Dump 8-bytes user stack in sample.
+//! opts.sample_format.user_stack = Some(Size(8)); // Dump an 8-byte user stack in each sample.
 //!
 //! let counter = Counter::new(event, target, opts).unwrap();
-//! let sampler = counter.sampler(10).unwrap(); // Allocate 2^10 pages to store samples.
+//! let sampler = counter.sampler(10).unwrap(); // Use 2^10 pages for the sample ring buffer.
 //!
 //! counter.enable().unwrap(); // Start the counter.
 //! fn fib(n: usize) -> usize {

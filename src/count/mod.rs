@@ -19,12 +19,14 @@ pub use stat::*;
 
 /// Event counter.
 ///
-/// Linux has many performance events to help developers identify performance
-/// issues with their programs. The [`perf_event_open`](https://man7.org/linux/man-pages/man2/perf_event_open.2.html)
-/// system call exposes the performance event subsystem for us to monitor these events.
+/// Linux has many performance events to help developers identify performance issues
+/// with their programs. The [`perf_event_open`](https://man7.org/linux/man-pages/man2/perf_event_open.2.html)
+/// system call exposes the performance event subsystem for us to monitor these
+/// events.
 ///
 /// This type is the core of utilizing `perf_event_open`, which provides the
-/// event counting functionality of `perf_event_open`, similar to the `perf stat` command.
+/// event counting functionality of `perf_event_open`, similar to the
+/// `perf stat` command.
 ///
 /// # Permission
 ///
@@ -39,8 +41,8 @@ pub use stat::*;
 /// - \>= 1: Disallow CPU event access.
 /// - \>= 2: Disallow kernel profiling.
 ///
-/// To make the adjusted `perf_event_paranoid` setting permanent, preserve it
-/// in `/etc/sysctl.conf` (e.g., `kernel.perf_event_paranoid = <setting>`).
+/// To make the adjusted `perf_event_paranoid` setting permanent, preserve it in
+/// `/etc/sysctl.conf` (e.g., `kernel.perf_event_paranoid = <setting>`).
 ///
 /// # Examples
 ///
@@ -55,7 +57,7 @@ pub use stat::*;
 ///
 /// let mut opts = Opts::default();
 /// opts.sample_on = SampleOn::Freq(1000); // 1000 samples per second.
-/// opts.sample_format.user_stack = Some(Size(8)); // Dump 8-bytes user stack in sample.
+/// opts.sample_format.user_stack = Some(Size(8)); // Dump an 8-byte user stack in each sample.
 ///
 /// let counter = Counter::new(event, target, opts).unwrap();
 ///
@@ -126,8 +128,8 @@ impl Counter {
     /// and 1 + 2^`exp` pages will be allocated for this.
     ///
     /// A counter cannot have multiple samplers simultaneously.
-    /// Attempting to create a new sampler while the previous one
-    /// is still active will result in [`ErrorKind::AlreadyExists`].
+    /// Attempting to create a new sampler while the previous one is still active
+    /// will result in [`ErrorKind::AlreadyExists`].
     pub fn sampler(&self, exp: u8) -> Result<Sampler> {
         if Arc::strong_count(&self.perf) == 1 {
             // We only change the attr fields related to event config,
@@ -211,8 +213,8 @@ impl Counter {
 
     /// Clear event count.
     ///
-    /// This will only clear the event counts in the statistics,
-    /// other fields (such as `time_enabled`) are not affected.
+    /// This will only clear the event counts in the statistics, other fields
+    /// (such as `time_enabled`) are not affected.
     pub fn clear_count(&self) -> Result<()> {
         syscall!(
             unsafe,
@@ -226,9 +228,9 @@ impl Counter {
 
     /// Returns counter statistics.
     ///
-    /// Returns an [`UnexpectedEof`][ErrorKind::UnexpectedEof] error if
-    /// the event is in an error state, for example a pinned event that could
-    /// not be scheduled onto the CPU.
+    /// Returns an [`UnexpectedEof`][ErrorKind::UnexpectedEof] error
+    /// if the event is in an error state, for example a pinned event
+    /// that could not be scheduled onto the CPU.
     pub fn stat(&self) -> Result<Stat> {
         // There could be at most one reference to `read_buf` simultaneously,
         // because `Counter` is not `Sync`.
@@ -276,13 +278,11 @@ impl Counter {
         };
     }
 
-    /// Querying which BPF programs are attached to the
-    /// existing kprobe tracepoint event.
+    /// Queries BPF programs attached to the existing kprobe tracepoint event
+    /// and returns their IDs.
     ///
-    /// Returns the IDs of all BPF programs in all events attached to the tracepoint.
-    ///
-    /// If the buffer is not large enough to contain all IDs,
-    /// it also indicates how many IDs were lost.
+    /// If the buffer is not large enough to contain all IDs, it also indicates
+    /// how many IDs were lost.
     ///
     /// Since `linux-4.16`: <https://github.com/torvalds/linux/commit/f371b304f12e31fe30207c41ca7754564e0ea4dc>
     pub fn query_bpf(&self, buf_len: u32) -> Result<(Vec<u32>, Option<u32>)> {
@@ -351,7 +351,7 @@ impl Counter {
         };
     }
 
-    /// Add an ftrace filter to current event.
+    /// Add an ftrace filter to the current event.
     pub fn with_ftrace_filter(&self, filter: &CStr) -> Result<()> {
         // The following ioctl op simply copies the filter bytes to
         // kernel space, so it does not violate immutability.
@@ -368,8 +368,8 @@ impl Counter {
 
     /// Switch to another event.
     ///
-    /// This allows modifying an existing event without the overhead of
-    /// closing and reopening a new counter.
+    /// This allows modifying an existing event without the overhead of closing and
+    /// reopening a new counter.
     ///
     /// Currently this is supported only for breakpoint events.
     ///

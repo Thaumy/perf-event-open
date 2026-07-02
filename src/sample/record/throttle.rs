@@ -3,8 +3,8 @@ use crate::ffi::deref_offset;
 
 /// Sampling has been throttled.
 ///
-/// This record indicates that the maximum sampling rate has been reached,
-/// and kernel will correct the sampling rate to avoid exceeding the limit.
+/// This record indicates that the maximum sampling rate has been reached, and
+/// the kernel will correct the sampling rate to avoid exceeding the limit.
 ///
 /// See also [`SampleOn`][crate::config::SampleOn].
 #[derive(Clone, PartialEq, Eq, Hash)]

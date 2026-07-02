@@ -102,8 +102,8 @@ super::debug!(LostRecords {
 
 /// Some samples have been lost.
 ///
-/// This counts only hardware generated corrupt samples
-/// that are discarded by the kernel.
+/// This counts only hardware generated corrupt samples that are discarded by the
+/// kernel.
 ///
 /// Since `linux-4.2`: <https://github.com/torvalds/linux/commit/f38b0dbb491a6987e198aa6b428db8692a6480f8>
 #[derive(Clone, PartialEq, Eq, Hash)]

@@ -14,8 +14,8 @@ mod rb;
 
 /// AUX tracer.
 ///
-/// AUX tracer is used to export high bandwidth data streams to userspace,
-/// such as instruction flow traces. Not all hardware supports this feature.
+/// AUX tracer is used to export high-bandwidth data streams to user space, such as
+/// instruction flow traces. Not all hardware supports this feature.
 ///
 /// # Examples
 ///
@@ -53,7 +53,7 @@ mod rb;
 /// let target = (Proc(tid_rx.recv().unwrap() as _), Cpu::ALL);
 /// let opts = Opts::default();
 ///
-/// let counter  = Counter::new(event, target, opts).unwrap();
+/// let counter = Counter::new(event, target, opts).unwrap();
 /// let sampler = counter.sampler(10).unwrap();
 /// let aux = sampler.aux_tracer(10).unwrap();
 ///

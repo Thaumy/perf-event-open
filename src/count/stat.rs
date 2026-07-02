@@ -3,8 +3,8 @@ use crate::sample::record::debug;
 
 /// Event statistics.
 ///
-/// This type can be formatted with the `{:-?}` formatter for compact
-/// debugging displays.
+/// This type can be formatted with the `{:-?}` formatter for compact debugging
+/// displays.
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Stat {
@@ -16,8 +16,9 @@ pub struct Stat {
 
     /// The enabled time of the counter.
     ///
-    /// This can be used to calculate estimated totals if the PMU is overcommitted and multiplexing is happening,
-    /// the raw count can be scaled by `raw / (time_running / time_enabled)` to estimate the totals.
+    /// This can be used to calculate estimated totals if the PMU is overcommitted and
+    /// multiplexing is happening. The raw count can be scaled by
+    /// `raw / (time_running / time_enabled)` to estimate the totals.
     pub time_enabled: Option<u64>,
 
     /// The running time of the counter.
@@ -27,8 +28,8 @@ pub struct Stat {
 
     /// The number of lost records.
     ///
-    /// If the sampler ring buffer has no more space to hold the new records
-    /// or the ring buffer output is paused, the records are considered lost.
+    /// If the sampler ring buffer has no more space to hold the new records or the
+    /// ring buffer output is paused, the records are considered lost.
     ///
     /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: Option<u64>,
@@ -170,8 +171,8 @@ pub struct SiblingStat {
 
     /// The number of lost records.
     ///
-    /// If the sampler ring buffer has no more space to hold the new records
-    /// or the ring buffer output is paused, the records are considered lost.
+    /// If the sampler ring buffer has no more space to hold the new records or the
+    /// ring buffer output is paused, the records are considered lost.
     ///
     /// Since `linux-6.0`: <https://github.com/torvalds/linux/commit/119a784c81270eb88e573174ed2209225d646656>
     pub lost_records: Option<u64>,

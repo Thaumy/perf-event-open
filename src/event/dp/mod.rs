@@ -15,8 +15,8 @@ use super::EventConfig;
 ///
 /// # Examples
 ///
-/// Access a PMU exposed under `/sys/bus/event_source/devices` directly.
-/// Here we use the always-available `software` PMU to count page faults:
+/// Access a PMU exposed under `/sys/bus/event_source/devices` directly. Here we use
+/// the always-available `software` PMU to count page faults:
 ///
 /// ```rust
 /// use perf_event_open::config::{Cpu, Opts, Proc};
@@ -56,12 +56,10 @@ use super::EventConfig;
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DynamicPmu {
-    /// The type value to use can be found in the sysfs filesystem: there is a subdirectory per
-    /// PMU instance under `/sys/bus/event_source/devices`. In each subdirectory there is a
-    /// type file whose content is an integer that can be used in the this field.
+    /// The type value to use can be found in the sysfs filesystem.
     ///
-    /// For instance, `/sys/bus/event_source/devices/cpu/type` contains the value for
-    /// the core CPU PMU, which is usually 4.
+    /// For example, `/sys/bus/event_source/devices/cpu/type` contains the value
+    /// for the core CPU PMU, which is usually 4.
     pub ty: u32,
     /// Event config.
     pub config: u64,

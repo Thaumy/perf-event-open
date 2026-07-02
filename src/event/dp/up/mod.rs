@@ -14,8 +14,8 @@ const RETPROBE_PATH: &str = "/sys/bus/event_source/devices/uprobe/format/retprob
 ///
 /// # Examples
 ///
-/// Count calls to a function in the current executable. The probe offset
-/// is the function's offset within the ELF file, which we derive from
+/// Count calls to a function in the current executable. The probe offset is the
+/// function's offset within the ELF file, which we derive from
 /// `/proc/self/maps` so this works for both PIE and non-PIE binaries.
 ///
 /// Running this example may require root privileges.
@@ -111,9 +111,9 @@ impl TryFrom<Uprobe> for Event {
 ///
 /// # Examples
 ///
-/// Count returns from a function in the current executable. The probe
-/// offset is the function's offset within the ELF file, which we derive
-/// from `/proc/self/maps` so this works for both PIE and non-PIE binaries.
+/// Count returns from a function in the current executable. The probe offset is
+/// the function's offset within the ELF file, which we derive from
+/// `/proc/self/maps` so this works for both PIE and non-PIE binaries.
 ///
 /// Running this example may require root privileges.
 ///

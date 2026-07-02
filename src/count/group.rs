@@ -14,12 +14,12 @@ use crate::ffi::{bindings as b, syscall};
 
 /// Counter group.
 ///
-/// An event group is scheduled onto the CPU as a unit: it will be put onto
-/// the CPU only if all of the events in the group can be put onto the CPU.
+/// An event group is scheduled onto the CPU as a unit: it will be put onto the
+/// CPU only if all of the events in the group can be put onto the CPU.
 ///
-/// This means that the values of the member events can be meaningfully compared, added,
-/// divided (to get ratios), and so on with each other, since they have counted events
-/// for the same set of executed instructions.
+/// This means that the values of the member events can be meaningfully
+/// compared, added, divided (to get ratios), and so on with each other,
+/// since they have counted events for the same set of executed instructions.
 ///
 /// # Examples
 ///
@@ -88,7 +88,8 @@ impl CounterGroup {
         &self.leader
     }
 
-    /// Returns the sibling counters of the counter group in the order they were added.
+    /// Returns the sibling counters of the counter group in the order they were
+    /// added.
     pub fn siblings(&self) -> &[Rc<Counter>] {
         self.siblings.as_slice()
     }

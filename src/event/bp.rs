@@ -6,8 +6,8 @@ use crate::ffi::bindings as b;
 
 /// Hardware breakpoint event provided by the CPU.
 ///
-/// Breakpoints can be read/write accesses to an address as well as
-/// execution of an instruction address.
+/// Breakpoints can be read/write accesses to an address as well as execution of an
+/// instruction address.
 ///
 /// # Examples
 ///

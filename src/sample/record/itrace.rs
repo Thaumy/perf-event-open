@@ -2,11 +2,11 @@ use super::{RecordId, Task};
 
 /// Instruction tracing has started.
 ///
-/// Instruction tracing is a hardware feature that identifies every
-/// branch taken by a program so that we can reconstruct the actual
-/// control flow of the program.
+/// Instruction tracing is a hardware feature that identifies every branch taken
+/// by a program so that we can reconstruct the actual control flow of the program.
 ///
-/// Only limited platforms support this feature, such as Intel PT, Intel BTS, and Arm SPE.
+/// Only limited platforms support this feature, such as Intel PT, Intel BTS,
+/// and Arm SPE.
 ///
 /// # Examples
 ///

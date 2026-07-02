@@ -3,7 +3,8 @@ use std::os::fd::AsRawFd;
 
 use crate::ffi::bindings as b;
 
-/// Monitor all processes (if [`Proc`] is not set) or all CPUs (if [`Cpu`] is not set).
+/// Monitor all processes (if [`Proc`] is not set) or all CPUs (if [`Cpu`] is
+/// not set).
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct All;
@@ -41,24 +42,28 @@ impl Proc {
 
 /// Which cgroup to monitor.
 ///
-/// For instance, if the cgroup to monitor is called test, then a file descriptor opened on
-/// `/dev/cgroup/test` (assuming cgroupfs is mounted on `/dev/cgroup`) should be passed.
+/// For instance, if the cgroup to monitor is called test, then a file descriptor
+/// opened on `/dev/cgroup/test` should be passed (assuming cgroupfs is mounted
+/// on `/dev/cgroup`).
 ///
-/// cgroup monitoring is available only for system-wide events and may therefore require
-/// extra permissions.
+/// cgroup monitoring is available only for system-wide events
+/// and may therefore require extra permissions.
 #[derive(Copy, Clone, Debug)]
 pub struct Cgroup<'a>(pub &'a File);
 
 /// Event target, the process (or cgroup) and CPU to monitor.
 ///
-/// To create an event target, combine these types in a tuple: [`Proc`] (or [`Cgroup`]), [`Cpu`] and [`All`].
+/// To create an event target, combine these types in a tuple: [`Proc`] (or
+/// [`Cgroup`]), [`Cpu`] and [`All`].
 ///
-/// For example, we want to monitor process with pid 12345 on all CPUs: `(Proc(12345), Cpu::ALL)`.
-/// The order of types in the tuples is not sensitive because we impl `Into<Target>` for these
-/// swapped tuples, e.g. `(Cpu::ALL, Proc(12345))` has the same semantics as the example above.
+/// For example, we want to monitor process with pid 12345 on all CPUs:
+/// `(Proc(12345), Cpu::ALL)`. The order of types in the tuples is not sensitive
+/// because we impl `Into<Target>` for these swapped tuples, e.g. `(Cpu::ALL,
+/// Proc(12345))` has the same semantics as the example above.
 ///
-/// This design limits what we can monitor at compile time. For example, the kernel not support
-/// monitoring any process on all CPUs, or a cgroup on all CPUs.
+/// This design limits what we can monitor at compile time. For example,
+/// the kernel does not support monitoring any process on all CPUs,
+/// or a cgroup on all CPUs.
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Target {
     pub(crate) pid: i32,
