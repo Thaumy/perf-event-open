@@ -91,9 +91,9 @@ impl Counter {
         let attr = from(event.try_into()?.0, opts.borrow())?;
         let flags = target.flags | b::PERF_FLAG_FD_CLOEXEC as u64;
         let perf = syscall!(perf_event_open, &attr, target.pid, target.cpu, -1, flags)?;
-        // Now there is only one event in the group, if in the future
-        // this counter becomes the group leader, `CounterGroup::add`
-        // will allocate a new buffer if `PERF_FORMAT_GROUP` is enabled.
+        // Now there is only one event in the group, if in the future this counter
+        // becomes the group leader, `CounterGroup::add` will allocate a new
+        // buffer if `PERF_FORMAT_GROUP` is enabled.
         let read_buf = vec![0; Stat::read_buf_size(1, attr.read_format)];
 
         Ok(Self {
@@ -131,21 +131,22 @@ impl Counter {
     pub fn sampler(&self, exp: u8) -> Result<Sampler> {
         if Arc::strong_count(&self.perf) == 1 {
             // We only change the attr fields related to event config,
-            // which are not used in `ChunkParser::from_attr`.
+            // which are not used in `UnsafeParser::from_attr`.
             let attr = unsafe { &*self.attr.get() };
             Sampler::new(Arc::clone(&self.perf), attr, exp)
         } else {
-            // The kernel allows creating multiple samplers for a counter, these
-            // samplers share the same ring buffer in kernel space and require
-            // the same mmap length.
+            // The kernel allows creating multiple samplers for a counter.
+            // These samplers share the same ring buffer in kernel space
+            // and require the same mmap length.
             //
             // Multiple samplers will result in an unsound `Send` impl, samplers
             // from different threads will race on the drop of COW chunks, which
             // may set the ring buffer head backwards.
             //
-            // We prohibit users from creating multiple samplers per counter to
-            // avoid the data race. Creating multiple samplers on the same counter
-            // is usually useless, while the `Send` impl is much more useful.
+            // We prohibit creating multiple samplers for the same counter to
+            // avoid data races. Creating multiple samplers on the same counter
+            // is rarely useful, and the `Send` impl (which we provide)
+            // is much more valuable.
             let error = "There is already a sampler attached to this counter.";
             Err(Error::new(ErrorKind::AlreadyExists, error))
         }
@@ -229,8 +230,8 @@ impl Counter {
     /// the event is in an error state, for example a pinned event that could
     /// not be scheduled onto the CPU.
     pub fn stat(&self) -> Result<Stat> {
-        // There could be only up to one reference to `read_buf` at the same time,
-        // since `Counter` is not `Sync`.
+        // There could be at most one reference to `read_buf` simultaneously,
+        // because `Counter` is not `Sync`.
         let buf = unsafe { &mut *self.read_buf.get() };
 
         let n: Result<usize> = syscall!(read, &self.perf, buf);
@@ -240,8 +241,8 @@ impl Counter {
         }
         let ptr = buf.as_ptr();
 
-        // We only change the attr fields related to event config,
-        // there is nothing about `read_format`.
+        // We only change the attr fields related to event config, there is
+        // nothing about `read_format`.
         let read_format = unsafe { &*self.attr.get() }.read_format;
         let stat = unsafe { Stat::from_ptr(ptr, read_format) };
 
@@ -298,9 +299,8 @@ impl Counter {
             let ids_len = buf_len;
             let buf_len = 2_usize.saturating_add(ids_len as _);
             let mut buf = vec![MaybeUninit::uninit(); buf_len];
-            // It's impossible to overflow the buffer when
-            // ids_len + 2 > usize::MAX, because the machine can never have
-            // that many memory addresses.
+            // It's impossible to overflow the buffer when ids_len + 2 > usize::MAX,
+            // because the machine can never have that many memory addresses.
             buf[0] = MaybeUninit::new(ids_len); // set `ids_len`
 
             let buf_addr = buf.as_mut_ptr() as u64;
@@ -383,13 +383,13 @@ impl Counter {
             let Event(event_cfg): Event = event.try_into()?;
 
             // We can only access `self.attr` within the same thread,
-            // so there is no potential data race.
+            // so there is no data race.
             //
-            // We will only change fields about event config, this will
-            // not break any consumptions or states since these fields
+            // We will only change fields related to the event config.
+            // This will not break any consumers or states, since these fields
             // are never used elsewhere after the counter is initialized.
             //
-            // The following ioctl op just copies the modified attr to kernel space,
+            // The following ioctl just copies the modified attr to kernel space,
             // so we don't have to worry about the mutable reference.
             let attr = unsafe { &mut *self.attr.get() };
             attr.type_ = event_cfg.ty;

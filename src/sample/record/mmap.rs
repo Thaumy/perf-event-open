@@ -114,21 +114,24 @@ impl Mmap {
     //     struct sample_id sample_id;
     // };
     //
-    // `PERF_RECORD_MMAP` and `PERF_RECORD_MMAP2` shares the same output and will never appear together
-    // in the same ring buffer since kernel replaces `PERF_RECORD_MMAP` with `PERF_RECORD_MMAP2` and
-    // extends the output if `attr.mmap2` was enabled.
+    // `PERF_RECORD_MMAP` and `PERF_RECORD_MMAP2` share the same output and will
+    // never appear together in the same ring buffer because the kernel replaces
+    // `PERF_RECORD_MMAP` with `PERF_RECORD_MMAP2` and extends the output
+    // if `attr.mmap2` was enabled.
     //
     // Call chain: `perf_event_mmap` -> `perf_event_mmap_event` -> `perf_event_mmap_output`
-    // `perf_event_mmap` set `type` to `PERF_RECORD_MMAP`:
+    // `perf_event_mmap` sets `type` to `PERF_RECORD_MMAP`:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L9129
-    // `perf_event_mmap_event` set `misc` to `PERF_RECORD_MISC_MMAP_DATA` if the map is inexecutable:
+    // `perf_event_mmap_event` sets `misc` to `PERF_RECORD_MISC_MMAP_DATA`
+    // if the map is non-executable:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L9004
-    // `perf_event_mmap_output` overwrite `type` to `PERF_RECORD_MMAP2` if `attr.mmap2` was enabled:
+    // `perf_event_mmap_output` overwrites `type` to `PERF_RECORD_MMAP2`
+    // if `attr.mmap2` was enabled:
     // https://github.com/torvalds/linux/blob/v6.12/kernel/events/core.c#L8815
     // `perf_event_mmap_output` extends the output:
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8884
     //
-    // So the final output ABI would be:
+    // So the final output ABI is:
     // struct {
     //     struct perf_event_header header;
     //     u32 pid, tid;

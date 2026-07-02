@@ -270,11 +270,16 @@ impl RecordId {
         let stream_id = when!(PERF_SAMPLE_STREAM_ID, u64);
         let cpu = when!(PERF_SAMPLE_CPU, u32);
 
-        // For `PERF_SAMPLE_IDENTIFIER`:
-        // `PERF_SAMPLE_IDENTIFIER` just duplicates the `PERF_SAMPLE_ID` at a fixed offset,
-        // it's useful to distinguish the sample format if multiple events share the same rb.
-        // Our design does not support redirecting samples to another rb (e.g., `PERF_FLAG_FD_OUTPUT`),
-        // and this is not a parser crate, so `PERF_SAMPLE_IDENTIFIER` is not needed.
+        // About `PERF_SAMPLE_IDENTIFIER`
+        //
+        // That flag just duplicates the `PERF_SAMPLE_ID` at a fixed offset.
+        // It is useful for distinguishing the sample format when multiple events
+        // share the same ring buffer.
+        //
+        // Our design does not support redirecting samples to another ring buffer
+        // (e.g., `PERF_FLAG_FD_OUTPUT`), and this is not a parser crate,
+        // so `PERF_SAMPLE_IDENTIFIER` is not needed.
+        //
         // See:
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7342
         // https://github.com/torvalds/linux/blob/v6.13/tools/perf/Documentation/perf.data-file-format.txt#L466

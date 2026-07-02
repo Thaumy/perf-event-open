@@ -2,8 +2,8 @@ use super::RecordId;
 
 #[cfg(feature = "linux-5.1")]
 const BPF_TAG_SIZE: u32 = crate::ffi::bindings::BPF_TAG_SIZE;
-// NOTE: There is no `BPF_TAG_SIZE` before Linux 5.1, if the tag size changes
-// in the future we need to ensure ABI compatibility.
+// NOTE: There is no `BPF_TAG_SIZE` before Linux 5.1, if the tag size changes in
+// the future we need to ensure ABI compatibility.
 #[cfg(not(feature = "linux-5.1"))]
 const BPF_TAG_SIZE: u32 = 8;
 

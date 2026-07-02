@@ -65,8 +65,8 @@ pub struct CounterGroup {
     // because `Counter` is unsafe to be `Sync` for performance reasons.
     //
     // - A sendable `CounterGroup` could leave some references of sibling
-    // counters (such as `Arc<Counter>`) using `add()` operation in one
-    // thread, and get those references via `siblings()` in the other thread,
+    // counters (such as `Arc<Counter>`) using `add()` operation in one thread,
+    // and get those references via `siblings()` in the other thread,
     // which potentially breaks the `!Sync` bound for `Counter`.
     //
     // - We could send `Counter` and consume it by `CounterGroup::from` to
@@ -104,8 +104,8 @@ impl CounterGroup {
         let leader = &self.leader;
 
         let attr = {
-            // We only change the attr fields related to event config,
-            // which are not used to initialize the sibling attr.
+            // We only change the attr fields related to event config, which are
+            // not used to initialize the sibling attr.
             let leader_attr = unsafe { &*leader.attr.get() };
             from(event.try_into()?.0, opts.borrow(), leader_attr)?
         };
@@ -123,8 +123,8 @@ impl CounterGroup {
             group_fd,
             flags
         )?;
-        // `group::StatFormat` has no `PERF_FORMAT_GROUP` for sibling event,
-        // so set `group_size` to 1 is safe.
+        // `group::StatFormat` has no `PERF_FORMAT_GROUP` for sibling events, so
+        // setting `group_size` to 1 is safe.
         let read_buf = vec![0; Stat::read_buf_size(1, attr.read_format)];
 
         let sibling = Rc::new(Counter {
@@ -136,20 +136,20 @@ impl CounterGroup {
 
         self.siblings.push(Rc::clone(&sibling));
 
-        // We only change the attr fields related to event config,
-        // there is nothing about `read_format`.
+        // We only change the attr fields related to event config, there is
+        // nothing about `read_format`.
         let leader_read_format = unsafe { &*leader.attr.get() }.read_format;
         let new_len = Stat::read_buf_size(self.siblings.len() + 1, leader_read_format);
         // Counter group and group leader always lives in the same thread,
-        // there could be only up to one borrow to the `read_buf` at the same time.
+        // there could be at most one reference to `read_buf` simultaneously.
         let old = unsafe { &mut *leader.read_buf.get() };
         if new_len > old.len() {
             // We allocate a new buffer instead of resizing the old one to avoid
-            // the copying old data unnecessarily.
+            // unnecessarily copying the old data.
             //
             // Because `vec![0; n]` is optimized to use `calloc`, the real
-            // allocation will happen in the `Counter::stat` call, so there
-            // is no overhead in calling `add` multiple times.
+            // allocation will happen in the `Counter::stat` call, so there is
+            // no overhead in calling `add` multiple times.
             let new = vec![0; new_len];
             let _ = mem::replace(old, new);
         }

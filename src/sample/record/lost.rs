@@ -1,7 +1,7 @@
 use super::{RecordId, SampleType};
 use crate::ffi::deref_offset;
 
-// PERF_RECORD_LOST counts all lost records:
+// PERF_RECORD_LOST counts all lost records.
 // Count lost when paused:
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L178
 // Count lost when no space:
@@ -10,6 +10,7 @@ use crate::ffi::deref_offset;
 // Generate PERF_RECORD_LOST:
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L189
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/ring_buffer.c#L247
+//
 // The same applies to `perf_read`:
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L5764
 // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7373

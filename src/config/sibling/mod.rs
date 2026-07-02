@@ -10,9 +10,9 @@ pub(crate) mod attr;
 
 // We skipped some options for sibling event to make sure the attr is valid.
 // * All events in a group should have the same clock:
-// https://github.com/torvalds/linux/blob/7ff71e6d923969d933e1ba7e0db857782d36cd19/kernel/events/core.c#L12962
+// https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12918
 // * Only a group leader can be exclusive or pinned:
-// https://github.com/torvalds/linux/blob/7ff71e6d923969d933e1ba7e0db857782d36cd19/kernel/events/core.c#L12982
+// https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12938
 /// Sibling event options.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -123,7 +123,7 @@ pub struct OnSample {
     pub aux: Option<AuxTracer>,
 
     // Must be used together with `remove_on_exec`:
-    // https://github.com/torvalds/linux/blob/2408a807bfc3f738850ef5ad5e3fd59d66168996/kernel/events/core.c#L12582
+    // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12538
     /// Enables synchronous signal delivery of `SIGTRAP` to the target
     /// process on event overflow.
     ///

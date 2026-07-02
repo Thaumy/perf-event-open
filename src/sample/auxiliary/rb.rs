@@ -25,7 +25,7 @@ impl<'a> Rb<'a> {
         let rb_ptr = self.alloc.as_ptr();
         let size = self.alloc.len();
 
-        // Thread safe since no more threads set the tail
+        // Thread-safe because no other thread sets the tail.
         let raw_tail = unsafe { *self.raw_tail.as_ptr() };
         // About acquire:
         // https://github.com/torvalds/linux/blob/v6.13/include/uapi/linux/perf_event.h#L720

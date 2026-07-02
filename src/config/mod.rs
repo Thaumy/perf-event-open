@@ -88,7 +88,7 @@ pub struct Opts {
     pub wake_up: WakeUp,
 
     // Must be used together with `remove_on_exec`:
-    // https://github.com/torvalds/linux/blob/2408a807bfc3f738850ef5ad5e3fd59d66168996/kernel/events/core.c#L12582
+    // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L12538
     /// Enables synchronous signal delivery of `SIGTRAP` to the target
     /// process on event overflow.
     ///

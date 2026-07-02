@@ -300,8 +300,8 @@ impl Sampler {
     /// This means that the new frequency will be applied if the counter was
     /// created with [`SampleOn::Freq`][crate::config::SampleOn], and so will the count.
     pub fn sample_on(&self, freq_or_count: u64) -> Result<()> {
-        // The following ioctl op simply copies the value to
-        // kernel space, so it does not violate immutability.
+        // The following ioctl op simply copies the value to kernel space, so it
+        // does not violate immutability.
         let addr = ptr::from_ref(&freq_or_count) as u64;
         syscall!(
             unsafe,

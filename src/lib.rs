@@ -55,12 +55,12 @@
 //!
 //! Any Linux kernel since 4.0 is supported.
 //!
-//! Please use the Linux version features to ensure your binary is compatible with
-//! the target host kernel. These features are backwards compatible, e.g.
+//! Please use the Linux version features to ensure your binary is compatible
+//! with the target host kernel. These features are backwards compatible, e.g.
 //! `linux-6.11` works with Linux 6.12 but may not work with Linux 6.10.
 //!
-//! The `latest` feature is an alias for the latest `linux-` feature; only choose it
-//! if you don't care about kernel compatibility.
+//! The `latest` feature is an alias for the latest `linux-` feature;
+//! only choose it if you don't care about kernel compatibility.
 //!
 //! Calling Linux-specific functions (e.g., `Counter::new`) on non-Linux targets
 //! will return an error, but configuration and profiling result types are
