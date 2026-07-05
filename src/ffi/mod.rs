@@ -40,6 +40,7 @@ pub unsafe fn deref_offset<T: Copy>(ptr: &mut *const u8) -> T {
 pub static PAGE_SIZE: LazyLock<usize> = LazyLock::new(|| {
     let name = libc::_SC_PAGE_SIZE;
     let size = unsafe { libc::sysconf(name) };
+    assert!(size > 0, "failed to get system page size");
     size as _
 });
 
