@@ -35,12 +35,6 @@ impl CowChunk<'_> {
             },
         }
     }
-
-    pub fn into_owned(self) -> Vec<u8> {
-        // TODO: For compatibility reasons, we will temporarily retain this
-        // inefficient implementation until the next breaking release.
-        self.as_bytes().to_vec()
-    }
 }
 
 impl Deref for CowChunk<'_> {
