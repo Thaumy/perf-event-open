@@ -47,7 +47,7 @@ use crate::ffi::deref_offset;
 /// thread::sleep(Duration::from_millis(10));
 /// sampler.resume().unwrap();
 ///
-/// let mut iter = sampler.iter().into_async().unwrap();
+/// let mut iter = sampler.iter().unwrap().into_async().unwrap();
 /// while let Some((_, r)) = iter.next().await {
 ///     if let Record::LostRecords(l) = r {
 ///         println!("{:-?}", l);
