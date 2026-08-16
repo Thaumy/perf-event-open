@@ -35,7 +35,7 @@
 //! let instrs = counter.stat().unwrap().count;
 //! println!("{} instructions retired", instrs);
 //!
-//! for it in sampler.iter() {
+//! for it in sampler.iter().unwrap() {
 //!     println!("{:-?}", it);
 //! }
 //!

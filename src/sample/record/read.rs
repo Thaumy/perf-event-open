@@ -50,7 +50,7 @@ use crate::ffi::deref_offset;
 /// }
 ///
 /// let mut count = 0;
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     count += 1;
 ///     println!("{:-?}", it);
 /// }

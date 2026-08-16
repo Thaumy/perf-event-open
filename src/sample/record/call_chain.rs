@@ -44,7 +44,7 @@ use super::RecordId;
 /// # let mut user_deferred = false;
 /// # let mut call_chain_deferred = false;
 ///
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     println!("{:-?}", it);
 ///     #
 ///     # use perf_event_open::sample::record::Record;
