@@ -1,8 +1,8 @@
 use std::cell::UnsafeCell;
 use std::fs::File;
 use std::io::Result;
-use std::slice;
 use std::sync::atomic::AtomicU64;
+use std::{ptr, slice};
 
 use iter::{CowIter, Iter};
 use rb::RingBuf;
@@ -78,6 +78,7 @@ pub struct AuxTracer<'a> {
     head: &'a AtomicU64,
     mmap: Mmap,
     perf: &'a File,
+    iter_alive: UnsafeCell<bool>,
 }
 
 impl<'a> AuxTracer<'a> {
@@ -114,6 +115,7 @@ impl<'a> AuxTracer<'a> {
                 head,
                 mmap,
                 perf,
+                iter_alive: UnsafeCell::new(false),
             })
         };
         #[cfg(not(feature = "linux-4.1"))]
@@ -127,15 +129,26 @@ impl<'a> AuxTracer<'a> {
     }
 
     /// Get an iterator of the AUX area.
-    pub fn iter(&self) -> Iter<'_> {
+    ///
+    /// There could be only up to one iterator over the AUX tracer simultaneously,
+    /// or this will return `None`.
+    pub fn iter(&self) -> Option<Iter<'_>> {
+        // `Self` and `CowIter` are guaranteed to run on the same thread,
+        // so there is no data race.
+        let iter_alive = self.iter_alive.get();
+        if unsafe { ptr::replace(iter_alive, true) } {
+            return None;
+        }
+
         let rb_ptr = self.mmap.as_ptr().cast::<UnsafeCell<u8>>();
         let rb_len = self.mmap.len();
         let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
 
-        Iter(CowIter {
+        Some(Iter(CowIter {
             rb: RingBuf::new(rb_alloc, self.tail, self.head),
             perf: self.perf,
-        })
+            alive: iter_alive,
+        }))
     }
 }
 
