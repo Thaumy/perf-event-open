@@ -42,7 +42,7 @@ use crate::ffi::deref_offset;
 /// handle.join().unwrap(); // Exit here.
 ///
 /// # let mut vec = vec![];
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     println!("{:-?}", it);
 ///     # vec.push(it);
 /// }

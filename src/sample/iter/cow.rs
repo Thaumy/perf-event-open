@@ -47,7 +47,7 @@ impl<'a> CowIter<'a> {
     ///
     /// let counter = Counter::new(event, target, &opts).unwrap();
     /// let sampler = counter.sampler(5).unwrap();
-    /// let mut iter = sampler.iter().into_cow();
+    /// let mut iter = sampler.iter().unwrap().into_cow();
     ///
     /// counter.enable().unwrap();
     ///

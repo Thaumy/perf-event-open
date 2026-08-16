@@ -29,7 +29,7 @@ use super::RecordId;
 /// std::fs::remove_dir(&path).unwrap();
 ///
 /// # let mut cgroup_record = false;
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     println!("{:-?}", it);
 ///     # use perf_event_open::sample::record::Record;
 ///     # if let Record::Cgroup(c) = &it.1 {

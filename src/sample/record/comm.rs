@@ -30,7 +30,7 @@ use crate::ffi::{bindings as b, deref_offset};
 /// unsafe { libc::prctl(libc::PR_SET_NAME, c"foo".as_ptr()) };
 ///
 /// # let mut vec = vec![];
-/// let mut iter = sampler.iter();
+/// let mut iter = sampler.iter().unwrap();
 /// while let Some(it) = iter.next() {
 ///     println!("{:-?}", it);
 ///     # vec.push(it);

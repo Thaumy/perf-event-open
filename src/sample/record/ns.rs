@@ -25,7 +25,7 @@ use super::{RecordId, Task};
 /// // Captures the namespace information for this task.
 /// std::thread::spawn(|| {});
 ///
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     println!("{:-?}", it);
 /// }
 /// ```

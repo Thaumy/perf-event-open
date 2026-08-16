@@ -388,7 +388,7 @@ impl StatFormat {
 ///     std::hint::spin_loop();
 /// }
 ///
-/// println!("{:-?}", sampler.iter().next());
+/// println!("{:-?}", sampler.iter().unwrap().next());
 /// # });
 /// # if result.is_err() {
 /// #     unsafe { libc::abort() };
@@ -875,7 +875,7 @@ pub struct WakeUp {
 ///
 /// counter.enable().unwrap();
 ///
-/// let mut iter = sampler.iter().into_async().unwrap();
+/// let mut iter = sampler.iter().unwrap().into_async().unwrap();
 /// println!("{:-?}", iter.next().await);
 /// # });
 /// ```
