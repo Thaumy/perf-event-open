@@ -20,6 +20,7 @@ pub struct CowIter<'a> {
     pub(in crate::sample) rb: RingBuf<'a>,
     pub(in crate::sample) perf: &'a File,
     pub(in crate::sample) parser: &'a Parser,
+    pub(in crate::sample) alive: *mut bool,
 }
 
 impl<'a> CowIter<'a> {
@@ -154,6 +155,12 @@ impl<'a> CowIter<'a> {
             let _ = self.perf;
             Err(std::io::ErrorKind::Unsupported.into())
         };
+    }
+}
+
+impl Drop for CowIter<'_> {
+    fn drop(&mut self) {
+        unsafe { *self.alive = false };
     }
 }
 

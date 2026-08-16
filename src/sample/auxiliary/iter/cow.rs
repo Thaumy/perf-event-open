@@ -19,6 +19,7 @@ use crate::sample::rb::CowChunk;
 pub struct CowIter<'a> {
     pub(in crate::sample::auxiliary) rb: RingBuf<'a>,
     pub(in crate::sample::auxiliary) perf: &'a File,
+    pub(in crate::sample::auxiliary) alive: *mut bool,
 }
 
 impl<'a> CowIter<'a> {
@@ -100,6 +101,12 @@ impl<'a> CowIter<'a> {
             let _ = self.perf;
             Err(std::io::ErrorKind::Unsupported.into())
         };
+    }
+}
+
+impl Drop for CowIter<'_> {
+    fn drop(&mut self) {
+        unsafe { *self.alive = false };
     }
 }
 
