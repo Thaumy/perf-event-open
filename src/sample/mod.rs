@@ -63,6 +63,7 @@ pub struct Sampler {
     perf: Arc<File>,
     mmap: Mmap,
     parser: Parser,
+    iter_alive: UnsafeCell<bool>,
     aux_tracer_alive: UnsafeCell<bool>,
 }
 
@@ -81,12 +82,23 @@ impl Sampler {
             perf,
             mmap,
             parser: Parser(UnsafeParser::from_attr(attr)),
+            iter_alive: UnsafeCell::new(false),
             aux_tracer_alive: UnsafeCell::new(false),
         })
     }
 
     /// Returns a record iterator over the kernel ring buffer.
-    pub fn iter(&self) -> Iter<'_> {
+    ///
+    /// There could be only up to one iterator over the sampler simultaneously,
+    /// or this will return `None`.
+    pub fn iter(&self) -> Option<Iter<'_>> {
+        // `Self` and `CowIter` are guaranteed to run on the same thread,
+        // so there is no data race.
+        let iter_alive = self.iter_alive.get();
+        if unsafe { ptr::replace(iter_alive, true) } {
+            return None;
+        }
+
         let mmap_ptr = self.mmap.as_ptr();
 
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6212
@@ -103,11 +115,12 @@ impl Sampler {
             unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).data_head)) },
         );
 
-        Iter(CowIter {
+        Some(Iter(CowIter {
             rb,
             perf: &self.perf,
             parser: &self.parser,
-        })
+            alive: iter_alive,
+        }))
     }
 
     /// Record parser of the sampler.
