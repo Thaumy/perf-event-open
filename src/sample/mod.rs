@@ -52,7 +52,7 @@ pub mod record;
 /// thread::sleep(Duration::from_millis(10));
 /// counter.disable().unwrap();
 ///
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     println!("{:-?}", it);
 ///     # if let (_, Record::Sample(s)) = it {
 ///     #     assert!(s.user_stack.is_some());
@@ -224,7 +224,7 @@ impl Sampler {
     /// sampler.enable_counter_with(10).unwrap();
     /// thread::sleep(Duration::from_millis(20));
     ///
-    /// assert_eq!(sampler.iter().count(), 10);
+    /// assert_eq!(sampler.iter().unwrap().count(), 10);
     /// ```
     ///
     /// Furthermore, we can capture the overflow events by enabling I/O signaling
@@ -298,7 +298,7 @@ impl Sampler {
     /// let sampler = counter.sampler(5).unwrap();
     /// sampler.enable_counter_with(MAX_SAMPLES as _).unwrap();
     ///
-    /// let iter = &mut sampler.iter();
+    /// let iter = &mut sampler.iter().unwrap();
     /// let mut count = 0;
     /// while !HUP.load(Ordering::Relaxed) {
     ///     while IN.swap(false, Ordering::Relaxed) {

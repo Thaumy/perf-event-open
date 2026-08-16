@@ -52,10 +52,12 @@ use super::{RecordId, Task};
 /// thread::sleep(Duration::from_millis(1));
 /// counter.disable().unwrap();
 ///
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     println!("{:-?}", it);
 /// }
-/// while let Some(it) = aux.iter().next(None) {
+///
+/// let mut aux_iter = aux.iter().unwrap();
+/// while let Some(it) = aux_iter.next(None) {
 ///     let bytes = it.len();
 ///     println!("{:.2} KB", bytes as f64 / 1000.0);
 /// }
