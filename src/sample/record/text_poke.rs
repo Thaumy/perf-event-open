@@ -35,7 +35,7 @@ use super::RecordId;
 ///     libc::syscall(libc::SYS_delete_module, c"register_kprobe_module".as_ptr(), 0);
 /// }
 ///
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     println!("{:-?}", it);
 /// }
 /// ```

@@ -35,7 +35,7 @@ use super::{RecordId, Task};
 ///
 /// # let mut switch_out = false;
 /// # let mut switch_in = false;
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     println!("{:-?}", it);
 ///     # if let Record::CtxSwitch(it) = it.1 {
 ///     #     match it.info {

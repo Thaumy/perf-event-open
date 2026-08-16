@@ -45,7 +45,7 @@ use super::RecordId;
 /// counter.enable().unwrap();
 /// WAIT.store(false, Ordering::Relaxed);
 ///
-/// let mut iter = sampler.iter().into_async().unwrap();
+/// let mut iter = sampler.iter().unwrap().into_async().unwrap();
 /// while let Some(it) = iter.next().await {
 ///     println!("{:-?}", it);
 /// }

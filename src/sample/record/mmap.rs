@@ -44,7 +44,7 @@ const BUILD_ID_SIZE_MAX: usize = 20;
 /// };
 ///
 /// # let mut count = 0;
-/// for it in sampler.iter() {
+/// for it in sampler.iter().unwrap() {
 ///     println!("{:-?}", it);
 ///     # if matches!(it.1, Record::Mmap(_)) {
 ///     #     count += 1;
