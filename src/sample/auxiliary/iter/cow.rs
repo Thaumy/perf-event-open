@@ -10,14 +10,14 @@ use std::task::{Context, Poll};
 use futures::task::AtomicWaker;
 
 use crate::ffi::syscall;
-use crate::sample::auxiliary::rb::Rb;
+use crate::sample::auxiliary::rb::RingBuf;
 use crate::sample::rb::CowChunk;
 
 /// COW (copy-on-write) AUX area iterator.
 ///
 /// Same as [COW record iterator][crate::sample::iter::CowIter], but for AUX area.
 pub struct CowIter<'a> {
-    pub(in crate::sample::auxiliary) rb: Rb<'a>,
+    pub(in crate::sample::auxiliary) rb: RingBuf<'a>,
     pub(in crate::sample::auxiliary) perf: &'a File,
 }
 

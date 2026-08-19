@@ -4,7 +4,7 @@ use std::slice;
 use std::sync::atomic::AtomicU64;
 
 use iter::{CowIter, Iter};
-use rb::Rb;
+use rb::RingBuf;
 
 use super::mmap::Mmap;
 use crate::ffi::Metadata;
@@ -123,7 +123,7 @@ impl<'a> AuxTracer<'a> {
         let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
 
         Iter(CowIter {
-            rb: Rb::new(rb_alloc, self.tail, self.head),
+            rb: RingBuf::new(rb_alloc, self.tail, self.head),
             perf: self.perf,
         })
     }

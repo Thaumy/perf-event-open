@@ -9,7 +9,7 @@ use std::task::{Context, Poll};
 use futures::task::AtomicWaker;
 
 use crate::ffi::syscall;
-use crate::sample::rb::{CowChunk, Rb};
+use crate::sample::rb::{CowChunk, RingBuf};
 use crate::sample::record::Parser;
 
 /// COW (copy-on-write) record iterator.
@@ -17,7 +17,7 @@ use crate::sample::record::Parser;
 /// This type allows you to access the raw bytes of a record in the underlying
 /// ring buffer directly without copying them out.
 pub struct CowIter<'a> {
-    pub(in crate::sample) rb: Rb<'a>,
+    pub(in crate::sample) rb: RingBuf<'a>,
     pub(in crate::sample) perf: &'a File,
     pub(in crate::sample) parser: &'a Parser,
 }

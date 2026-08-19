@@ -8,13 +8,13 @@ pub use cow::CowChunk;
 
 mod cow;
 
-pub(super) struct Rb<'a> {
+pub(super) struct RingBuf<'a> {
     alloc: &'a [u8],
     raw_tail: &'a AtomicU64,
     raw_head: &'a AtomicU64,
 }
 
-impl<'a> Rb<'a> {
+impl<'a> RingBuf<'a> {
     pub fn new(alloc: &'a [u8], raw_tail: &'a AtomicU64, raw_head: &'a AtomicU64) -> Self {
         Self {
             alloc,

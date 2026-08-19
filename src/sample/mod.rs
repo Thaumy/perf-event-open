@@ -7,7 +7,7 @@ use std::{ptr, slice};
 use auxiliary::AuxTracer;
 use iter::{CowIter, Iter};
 use mmap::Mmap;
-use rb::Rb;
+use rb::RingBuf;
 use record::{Parser, UnsafeParser};
 
 use crate::ffi::{bindings as b, syscall, Attr, Metadata, PAGE_SIZE};
@@ -93,7 +93,7 @@ impl Sampler {
 
         let metadata = mmap_ptr as *mut Metadata;
 
-        let rb = Rb::new(
+        let rb = RingBuf::new(
             rb_alloc,
             unsafe { AtomicU64::from_ptr(&mut (*metadata).data_tail) },
             unsafe { AtomicU64::from_ptr(&mut (*metadata).data_head) },

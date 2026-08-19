@@ -6,13 +6,13 @@ use std::sync::atomic::{AtomicU64, Ordering as MemOrd};
 
 use crate::sample::rb::CowChunk;
 
-pub struct Rb<'a> {
+pub struct RingBuf<'a> {
     alloc: &'a [u8],
     raw_tail: &'a AtomicU64,
     raw_head: &'a AtomicU64,
 }
 
-impl<'a> Rb<'a> {
+impl<'a> RingBuf<'a> {
     pub fn new(alloc: &'a [u8], raw_tail: &'a AtomicU64, raw_head: &'a AtomicU64) -> Self {
         Self {
             alloc,
