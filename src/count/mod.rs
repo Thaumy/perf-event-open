@@ -144,7 +144,7 @@ impl Counter {
         }
 
         // We only change the attr fields related to event config,
-        // which are not used in `UnsafeParser::from_attr`.
+        // which are not used in `Parser::from_attr`.
         let attr = unsafe { &*self.attr.get() };
         Sampler::new(Arc::clone(&self.perf), attr, exp)
     }

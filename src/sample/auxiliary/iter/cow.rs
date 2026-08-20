@@ -32,11 +32,8 @@ impl<'a> CowIter<'a> {
     /// be quick and cheap. Slow iteration of raw bytes may throttle kernel threads
     /// from outputting new data to the AUX area, and heavy operations may affect
     /// the performance of the target process.
-    pub fn next<F, R>(&mut self, f: F, max_chunk_len: Option<NonZeroUsize>) -> Option<R>
-    where
-        F: FnOnce(CowChunk<'_>) -> R,
-    {
-        unsafe { self.rb.lending_pop(max_chunk_len) }.map(f)
+    pub fn lending_next(&mut self, max_chunk_len: Option<NonZeroUsize>) -> Option<CowChunk<'_>> {
+        unsafe { self.rb.lending_pop(max_chunk_len) }
     }
 
     /// Creates an asynchronous iterator.
@@ -128,31 +125,17 @@ pub struct AsyncCowIter<'a> {
     wait: Arc<Wait>,
 }
 
-impl AsyncCowIter<'_> {
-    /// Attempt to pull out the next value, registering the current task for
-    /// wakeup if the value is not yet available, and returning `None` if the
-    /// iterator is exhausted.
-    ///
-    /// [`WakeUp::on_aux_bytes`][crate::config::WakeUp::on_aux_bytes]
-    /// must be properly set to make this work.
-    ///
-    /// See also [`CowIter::next`].
-    pub fn poll_next<F, R>(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        f: F,
+impl<'a> AsyncCowIter<'a> {
+    unsafe fn poll(
+        &mut self,
+        cx: &Context<'_>,
         max_chunk_len: Option<NonZeroUsize>,
-    ) -> Poll<Option<R>>
-    where
-        F: FnOnce(CowChunk<'_>) -> R + Unpin,
-    {
-        let this = self.get_mut();
-
-        if let Some(cc) = unsafe { this.inner.rb.lending_pop(max_chunk_len) } {
-            return Poll::Ready(Some(f(cc)));
+    ) -> Poll<Option<CowChunk<'a>>> {
+        if let Some(cc) = unsafe { self.inner.rb.lending_pop(max_chunk_len) } {
+            return Poll::Ready(Some(cc));
         }
 
-        let wait = &this.wait;
+        let wait = &self.wait;
 
         wait.waker.register(cx.waker());
         loop {
@@ -164,8 +147,8 @@ impl AsyncCowIter<'_> {
             ) {
                 Err(Wait::STATE_WAIT) => Poll::Pending,
                 Ok(Wait::STATE_WAKE) => {
-                    if let Some(cc) = unsafe { this.inner.rb.lending_pop(max_chunk_len) } {
-                        Poll::Ready(Some(f(cc)))
+                    if let Some(cc) = unsafe { self.inner.rb.lending_pop(max_chunk_len) } {
+                        Poll::Ready(Some(cc))
                     } else {
                         Poll::Pending
                     }
@@ -174,7 +157,7 @@ impl AsyncCowIter<'_> {
                     continue; // Spurious fail, try again.
                 }
                 Err(Wait::STATE_HANG) => {
-                    Poll::Ready(unsafe { this.inner.rb.lending_pop(max_chunk_len) }.map(f))
+                    Poll::Ready(unsafe { self.inner.rb.lending_pop(max_chunk_len) })
                 }
                 #[cfg(debug_assertions)]
                 _ => unreachable!(),
@@ -184,41 +167,44 @@ impl AsyncCowIter<'_> {
         }
     }
 
+    /// Attempt to pull out the next value, registering the current task for
+    /// wakeup if the value is not yet available, and returning `None` if the
+    /// iterator is exhausted.
+    ///
+    /// [`WakeUp::on_aux_bytes`][crate::config::WakeUp::on_aux_bytes]
+    /// must be properly set to make this work.
+    ///
+    /// See also [`CowIter::lending_next`].
+    pub fn poll_lending_next(
+        &mut self,
+        cx: &Context<'_>,
+        max_chunk_len: Option<NonZeroUsize>,
+    ) -> Poll<Option<CowChunk<'_>>> {
+        unsafe { self.poll(cx, max_chunk_len) }
+    }
+
     /// Advances the iterator and returns the next value.
     ///
     /// [`WakeUp::on_aux_bytes`][crate::config::WakeUp::on_aux_bytes]
     /// must be properly set to make this work.
     ///
-    /// See also [`CowIter::next`].
-    pub async fn next<F, R>(&mut self, f: F, max_chunk_len: Option<NonZeroUsize>) -> Option<R>
-    where
-        F: FnOnce(CowChunk<'_>) -> R + Unpin,
-    {
-        struct Fut<I, F>(I, Option<F>, Option<NonZeroUsize>);
+    /// See also [`CowIter::lending_next`].
+    pub async fn lending_next(
+        &mut self,
+        max_chunk_len: Option<NonZeroUsize>,
+    ) -> Option<CowChunk<'_>> {
+        struct Fut<I>(I, Option<NonZeroUsize>);
 
-        impl<F, R> Future for Fut<&mut AsyncCowIter<'_>, F>
-        where
-            F: FnOnce(CowChunk<'_>) -> R + Unpin,
-        {
-            type Output = Option<R>;
+        impl<'b> Future for Fut<&'b mut AsyncCowIter<'_>> {
+            type Output = Option<CowChunk<'b>>;
 
             fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-                let Fut(iter, f, max_chunk_len) = self.get_mut();
-
-                Pin::new(&mut **iter).poll_next(
-                    cx,
-                    |cc| {
-                        let f = f.take();
-                        // We only take `f` once, so there is always a value there.
-                        let f = unsafe { f.unwrap_unchecked() };
-                        f(cc)
-                    },
-                    *max_chunk_len,
-                )
+                let Fut(iter, max_chunk_len) = self.get_mut();
+                unsafe { iter.poll(cx, *max_chunk_len) }
             }
         }
 
-        Fut(self, Some(f), max_chunk_len).await
+        Fut(self, max_chunk_len).await
     }
 }
 
