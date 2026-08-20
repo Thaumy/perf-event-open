@@ -89,7 +89,7 @@ impl<'a> CowIter<'a> {
     where
         F: FnOnce(CowChunk<'_>, &Parser) -> R,
     {
-        self.rb.lending_pop().map(|cc| f(cc, self.parser))
+        unsafe { self.rb.lending_pop() }.map(|cc| f(cc, self.parser))
     }
 
     /// Creates an asynchronous iterator.
@@ -189,7 +189,7 @@ impl AsyncCowIter<'_> {
     {
         let this = self.get_mut();
 
-        if let Some(cc) = this.inner.rb.lending_pop() {
+        if let Some(cc) = unsafe { this.inner.rb.lending_pop() } {
             return Poll::Ready(Some(f(cc, this.inner.parser)));
         }
 
@@ -205,7 +205,7 @@ impl AsyncCowIter<'_> {
             ) {
                 Err(Wait::STATE_WAIT) => Poll::Pending,
                 Ok(Wait::STATE_WAKE) => {
-                    if let Some(cc) = this.inner.rb.lending_pop() {
+                    if let Some(cc) = unsafe { this.inner.rb.lending_pop() } {
                         Poll::Ready(Some(f(cc, this.inner.parser)))
                     } else {
                         Poll::Pending
@@ -215,10 +215,7 @@ impl AsyncCowIter<'_> {
                     continue; // Spurious fail, try again.
                 }
                 Err(Wait::STATE_HANG) => Poll::Ready(
-                    this.inner
-                        .rb
-                        .lending_pop()
-                        .map(|cc| f(cc, this.inner.parser)),
+                    unsafe { this.inner.rb.lending_pop() }.map(|cc| f(cc, this.inner.parser)),
                 ),
                 #[cfg(debug_assertions)]
                 _ => unreachable!(),

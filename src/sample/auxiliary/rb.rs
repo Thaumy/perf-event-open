@@ -21,7 +21,10 @@ impl<'a> Rb<'a> {
         }
     }
 
-    pub fn lending_pop(&self, max_chunk_len: Option<NonZeroUsize>) -> Option<CowChunk<'a>> {
+    /// # Safety
+    ///
+    /// See [`crate::sample::rb::RingBuf::lending_pop`].
+    pub unsafe fn lending_pop(&self, max_chunk_len: Option<NonZeroUsize>) -> Option<CowChunk<'a>> {
         let rb_ptr = self.alloc.as_ptr();
         let size = self.alloc.len();
 

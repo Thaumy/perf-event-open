@@ -35,7 +35,7 @@ impl<'a> CowIter<'a> {
     where
         F: FnOnce(CowChunk<'_>) -> R,
     {
-        self.rb.lending_pop(max_chunk_len).map(f)
+        unsafe { self.rb.lending_pop(max_chunk_len) }.map(f)
     }
 
     /// Creates an asynchronous iterator.
@@ -141,7 +141,7 @@ impl AsyncCowIter<'_> {
     {
         let this = self.get_mut();
 
-        if let Some(cc) = this.inner.rb.lending_pop(max_chunk_len) {
+        if let Some(cc) = unsafe { this.inner.rb.lending_pop(max_chunk_len) } {
             return Poll::Ready(Some(f(cc)));
         }
 
@@ -157,7 +157,7 @@ impl AsyncCowIter<'_> {
             ) {
                 Err(Wait::STATE_WAIT) => Poll::Pending,
                 Ok(Wait::STATE_WAKE) => {
-                    if let Some(cc) = this.inner.rb.lending_pop(max_chunk_len) {
+                    if let Some(cc) = unsafe { this.inner.rb.lending_pop(max_chunk_len) } {
                         Poll::Ready(Some(f(cc)))
                     } else {
                         Poll::Pending
@@ -167,7 +167,7 @@ impl AsyncCowIter<'_> {
                     continue; // Spurious fail, try again.
                 }
                 Err(Wait::STATE_HANG) => {
-                    Poll::Ready(this.inner.rb.lending_pop(max_chunk_len).map(f))
+                    Poll::Ready(unsafe { this.inner.rb.lending_pop(max_chunk_len) }.map(f))
                 }
                 #[cfg(debug_assertions)]
                 _ => unreachable!(),

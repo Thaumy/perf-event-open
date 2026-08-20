@@ -23,7 +23,14 @@ impl<'a> Rb<'a> {
         }
     }
 
-    pub fn lending_pop(&self) -> Option<CowChunk<'a>> {
+    /// # Safety
+    ///
+    /// There must be no live [`CowChunk`] previously returned by this method
+    /// at the time of the call. The previous one must have been dropped.
+    ///
+    /// Violating this condition will cause the ring buffer to roll back its
+    /// tail pointer, leading to UB (like UAF).
+    pub unsafe fn lending_pop(&self) -> Option<CowChunk<'a>> {
         let rb_ptr = self.alloc.as_ptr();
         let size = self.alloc.len();
 
