@@ -16,7 +16,9 @@ impl<'a> Iter<'a> {
     /// `max_chunk_len` specifies the maximum length of a chunk that can be produced
     /// at one time, unlimited if `None`.
     pub fn next(&mut self, max_chunk_len: Option<NonZeroUsize>) -> Option<Vec<u8>> {
-        self.0.next(|cc| cc.as_bytes().to_vec(), max_chunk_len)
+        self.0
+            .lending_next(max_chunk_len)
+            .map(|cc| cc.as_bytes().to_vec())
     }
 
     /// Returns the underlying COW iterator.
@@ -45,8 +47,10 @@ impl AsyncIter<'_> {
         cx: &mut Context<'_>,
         max_chunk_len: Option<NonZeroUsize>,
     ) -> Poll<Option<Vec<u8>>> {
-        let this = Pin::new(&mut self.get_mut().0);
-        this.poll_next(cx, |cc| cc.as_bytes().to_vec(), max_chunk_len)
+        self.get_mut()
+            .0
+            .poll_lending_next(cx, max_chunk_len)
+            .map(|it| it.map(|cc| cc.as_bytes().to_vec()))
     }
 
     /// Advances the iterator and returns the next value.
@@ -55,7 +59,8 @@ impl AsyncIter<'_> {
     /// at one time, unlimited if `None`.
     pub async fn next(&mut self, max_chunk_len: Option<NonZeroUsize>) -> Option<Vec<u8>> {
         self.0
-            .next(|cc| cc.as_bytes().to_vec(), max_chunk_len)
+            .lending_next(max_chunk_len)
             .await
+            .map(|cc| cc.as_bytes().to_vec())
     }
 }

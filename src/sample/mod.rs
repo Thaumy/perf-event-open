@@ -10,7 +10,7 @@ use auxiliary::AuxTracer;
 use iter::{CowIter, Iter};
 use mmap::Mmap;
 use rb::RingBuf;
-use record::{Parser, UnsafeParser};
+use record::Parser;
 
 use crate::ffi::{bindings as b, syscall, Attr, Metadata, PAGE_SIZE};
 
@@ -81,7 +81,7 @@ impl Sampler {
         Ok(Sampler {
             perf,
             mmap,
-            parser: Parser(UnsafeParser::from_attr(attr)),
+            parser: Parser::from_attr(attr),
             iter_alive: UnsafeCell::new(false),
             aux_tracer_alive: UnsafeCell::new(false),
         })
@@ -124,8 +124,8 @@ impl Sampler {
     }
 
     /// Record parser of the sampler.
-    pub fn parser(&self) -> &UnsafeParser {
-        &self.parser.0
+    pub fn parser(&self) -> &Parser {
+        &self.parser
     }
 
     /// Create an AUX tracer for this sampler.

@@ -377,12 +377,10 @@ macro_rules! debug {
 }
 pub(crate) use debug;
 
-/// Unsafe record parser.
-///
-/// Unlike [`Parser`], you need to ensure the safety of parsing record bytes.
+/// Record parser.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct UnsafeParser {
+pub struct Parser {
     pub sample_id_all: bool,
     pub sample_type: u64,
     pub read_format: u64,
@@ -391,7 +389,7 @@ pub struct UnsafeParser {
     pub branch_sample_type: u64,
 }
 
-impl UnsafeParser {
+impl Parser {
     pub(crate) fn from_attr(attr: &Attr) -> Self {
         Self {
             sample_id_all: attr.sample_id_all() > 0,
@@ -412,8 +410,6 @@ impl UnsafeParser {
     ///
     /// `bytes` must be created by the same sampler as this parser and must be 8-byte
     /// aligned.
-    ///
-    /// See also [`Parser`].
     pub unsafe fn parse<T>(&self, bytes: T) -> (Priv, Record, usize)
     where
         T: Borrow<[u8]>,
@@ -502,25 +498,24 @@ impl UnsafeParser {
     }
 }
 
-/// Record parser.
-///
-/// This type can only be accessed within the closure scope of COW record iterators,
-/// parse [`CowChunk`] with this parser is always safe since the closure scope
-/// ensures that the `CowChunk` and the underlying unsafe parser are created
-/// from the same sampler.
-#[derive(Debug)]
-pub struct Parser(pub(in crate::sample) UnsafeParser);
+pub struct RawRecord<'a> {
+    pub(in crate::sample) parser: &'a Parser,
+    pub(in crate::sample) chunk: CowChunk<'a>,
+}
 
-impl Parser {
-    /// Parse [`CowChunk`] into record type.
-    pub fn parse(&self, chunk: CowChunk<'_>) -> (Priv, Record) {
-        let bytes = chunk.as_bytes();
-        let (p, r, _) = unsafe { self.0.parse(bytes) };
+impl<'a> RawRecord<'a> {
+    /// Parse to record type.
+    pub fn parse(&self) -> (Priv, Record) {
+        let bytes = self.chunk.as_bytes();
+        let (p, r, _) = unsafe { self.parser.parse(bytes) };
         (p, r)
     }
 
-    /// Returns the underlying unsafe record parser.
-    pub fn as_unsafe(&self) -> &UnsafeParser {
-        &self.0
+    pub fn as_raw(&self) -> &CowChunk<'a> {
+        &self.chunk
+    }
+
+    pub fn into_raw(self) -> CowChunk<'a> {
+        self.chunk
     }
 }
