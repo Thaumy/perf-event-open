@@ -9,8 +9,8 @@ use std::task::{Context, Poll};
 use futures::task::AtomicWaker;
 
 use crate::ffi::syscall;
-use crate::sample::rb::{CowChunk, RingBuf};
-use crate::sample::record::Parser;
+use crate::sample::rb::RingBuf;
+use crate::sample::record::{Parser, RawRecord};
 
 /// COW (copy-on-write) record iterator.
 ///
@@ -53,44 +53,38 @@ impl<'a> CowIter<'a> {
     ///
     /// let mut skipped = 0;
     /// let it = loop {
-    ///     let it = iter
-    ///         .next(|cc, p| {
-    ///             // ABI layout:
-    ///             // u32 type
-    ///             // u16 misc
-    ///             // u16 size
-    ///             // u64 len
-    ///             // [u8; len] bytes
+    ///     let Some(rr) = iter.lending_next() else {
+    ///         skipped += 1;
+    ///         continue;
+    ///     };
     ///
-    ///             let ptr = cc.as_bytes().as_ptr();
-    ///             let ty = ptr as *const u32;
+    ///     // ABI layout:
+    ///     // u32 type
+    ///     // u16 misc
+    ///     // u16 size
+    ///     // u64 len
+    ///     // [u8; len] bytes
+    ///     let ptr = rr.as_raw().as_bytes().as_ptr();
+    ///     let ty = ptr as *const u32;
     ///
-    ///             // Only parse sample record with stack dumped.
-    ///             if unsafe { *ty } == 9 {
-    ///                 let len = unsafe { ptr.offset(8) } as *const u64;
-    ///                 if unsafe { *len } > 0 {
-    ///                     return Some(p.parse(cc));
-    ///                 }
-    ///             }
-    ///
-    ///             skipped += 1;
-    ///             None
-    ///         })
-    ///         .flatten();
-    ///
-    ///     if let Some(it) = it {
-    ///         break it;
+    ///     // Only parse sample record with stack dumped.
+    ///     if unsafe { *ty } == 9 {
+    ///         let len = unsafe { ptr.offset(8) } as *const u64;
+    ///         if unsafe { *len } > 0 {
+    ///             break rr.parse();
+    ///         }
     ///     }
     /// };
     ///
     /// println!("skipped: {}", skipped);
     /// println!("{:-?}", it);
     /// ```
-    pub fn next<F, R>(&mut self, f: F) -> Option<R>
-    where
-        F: FnOnce(CowChunk<'_>, &Parser) -> R,
-    {
-        unsafe { self.rb.lending_pop() }.map(|cc| f(cc, self.parser))
+    pub fn lending_next(&mut self) -> Option<RawRecord<'_>> {
+        let chunk = unsafe { self.rb.lending_pop() }?;
+        Some(RawRecord {
+            chunk,
+            parser: self.parser,
+        })
     }
 
     /// Creates an asynchronous iterator.
@@ -182,25 +176,16 @@ pub struct AsyncCowIter<'a> {
     wait: Arc<Wait>,
 }
 
-impl AsyncCowIter<'_> {
-    /// Attempt to pull out the next value, registering the current task for
-    /// wakeup if the value is not yet available, and returning `None` if the
-    /// iterator is exhausted.
-    ///
-    /// [`WakeUp::on`][crate::config::WakeUp::on] must be properly set to make this work.
-    ///
-    /// See also [`CowIter::next`].
-    pub fn poll_next<F, R>(self: Pin<&mut Self>, cx: &mut Context<'_>, f: F) -> Poll<Option<R>>
-    where
-        F: FnOnce(CowChunk<'_>, &Parser) -> R + Unpin,
-    {
-        let this = self.get_mut();
-
-        if let Some(cc) = unsafe { this.inner.rb.lending_pop() } {
-            return Poll::Ready(Some(f(cc, this.inner.parser)));
+impl<'a> AsyncCowIter<'a> {
+    unsafe fn poll(&mut self, cx: &Context<'_>) -> Poll<Option<RawRecord<'a>>> {
+        if let Some(chunk) = unsafe { self.inner.rb.lending_pop() } {
+            return Poll::Ready(Some(RawRecord {
+                parser: self.inner.parser,
+                chunk,
+            }));
         }
 
-        let wait = &this.wait;
+        let wait = &self.wait;
 
         wait.waker.register(cx.waker());
         loop {
@@ -212,8 +197,11 @@ impl AsyncCowIter<'_> {
             ) {
                 Err(Wait::STATE_WAIT) => Poll::Pending,
                 Ok(Wait::STATE_WAKE) => {
-                    if let Some(cc) = unsafe { this.inner.rb.lending_pop() } {
-                        Poll::Ready(Some(f(cc, this.inner.parser)))
+                    if let Some(chunk) = unsafe { self.inner.rb.lending_pop() } {
+                        Poll::Ready(Some(RawRecord {
+                            parser: self.inner.parser,
+                            chunk,
+                        }))
                     } else {
                         Poll::Pending
                     }
@@ -221,9 +209,12 @@ impl AsyncCowIter<'_> {
                 Err(Wait::STATE_WAKE) => {
                     continue; // Spurious fail, try again.
                 }
-                Err(Wait::STATE_HANG) => Poll::Ready(
-                    unsafe { this.inner.rb.lending_pop() }.map(|cc| f(cc, this.inner.parser)),
-                ),
+                Err(Wait::STATE_HANG) => Poll::Ready(unsafe { self.inner.rb.lending_pop() }.map(
+                    |chunk| RawRecord {
+                        parser: self.inner.parser,
+                        chunk,
+                    },
+                )),
                 #[cfg(debug_assertions)]
                 _ => unreachable!(),
                 #[cfg(not(debug_assertions))]
@@ -232,36 +223,35 @@ impl AsyncCowIter<'_> {
         }
     }
 
+    /// Attempt to pull out the next value, registering the current task for
+    /// wakeup if the value is not yet available, and returning `None` if the
+    /// iterator is exhausted.
+    ///
+    /// [`WakeUp::on`][crate::config::WakeUp::on] must be properly set to make this work.
+    ///
+    /// See also [`CowIter::lending_next`].
+    pub fn poll_lending_next(&mut self, cx: &Context<'_>) -> Poll<Option<RawRecord<'_>>> {
+        unsafe { self.poll(cx) }
+    }
+
     /// Advances the iterator and returns the next value.
     ///
     /// [`WakeUp::on`][crate::config::WakeUp::on] must be properly set to make this work.
     ///
-    /// See also [`CowIter::next`].
-    pub async fn next<F, R>(&mut self, f: F) -> Option<R>
-    where
-        F: FnOnce(CowChunk<'_>, &Parser) -> R + Unpin,
-    {
-        struct Fut<I, F>(I, Option<F>);
+    /// See also [`CowIter::lending_next`].
+    pub async fn lending_next(&mut self) -> Option<RawRecord<'_>> {
+        struct Fut<I>(I);
 
-        impl<F, R> Future for Fut<&mut AsyncCowIter<'_>, F>
-        where
-            F: FnOnce(CowChunk<'_>, &Parser) -> R + Unpin,
-        {
-            type Output = Option<R>;
+        impl<'b> Future for Fut<&'b mut AsyncCowIter<'_>> {
+            type Output = Option<RawRecord<'b>>;
 
             fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-                let Fut(iter, f) = self.get_mut();
-
-                Pin::new(&mut **iter).poll_next(cx, |cc, p| {
-                    let f = f.take();
-                    // We only take `f` once, so there is always a value there.
-                    let f = unsafe { f.unwrap_unchecked() };
-                    f(cc, p)
-                })
+                let Fut(iter) = self.get_mut();
+                unsafe { iter.poll(cx) }
             }
         }
 
-        Fut(self, Some(f)).await
+        Fut(self).await
     }
 }
 

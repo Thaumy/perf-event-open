@@ -27,7 +27,7 @@ impl Iterator for Iter<'_> {
     type Item = (Priv, Record);
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.0.next(|cc, p| p.parse(cc))
+        self.0.lending_next().map(|rr| rr.parse())
     }
 }
 
@@ -41,14 +41,16 @@ impl AsyncIter<'_> {
     ///
     /// [`WakeUpOn`][crate::config::WakeUpOn] must be properly set to make this work.
     pub fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<(Priv, Record)>> {
-        let this = Pin::new(&mut self.get_mut().0);
-        this.poll_next(cx, |cc, p| p.parse(cc))
+        self.get_mut()
+            .0
+            .poll_lending_next(cx)
+            .map(|it| it.map(|rr| rr.parse()))
     }
 
     /// Advances the iterator and returns the next value.
     ///
     /// [`WakeUpOn`][crate::config::WakeUpOn] must be properly set to make this work.
     pub async fn next(&mut self) -> Option<(Priv, Record)> {
-        self.0.next(|cc, p| p.parse(cc)).await
+        self.0.lending_next().await.map(|rr| rr.parse())
     }
 }
