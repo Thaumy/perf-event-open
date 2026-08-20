@@ -140,12 +140,16 @@ impl<'a> AuxTracer<'a> {
             return None;
         }
 
-        let rb_ptr = self.mmap.as_ptr().cast::<UnsafeCell<u8>>();
-        let rb_len = self.mmap.len();
-        let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
+        let rb = {
+            let rb_ptr = self.mmap.as_ptr().cast::<UnsafeCell<u8>>();
+            let rb_len = self.mmap.len();
+            let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
+
+            RingBuf::new(rb_alloc, self.tail, self.head)
+        };
 
         Some(Iter(CowIter {
-            rb: RingBuf::new(rb_alloc, self.tail, self.head),
+            rb,
             perf: self.perf,
             alive: iter_alive,
         }))

@@ -99,21 +99,21 @@ impl Sampler {
             return None;
         }
 
-        let mmap_ptr = self.mmap.as_ptr();
+        let rb = {
+            let mmap_ptr = self.mmap.as_ptr();
 
-        // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6212
-        let page_size = *PAGE_SIZE;
-        let rb_ptr = unsafe { mmap_ptr.add(page_size) }.cast::<UnsafeCell<u8>>();
-        let rb_len = self.mmap.len() - page_size;
-        let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
+            // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6212
+            let page_size = *PAGE_SIZE;
+            let rb_ptr = unsafe { mmap_ptr.add(page_size) }.cast::<UnsafeCell<u8>>();
+            let rb_len = self.mmap.len() - page_size;
+            let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
 
-        let metadata = mmap_ptr as *mut Metadata;
+            let metadata = mmap_ptr as *mut Metadata;
+            let rb_tail = unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).data_tail)) };
+            let rb_head = unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).data_head)) };
 
-        let rb = RingBuf::new(
-            rb_alloc,
-            unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).data_tail)) },
-            unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).data_head)) },
-        );
+            RingBuf::new(rb_alloc, rb_tail, rb_head)
+        };
 
         Some(Iter(CowIter {
             rb,
