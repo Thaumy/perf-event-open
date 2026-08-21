@@ -6,7 +6,6 @@ use std::io::{Error, Read, Result, Seek, SeekFrom};
 use std::path::Path;
 
 pub use kp::*;
-use thiserror::Error;
 pub use up::*;
 
 use super::EventConfig;
