@@ -4,17 +4,17 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::{ptr, slice};
 
-use arena::Arena;
 use auxiliary::AuxTracer;
 use iter::{CowIter, Iter};
+use mmap::Mmap;
 use rb::Rb;
 use record::{Parser, UnsafeParser};
 
 use crate::ffi::{bindings as b, syscall, Attr, Metadata, PAGE_SIZE};
 
-mod arena;
 pub mod auxiliary;
 pub mod iter;
+mod mmap;
 pub mod rb;
 pub mod record;
 
@@ -59,7 +59,7 @@ pub mod record;
 /// ```
 pub struct Sampler {
     perf: Arc<File>,
-    arena: Arena,
+    mmap: Mmap,
     parser: Parser,
 }
 
@@ -72,26 +72,26 @@ impl Sampler {
         else {
             return Err(Error::other("allocation size overflow"));
         };
-        let arena = Arena::new(&perf, len, 0)?;
+        let mmap = Mmap::new(&perf, len, 0)?;
 
         Ok(Sampler {
             perf,
-            arena,
+            mmap,
             parser: Parser(UnsafeParser::from_attr(attr)),
         })
     }
 
     /// Returns a record iterator over the kernel ring buffer.
     pub fn iter(&self) -> Iter<'_> {
-        let arena_ptr = self.arena.as_ptr();
+        let mmap_ptr = self.mmap.as_ptr();
 
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6212
         let page_size = *PAGE_SIZE;
-        let rb_ptr = unsafe { arena_ptr.add(page_size) };
-        let rb_len = self.arena.len() - page_size;
+        let rb_ptr = unsafe { mmap_ptr.add(page_size) };
+        let rb_len = self.mmap.len() - page_size;
         let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
 
-        let metadata = arena_ptr as *mut Metadata;
+        let metadata = mmap_ptr as *mut Metadata;
 
         let rb = Rb::new(
             rb_alloc,
@@ -120,7 +120,7 @@ impl Sampler {
     /// from the same sampler share the same ring buffer in the kernel space, so `exp`
     /// should be the same.
     pub fn aux_tracer(&self, exp: u8) -> Result<AuxTracer<'_>> {
-        let metadata = self.arena.as_ptr() as *mut Metadata;
+        let metadata = self.mmap.as_ptr() as *mut Metadata;
         AuxTracer::new(&self.perf, metadata, exp)
     }
 
@@ -319,7 +319,7 @@ impl Sampler {
     /// [`Counter::stat`][crate::count::Counter::stat], but much cheaper
     /// since the value is read from memory instead of system call.
     pub fn counter_time_enabled(&self) -> u64 {
-        let metadata = self.arena.as_ptr() as *mut Metadata;
+        let metadata = self.mmap.as_ptr() as *mut Metadata;
         let time_enabled = unsafe { AtomicU64::from_ptr(&mut (*metadata).time_enabled) };
         time_enabled.load(Ordering::Relaxed)
     }
@@ -330,11 +330,11 @@ impl Sampler {
     /// [`Counter::stat`][crate::count::Counter::stat], but much cheaper
     /// since the value is read from memory instead of system call.
     pub fn counter_time_running(&self) -> u64 {
-        let metadata = self.arena.as_ptr() as *mut Metadata;
+        let metadata = self.mmap.as_ptr() as *mut Metadata;
         let time_running = unsafe { AtomicU64::from_ptr(&mut (*metadata).time_running) };
         time_running.load(Ordering::Relaxed)
     }
 }
 
-// `Arena::ptr` is valid during the lifetime of `Sampler`.
+// `Mmap::ptr` is valid during the lifetime of `Sampler`.
 unsafe impl Send for Sampler {}

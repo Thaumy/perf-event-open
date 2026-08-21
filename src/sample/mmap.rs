@@ -4,12 +4,12 @@ use std::ptr::{null_mut, NonNull};
 
 use crate::ffi::syscall;
 
-pub struct Arena {
+pub struct Mmap {
     ptr: NonNull<u8>,
     len: usize,
 }
 
-impl Arena {
+impl Mmap {
     pub fn new(file: &File, len: usize, offset: usize) -> Result<Self> {
         let prot = libc::PROT_READ | libc::PROT_WRITE;
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6582
@@ -40,12 +40,12 @@ impl Arena {
     }
 }
 
-impl Drop for Arena {
+impl Drop for Mmap {
     fn drop(&mut self) {
         if let Result::<()>::Err(e) =
             syscall!(unsafe, munmap, self.ptr.as_ptr() as *mut (), self.len)
         {
-            panic!("Failed to unmap arena: {}", e)
+            panic!("Failed to munmap: {}", e)
         }
     }
 }

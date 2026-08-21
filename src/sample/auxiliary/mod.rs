@@ -6,7 +6,7 @@ use std::sync::atomic::AtomicU64;
 use iter::{CowIter, Iter};
 use rb::Rb;
 
-use super::arena::Arena;
+use super::mmap::Mmap;
 use crate::ffi::Metadata;
 
 pub mod iter;
@@ -74,7 +74,7 @@ mod rb;
 pub struct AuxTracer<'a> {
     tail: &'a AtomicU64,
     head: &'a AtomicU64,
-    arena: Arena,
+    mmap: Mmap,
     perf: &'a File,
 }
 
@@ -96,14 +96,14 @@ impl<'a> AuxTracer<'a> {
             unsafe { (*metadata).aux_size = len as _ };
             unsafe { (*metadata).aux_offset = aux_offset };
 
-            let arena = Arena::new(perf, len, aux_offset as _)?;
+            let mmap = Mmap::new(perf, len, aux_offset as _)?;
             let tail = unsafe { AtomicU64::from_ptr(&mut (*metadata).aux_tail) };
             let head = unsafe { AtomicU64::from_ptr(&mut (*metadata).aux_head) };
 
             Ok(Self {
                 tail,
                 head,
-                arena,
+                mmap,
                 perf,
             })
         };
@@ -118,8 +118,8 @@ impl<'a> AuxTracer<'a> {
 
     /// Get an iterator of the AUX area.
     pub fn iter(&self) -> Iter<'_> {
-        let rb_ptr = self.arena.as_ptr();
-        let rb_len = self.arena.len();
+        let rb_ptr = self.mmap.as_ptr();
+        let rb_len = self.mmap.len();
         let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
 
         Iter(CowIter {
