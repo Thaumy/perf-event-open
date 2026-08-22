@@ -1,5 +1,6 @@
 use std::alloc::{dealloc, Layout};
 use std::borrow::Borrow;
+use std::ops::Deref;
 use std::ptr::NonNull;
 use std::slice;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -39,6 +40,14 @@ impl CowChunk<'_> {
         // TODO: For compatibility reasons, we will temporarily retain this
         // inefficient implementation until the next breaking release.
         self.as_bytes().to_vec()
+    }
+}
+
+impl Deref for CowChunk<'_> {
+    type Target = [u8];
+
+    fn deref(&self) -> &Self::Target {
+        self.as_bytes()
     }
 }
 
