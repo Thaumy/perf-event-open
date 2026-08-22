@@ -648,7 +648,7 @@ pub struct EntryFormat {
     /// Contains flags (e.g., [`mis`][crate::sample::record::sample::Entry::mis],
     /// [`pred`][crate::sample::record::sample::Entry::pred],
     /// [`in_tx`][crate::sample::record::sample::Entry::in_tx] and
-    /// [`abort`][crate::sample::record::sample::Entry::in_tx]).
+    /// [`abort`][crate::sample::record::sample::Entry::abort]).
     ///
     /// Must be enabled before `linux-4.5`:
     /// <https://github.com/torvalds/linux/commit/b16a5b52eb90d92b597257778e51e1fdc6423e64>

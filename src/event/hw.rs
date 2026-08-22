@@ -61,9 +61,9 @@ pub enum Hardware {
     /// Branch instructions retired.
     BranchInstr,
 
-    /// Stalled cycles during issue.
-    BackendStalledCycle,
     /// Stalled cycles during retirement.
+    BackendStalledCycle,
+    /// Stalled cycles during issue.
     FrontendStalledCycle,
 
     /// Retired instructions.
