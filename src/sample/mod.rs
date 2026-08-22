@@ -1,5 +1,6 @@
+use std::cell::UnsafeCell;
 use std::fs::File;
-use std::io::{Error, Result};
+use std::io::{Error, ErrorKind, Result};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::{ptr, slice};
@@ -61,6 +62,7 @@ pub struct Sampler {
     perf: Arc<File>,
     mmap: Mmap,
     parser: Parser,
+    aux_tracer_alive: UnsafeCell<bool>,
 }
 
 impl Sampler {
@@ -78,6 +80,7 @@ impl Sampler {
             perf,
             mmap,
             parser: Parser(UnsafeParser::from_attr(attr)),
+            aux_tracer_alive: UnsafeCell::new(false),
         })
     }
 
@@ -116,12 +119,26 @@ impl Sampler {
     /// The AUX tracer needs a ring buffer to store data, and 2^`exp` pages will
     /// be allocated for this.
     ///
-    /// Multiple calls to this method duplicate the existing AUX tracer. AUX tracers
-    /// from the same sampler share the same ring buffer in the kernel space, so `exp`
-    /// should be the same.
+    /// A sampler cannot have multiple AUX tracers simultaneously.
+    /// Attempting to create a new AUX tracer while the previous one is still active
+    /// will result in [`ErrorKind::AlreadyExists`].
     pub fn aux_tracer(&self, exp: u8) -> Result<AuxTracer<'_>> {
+        // `Self` and `AuxTracer` are guaranteed to run on the same thread,
+        // so there is no data race.
+        let aux_tracer_alive = self.aux_tracer_alive.get();
+        if unsafe { ptr::replace(aux_tracer_alive, true) } {
+            let error = "There is already an AUX tracer attached to this sampler.";
+            return Err(Error::new(ErrorKind::AlreadyExists, error));
+        }
+
         let metadata = self.mmap.as_ptr() as *mut Metadata;
-        unsafe { AuxTracer::new(&self.perf, metadata, exp) }
+        match unsafe { AuxTracer::new(aux_tracer_alive, &self.perf, metadata, exp) } {
+            Ok(o) => Ok(o),
+            Err(e) => {
+                unsafe { *aux_tracer_alive = false };
+                Err(e)
+            }
+        }
     }
 
     /// Pause the ring buffer output.

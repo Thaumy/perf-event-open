@@ -72,6 +72,7 @@ mod rb;
 ///
 /// Since `linux-4.1`: <https://github.com/torvalds/linux/commit/45bfb2e50471abbbfd83d40d28c986078b0d24ff>
 pub struct AuxTracer<'a> {
+    aux_tracer_alive: *mut bool,
     tail: &'a AtomicU64,
     head: &'a AtomicU64,
     mmap: Mmap,
@@ -79,7 +80,12 @@ pub struct AuxTracer<'a> {
 }
 
 impl<'a> AuxTracer<'a> {
-    pub(crate) unsafe fn new(perf: &'a File, metadata: *mut Metadata, exp: u8) -> Result<Self> {
+    pub(crate) unsafe fn new(
+        aux_tracer_alive: *mut bool,
+        perf: &'a File,
+        metadata: *mut Metadata,
+        exp: u8,
+    ) -> Result<Self> {
         #[cfg(feature = "linux-4.1")]
         return {
             use std::io::Error;
@@ -101,6 +107,7 @@ impl<'a> AuxTracer<'a> {
             let head = unsafe { AtomicU64::from_ptr(&mut (*metadata).aux_head) };
 
             Ok(Self {
+                aux_tracer_alive,
                 tail,
                 head,
                 mmap,
@@ -109,6 +116,7 @@ impl<'a> AuxTracer<'a> {
         };
         #[cfg(not(feature = "linux-4.1"))]
         return {
+            let _ = aux_tracer_alive;
             let _ = perf;
             let _ = metadata;
             let _ = exp;
@@ -126,5 +134,11 @@ impl<'a> AuxTracer<'a> {
             rb: RingBuf::new(rb_alloc, self.tail, self.head),
             perf: self.perf,
         })
+    }
+}
+
+impl Drop for AuxTracer<'_> {
+    fn drop(&mut self) {
+        unsafe { *self.aux_tracer_alive = false };
     }
 }
