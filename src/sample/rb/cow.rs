@@ -51,6 +51,12 @@ impl Deref for CowChunk<'_> {
     }
 }
 
+impl AsRef<[u8]> for CowChunk<'_> {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
 impl Borrow<[u8]> for CowChunk<'_> {
     fn borrow(&self) -> &[u8] {
         self.as_bytes()
