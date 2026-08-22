@@ -126,12 +126,7 @@ impl Counter {
     /// Attempting to create a new sampler while the previous one is still active
     /// will result in [`ErrorKind::AlreadyExists`].
     pub fn sampler(&self, exp: u8) -> Result<Sampler> {
-        if Arc::strong_count(&self.perf) == 1 {
-            // We only change the attr fields related to event config,
-            // which are not used in `UnsafeParser::from_attr`.
-            let attr = unsafe { &*self.attr.get() };
-            Sampler::new(Arc::clone(&self.perf), attr, exp)
-        } else {
+        if Arc::strong_count(&self.perf) > 1 {
             // The kernel allows creating multiple samplers for a counter.
             // These samplers share the same ring buffer in kernel space
             // and require the same mmap length.
@@ -145,8 +140,13 @@ impl Counter {
             // is rarely useful, and the `Send` impl (which we provide)
             // is much more valuable.
             let error = "There is already a sampler attached to this counter.";
-            Err(Error::new(ErrorKind::AlreadyExists, error))
+            return Err(Error::new(ErrorKind::AlreadyExists, error));
         }
+
+        // We only change the attr fields related to event config,
+        // which are not used in `UnsafeParser::from_attr`.
+        let attr = unsafe { &*self.attr.get() };
+        Sampler::new(Arc::clone(&self.perf), attr, exp)
     }
 
     /// Returns the file handle opened by [`perf_event_open`](https://man7.org/linux/man-pages/man2/perf_event_open.2.html)
