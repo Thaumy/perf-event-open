@@ -22,7 +22,7 @@ pub struct Sample {
     /// Cgroup ID (for the perf event subsystem).
     ///
     /// To get the pathname of the cgroup, the ID should match to
-    /// [`Cgroup::id`][crate::sample::record::Cgroup::id].
+    /// [`Cgroup::id`][crate::sample::record::cgroup::Cgroup::id].
     pub cgroup: Option<u64>,
     /// Call chain (stack backtrace).
     pub call_chain: Option<Vec<CallChain>>,

@@ -19,7 +19,7 @@ use crate::ffi::deref_offset;
 /// # Examples
 ///
 /// ```rust
-/// # #[cfg(not(feature = "linux-6.0"))]
+/// # #[cfg(not(feature = "linux-4.7"))]
 /// # return;
 /// #
 /// # tokio_test::block_on(async {
@@ -35,7 +35,6 @@ use crate::ffi::deref_offset;
 /// let target = (Proc::ALL, Cpu(0));
 ///
 /// let mut opts = Opts::default();
-/// opts.stat_format.lost_records = true;
 /// opts.wake_up.on = WakeUpOn::Samples(1);
 /// opts.sample_on = SampleOn::Count(1_000_000); // 1ms
 ///

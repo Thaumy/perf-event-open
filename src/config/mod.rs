@@ -48,7 +48,7 @@ pub struct Opts {
     /// If a pinned counter cannot be put onto the CPU (e.g., because there are not
     /// enough hardware counters or because of a conflict with some other event),
     /// then the counter goes into an "error" state, where [stat][crate::count::Counter::stat]
-    /// returns EOF.
+    /// returns [`UnexpectedEof`][std::io::ErrorKind::UnexpectedEof].
     pub pin_on_pmu: bool,
 
     // `mmap` will fail if this option is used with all CPUs:

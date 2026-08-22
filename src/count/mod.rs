@@ -47,19 +47,14 @@ pub use stat::*;
 /// # Examples
 ///
 /// ```rust
-/// use perf_event_open::config::{Cpu, Opts, Proc, SampleOn, Size};
+/// use perf_event_open::config::{Cpu, Opts, Proc};
 /// use perf_event_open::count::Counter;
 /// use perf_event_open::event::hw::Hardware;
 ///
 /// // Count retired instructions on current process, all CPUs.
 /// let event = Hardware::Instr;
 /// let target = (Proc::CURRENT, Cpu::ALL);
-///
-/// let mut opts = Opts::default();
-/// opts.sample_on = SampleOn::Freq(1000); // 1000 samples per second.
-/// opts.sample_format.user_stack = Some(Size(8)); // Dump an 8-byte user stack in each sample.
-///
-/// let counter = Counter::new(event, target, opts).unwrap();
+/// let counter = Counter::new(event, target, Opts::default()).unwrap();
 ///
 /// counter.enable().unwrap(); // Start the counter.
 /// fn fib(n: usize) -> usize {
