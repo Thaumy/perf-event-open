@@ -2,9 +2,9 @@ use std::cell::UnsafeCell;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Result};
 use std::ptr::addr_of_mut;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{compiler_fence, AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;
-use std::{ptr, slice};
+use std::{hint, ptr, slice};
 
 use auxiliary::AuxTracer;
 use iter::{CowIter, Iter};
@@ -351,6 +351,39 @@ impl Sampler {
         let metadata = self.mmap.as_ptr() as *mut Metadata;
         let time_running = unsafe { AtomicU64::from_ptr(&mut (*metadata).time_running) };
         time_running.load(Ordering::Relaxed)
+    }
+
+    /// Returns the latest `(time_enabled, time_running)` snapshot.
+    ///
+    /// This is cheaper than [`Counter::stat`][crate::count::Counter::stat], but the
+    /// values may be stale while the counter is active.
+    ///
+    /// This is only reliable when the event monitors the calling thread. Otherwise,
+    /// the values may be inconsistent on weakly ordered architectures.
+    pub fn counter_time(&self) -> (u64, u64) {
+        let metadata = self.mmap.as_ptr() as *mut Metadata;
+
+        let lock = unsafe { AtomicU32::from_ptr(addr_of_mut!((*metadata).lock)) };
+        let time_enabled = unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).time_enabled)) };
+        let time_running = unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).time_running)) };
+
+        loop {
+            let seq = lock.load(Ordering::Relaxed);
+            if seq & 1 == 1 {
+                hint::spin_loop();
+                continue;
+            }
+            compiler_fence(Ordering::SeqCst);
+
+            let time_enabled = time_enabled.load(Ordering::Relaxed);
+            let time_running = time_running.load(Ordering::Relaxed);
+
+            compiler_fence(Ordering::SeqCst);
+            if lock.load(Ordering::Relaxed) == seq {
+                return (time_enabled, time_running);
+            }
+            hint::spin_loop();
+        }
     }
 }
 
