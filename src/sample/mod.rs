@@ -331,28 +331,6 @@ impl Sampler {
         Ok(())
     }
 
-    /// Counter's enabled time.
-    ///
-    /// Same as [time][crate::count::Stat::time_enabled] returned by
-    /// [`Counter::stat`][crate::count::Counter::stat], but much cheaper
-    /// since the value is read from memory instead of system call.
-    pub fn counter_time_enabled(&self) -> u64 {
-        let metadata = self.mmap.as_ptr() as *mut Metadata;
-        let time_enabled = unsafe { AtomicU64::from_ptr(&mut (*metadata).time_enabled) };
-        time_enabled.load(Ordering::Relaxed)
-    }
-
-    /// Counter's running time.
-    ///
-    /// Same as [time][crate::count::Stat::time_running] returned by
-    /// [`Counter::stat`][crate::count::Counter::stat], but much cheaper
-    /// since the value is read from memory instead of system call.
-    pub fn counter_time_running(&self) -> u64 {
-        let metadata = self.mmap.as_ptr() as *mut Metadata;
-        let time_running = unsafe { AtomicU64::from_ptr(&mut (*metadata).time_running) };
-        time_running.load(Ordering::Relaxed)
-    }
-
     /// Returns the latest `(time_enabled, time_running)` snapshot.
     ///
     /// This is cheaper than [`Counter::stat`][crate::count::Counter::stat], but the
