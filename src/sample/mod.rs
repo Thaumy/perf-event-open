@@ -121,7 +121,7 @@ impl Sampler {
     /// should be the same.
     pub fn aux_tracer(&self, exp: u8) -> Result<AuxTracer<'_>> {
         let metadata = self.mmap.as_ptr() as *mut Metadata;
-        AuxTracer::new(&self.perf, metadata, exp)
+        unsafe { AuxTracer::new(&self.perf, metadata, exp) }
     }
 
     /// Pause the ring buffer output.

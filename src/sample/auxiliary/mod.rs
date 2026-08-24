@@ -79,7 +79,7 @@ pub struct AuxTracer<'a> {
 }
 
 impl<'a> AuxTracer<'a> {
-    pub(crate) fn new(perf: &'a File, metadata: *mut Metadata, exp: u8) -> Result<Self> {
+    pub(crate) unsafe fn new(perf: &'a File, metadata: *mut Metadata, exp: u8) -> Result<Self> {
         #[cfg(feature = "linux-4.1")]
         return {
             use std::io::Error;
