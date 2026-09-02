@@ -1,6 +1,7 @@
 use std::cell::UnsafeCell;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Result};
+use std::ptr::addr_of_mut;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::{ptr, slice};
@@ -98,8 +99,8 @@ impl Sampler {
 
         let rb = RingBuf::new(
             rb_alloc,
-            unsafe { AtomicU64::from_ptr(&mut (*metadata).data_tail) },
-            unsafe { AtomicU64::from_ptr(&mut (*metadata).data_head) },
+            unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).data_tail)) },
+            unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).data_head)) },
         );
 
         Iter(CowIter {

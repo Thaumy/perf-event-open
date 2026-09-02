@@ -89,6 +89,7 @@ impl<'a> AuxTracer<'a> {
         #[cfg(feature = "linux-4.1")]
         return {
             use std::io::Error;
+            use std::ptr::addr_of_mut;
 
             use crate::ffi::PAGE_SIZE;
 
@@ -103,8 +104,8 @@ impl<'a> AuxTracer<'a> {
             unsafe { (*metadata).aux_offset = aux_offset };
 
             let mmap = Mmap::new(perf, len, aux_offset as _)?;
-            let tail = unsafe { AtomicU64::from_ptr(&mut (*metadata).aux_tail) };
-            let head = unsafe { AtomicU64::from_ptr(&mut (*metadata).aux_head) };
+            let tail = unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).aux_tail)) };
+            let head = unsafe { AtomicU64::from_ptr(addr_of_mut!((*metadata).aux_head)) };
 
             Ok(Self {
                 aux_tracer_alive,
