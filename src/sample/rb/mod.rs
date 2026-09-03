@@ -1,4 +1,5 @@
 use std::alloc::{alloc, handle_alloc_error, Layout};
+use std::cell::UnsafeCell;
 use std::cmp::Ordering as Ord;
 use std::ptr::copy_nonoverlapping;
 use std::slice;
@@ -9,13 +10,17 @@ pub use cow::CowChunk;
 mod cow;
 
 pub(super) struct RingBuf<'a> {
-    alloc: &'a [u8],
+    alloc: &'a [UnsafeCell<u8>],
     raw_tail: &'a AtomicU64,
     raw_head: &'a AtomicU64,
 }
 
 impl<'a> RingBuf<'a> {
-    pub fn new(alloc: &'a [u8], raw_tail: &'a AtomicU64, raw_head: &'a AtomicU64) -> Self {
+    pub fn new(
+        alloc: &'a [UnsafeCell<u8>],
+        raw_tail: &'a AtomicU64,
+        raw_head: &'a AtomicU64,
+    ) -> Self {
         Self {
             alloc,
             raw_tail,
@@ -31,7 +36,7 @@ impl<'a> RingBuf<'a> {
     /// Violating this condition will cause the ring buffer to roll back its
     /// tail pointer, leading to UB (like UAF).
     pub unsafe fn lending_pop(&self) -> Option<CowChunk<'a>> {
-        let rb_ptr = self.alloc.as_ptr();
+        let rb_ptr = self.alloc.as_ptr().cast::<u8>();
         let size = self.alloc.len();
 
         // Thread-safe because no other thread sets the tail.

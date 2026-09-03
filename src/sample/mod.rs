@@ -91,7 +91,7 @@ impl Sampler {
 
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L6212
         let page_size = *PAGE_SIZE;
-        let rb_ptr = unsafe { mmap_ptr.add(page_size) };
+        let rb_ptr = unsafe { mmap_ptr.add(page_size) }.cast::<UnsafeCell<u8>>();
         let rb_len = self.mmap.len() - page_size;
         let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
 

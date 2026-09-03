@@ -1,3 +1,4 @@
+use std::cell::UnsafeCell;
 use std::fs::File;
 use std::io::Result;
 use std::slice;
@@ -127,7 +128,7 @@ impl<'a> AuxTracer<'a> {
 
     /// Get an iterator of the AUX area.
     pub fn iter(&self) -> Iter<'_> {
-        let rb_ptr = self.mmap.as_ptr();
+        let rb_ptr = self.mmap.as_ptr().cast::<UnsafeCell<u8>>();
         let rb_len = self.mmap.len();
         let rb_alloc = unsafe { slice::from_raw_parts(rb_ptr, rb_len) };
 

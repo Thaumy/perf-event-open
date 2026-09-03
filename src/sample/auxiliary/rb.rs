@@ -1,4 +1,5 @@
 use std::alloc::{alloc, handle_alloc_error, Layout};
+use std::cell::UnsafeCell;
 use std::num::NonZeroUsize;
 use std::ptr::copy_nonoverlapping;
 use std::slice;
@@ -7,13 +8,17 @@ use std::sync::atomic::{AtomicU64, Ordering as MemOrd};
 use crate::sample::rb::CowChunk;
 
 pub struct RingBuf<'a> {
-    alloc: &'a [u8],
+    alloc: &'a [UnsafeCell<u8>],
     raw_tail: &'a AtomicU64,
     raw_head: &'a AtomicU64,
 }
 
 impl<'a> RingBuf<'a> {
-    pub fn new(alloc: &'a [u8], raw_tail: &'a AtomicU64, raw_head: &'a AtomicU64) -> Self {
+    pub fn new(
+        alloc: &'a [UnsafeCell<u8>],
+        raw_tail: &'a AtomicU64,
+        raw_head: &'a AtomicU64,
+    ) -> Self {
         Self {
             alloc,
             raw_tail,
@@ -25,7 +30,7 @@ impl<'a> RingBuf<'a> {
     ///
     /// See [`crate::sample::rb::RingBuf::lending_pop`].
     pub unsafe fn lending_pop(&self, max_chunk_len: Option<NonZeroUsize>) -> Option<CowChunk<'a>> {
-        let rb_ptr = self.alloc.as_ptr();
+        let rb_ptr = self.alloc.as_ptr().cast::<u8>();
         let size = self.alloc.len();
 
         // Thread-safe because no other thread sets the tail.
