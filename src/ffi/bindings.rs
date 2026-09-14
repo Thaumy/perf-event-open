@@ -7,16 +7,16 @@ macro_rules! select [
     // internal switches
     ($since:literal ..) => {
         #[cfg(feature = $since)]
-        include!(concat!("bindings/.", $since, ".rs"));
+        include!(concat!(env!("OUT_DIR"), "/bindings/", $since, ".rs"));
     };
     ($since:literal .. $before:literal) => {
         #[cfg(not(feature = $before))]
         #[cfg(feature = $since)]
-        include!(concat!("bindings/.", $since, ".rs"));
+        include!(concat!(env!("OUT_DIR"), "/bindings/", $since, ".rs"));
     };
     (.. $before:literal) => {
         #[cfg(not(feature = $before))]
-        include!(concat!("bindings/.", $before, ".rs"));
+        include!(concat!(env!("OUT_DIR"), "/bindings/", $before, ".rs"));
     };
 ];
 

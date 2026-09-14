@@ -1,0 +1,49 @@
+--- original
++++ modified
+@@ -186,6 +186,7 @@
+ pub const PERF_ATTR_SIZE_VER3: u32 = 96;
+ pub const PERF_ATTR_SIZE_VER4: u32 = 104;
+ pub const PERF_ATTR_SIZE_VER5: u32 = 112;
++pub const PERF_ATTR_SIZE_VER6: u32 = 120;
+ pub const PERF_RECORD_MISC_CPUMODE_MASK: u32 = 7;
+ pub const PERF_RECORD_MISC_CPUMODE_UNKNOWN: u32 = 0;
+ pub const PERF_RECORD_MISC_KERNEL: u32 = 1;
+@@ -342,7 +343,8 @@
+ pub const PERF_SAMPLE_TRANSACTION: perf_event_sample_format = 131072;
+ pub const PERF_SAMPLE_REGS_INTR: perf_event_sample_format = 262144;
+ pub const PERF_SAMPLE_PHYS_ADDR: perf_event_sample_format = 524288;
+-pub const PERF_SAMPLE_MAX: perf_event_sample_format = 1048576;
++pub const PERF_SAMPLE_AUX: perf_event_sample_format = 1048576;
++pub const PERF_SAMPLE_MAX: perf_event_sample_format = 2097152;
+ pub const __PERF_SAMPLE_CALLCHAIN_EARLY: perf_event_sample_format = 9223372036854775808;
+ pub type perf_event_sample_format = u64;
+ pub const PERF_SAMPLE_BRANCH_USER_SHIFT: perf_branch_sample_type_shift = 0;
+@@ -441,6 +443,8 @@
+     pub aux_watermark: __u32,
+     pub sample_max_stack: __u16,
+     pub __reserved_2: __u16,
++    pub aux_sample_size: __u32,
++    pub __reserved_3: __u32,
+ }
+ #[repr(C)]
+ #[derive(Copy, Clone)]
+@@ -560,7 +564,7 @@
+ }
+ #[allow(clippy::unnecessary_operation, clippy::identity_op)]
+ const _: () = {
+-    ["Size of perf_event_attr"][::std::mem::size_of::<perf_event_attr>() - 112usize];
++    ["Size of perf_event_attr"][::std::mem::size_of::<perf_event_attr>() - 120usize];
+     ["Alignment of perf_event_attr"][::std::mem::align_of::<perf_event_attr>() - 8usize];
+     ["Offset of field: perf_event_attr::type_"]
+         [::std::mem::offset_of!(perf_event_attr, type_) - 0usize];
+@@ -590,6 +594,10 @@
+         [::std::mem::offset_of!(perf_event_attr, sample_max_stack) - 108usize];
+     ["Offset of field: perf_event_attr::__reserved_2"]
+         [::std::mem::offset_of!(perf_event_attr, __reserved_2) - 110usize];
++    ["Offset of field: perf_event_attr::aux_sample_size"]
++        [::std::mem::offset_of!(perf_event_attr, aux_sample_size) - 112usize];
++    ["Offset of field: perf_event_attr::__reserved_3"]
++        [::std::mem::offset_of!(perf_event_attr, __reserved_3) - 116usize];
+ };
+ impl Default for perf_event_attr {
+     fn default() -> Self {

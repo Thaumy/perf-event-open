@@ -10,8 +10,6 @@ description = "Full-featured support for the perf_event_open syscall."
 documentation = "https://docs.rs/perf-event-open"
 rust-version = "1.80.0"
 
-build = "build/main.rs"
-
 [features]
 "serde" = ["dep:serde", "arrayvec/serde"]
 "latest" = ["linux-7.0"]
@@ -62,6 +60,5 @@ uuid = { version = "1", features = ["v4"] }
 tokio-test = "0.4"
 
 [build-dependencies]
+diffy = "0.4"
 anyhow = "1"
-bindgen = "0.72"
-itertools = "0.14"

@@ -1,0 +1,185 @@
+--- original
++++ modified
+@@ -193,6 +193,7 @@
+ pub const PERF_ATTR_SIZE_VER6: u32 = 120;
+ pub const PERF_ATTR_SIZE_VER7: u32 = 128;
+ pub const PERF_ATTR_SIZE_VER8: u32 = 136;
++pub const PERF_ATTR_SIZE_VER9: u32 = 144;
+ pub const PERF_RECORD_MISC_CPUMODE_MASK: u32 = 7;
+ pub const PERF_RECORD_MISC_CPUMODE_UNKNOWN: u32 = 0;
+ pub const PERF_RECORD_MISC_KERNEL: u32 = 1;
+@@ -510,6 +511,7 @@
+     pub __bindgen_anon_5: perf_event_attr__bindgen_ty_5,
+     pub sig_data: __u64,
+     pub config3: __u64,
++    pub config4: __u64,
+ }
+ #[repr(C)]
+ #[derive(Copy, Clone)]
+@@ -826,7 +828,7 @@
+ }
+ #[allow(clippy::unnecessary_operation, clippy::identity_op)]
+ const _: () = {
+-    ["Size of perf_event_attr"][::std::mem::size_of::<perf_event_attr>() - 136usize];
++    ["Size of perf_event_attr"][::std::mem::size_of::<perf_event_attr>() - 144usize];
+     ["Alignment of perf_event_attr"][::std::mem::align_of::<perf_event_attr>() - 8usize];
+     ["Offset of field: perf_event_attr::type_"]
+         [::std::mem::offset_of!(perf_event_attr, type_) - 0usize];
+@@ -862,6 +864,8 @@
+         [::std::mem::offset_of!(perf_event_attr, sig_data) - 120usize];
+     ["Offset of field: perf_event_attr::config3"]
+         [::std::mem::offset_of!(perf_event_attr, config3) - 128usize];
++    ["Offset of field: perf_event_attr::config4"]
++        [::std::mem::offset_of!(perf_event_attr, config4) - 136usize];
+ };
+ impl Default for perf_event_attr {
+     fn default() -> Self {
+@@ -2095,14 +2099,80 @@
+         }
+     }
+     #[inline]
++    pub fn defer_callchain(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(38usize, 1u8) as u64) }
++    }
++    #[inline]
++    pub fn set_defer_callchain(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set(38usize, 1u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn defer_callchain_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                38usize,
++                1u8,
++            ) as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_defer_callchain_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                38usize,
++                1u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    pub fn defer_output(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(39usize, 1u8) as u64) }
++    }
++    #[inline]
++    pub fn set_defer_output(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set(39usize, 1u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn defer_output_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                39usize,
++                1u8,
++            ) as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_defer_output_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                39usize,
++                1u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
+     pub fn __reserved_1(&self) -> __u64 {
+-        unsafe { ::std::mem::transmute(self._bitfield_1.get(38usize, 26u8) as u64) }
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(40usize, 24u8) as u64) }
+     }
+     #[inline]
+     pub fn set___reserved_1(&mut self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            self._bitfield_1.set(38usize, 26u8, val as u64)
++            self._bitfield_1.set(40usize, 24u8, val as u64)
+         }
+     }
+     #[inline]
+@@ -2110,8 +2180,8 @@
+         unsafe {
+             ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+                 ::std::ptr::addr_of!((*this)._bitfield_1),
+-                38usize,
+-                26u8,
++                40usize,
++                24u8,
+             ) as u64)
+         }
+     }
+@@ -2121,8 +2191,8 @@
+             let val: u64 = ::std::mem::transmute(val);
+             <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+                 ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+-                38usize,
+-                26u8,
++                40usize,
++                24u8,
+                 val as u64,
+             )
+         }
+@@ -2166,6 +2236,8 @@
+         inherit_thread: __u64,
+         remove_on_exec: __u64,
+         sigtrap: __u64,
++        defer_callchain: __u64,
++        defer_output: __u64,
+         __reserved_1: __u64,
+     ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
+         let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+@@ -2319,7 +2391,15 @@
+             let sigtrap: u64 = unsafe { ::std::mem::transmute(sigtrap) };
+             sigtrap as u64
+         });
+-        __bindgen_bitfield_unit.set(38usize, 26u8, {
++        __bindgen_bitfield_unit.set(38usize, 1u8, {
++            let defer_callchain: u64 = unsafe { ::std::mem::transmute(defer_callchain) };
++            defer_callchain as u64
++        });
++        __bindgen_bitfield_unit.set(39usize, 1u8, {
++            let defer_output: u64 = unsafe { ::std::mem::transmute(defer_output) };
++            defer_output as u64
++        });
++        __bindgen_bitfield_unit.set(40usize, 24u8, {
+             let __reserved_1: u64 = unsafe { ::std::mem::transmute(__reserved_1) };
+             __reserved_1 as u64
+         });
+@@ -2815,7 +2895,8 @@
+ pub const PERF_RECORD_CGROUP: perf_event_type = 19;
+ pub const PERF_RECORD_TEXT_POKE: perf_event_type = 20;
+ pub const PERF_RECORD_AUX_OUTPUT_HW_ID: perf_event_type = 21;
+-pub const PERF_RECORD_MAX: perf_event_type = 22;
++pub const PERF_RECORD_CALLCHAIN_DEFERRED: perf_event_type = 22;
++pub const PERF_RECORD_MAX: perf_event_type = 23;
+ pub type perf_event_type = u32;
+ pub const PERF_RECORD_KSYMBOL_TYPE_UNKNOWN: perf_record_ksymbol_type = 0;
+ pub const PERF_RECORD_KSYMBOL_TYPE_BPF: perf_record_ksymbol_type = 1;
+@@ -2830,6 +2911,7 @@
+ pub const PERF_CONTEXT_HV: perf_callchain_context = 18446744073709551584;
+ pub const PERF_CONTEXT_KERNEL: perf_callchain_context = 18446744073709551488;
+ pub const PERF_CONTEXT_USER: perf_callchain_context = 18446744073709551104;
++pub const PERF_CONTEXT_USER_DEFERRED: perf_callchain_context = 18446744073709550976;
+ pub const PERF_CONTEXT_GUEST: perf_callchain_context = 18446744073709549568;
+ pub const PERF_CONTEXT_GUEST_KERNEL: perf_callchain_context = 18446744073709549440;
+ pub const PERF_CONTEXT_GUEST_USER: perf_callchain_context = 18446744073709549056;

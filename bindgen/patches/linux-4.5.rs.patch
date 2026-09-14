@@ -1,0 +1,24 @@
+--- original
++++ modified
+@@ -306,7 +306,9 @@
+ pub const PERF_SAMPLE_BRANCH_CALL_STACK_SHIFT: perf_branch_sample_type_shift = 11;
+ pub const PERF_SAMPLE_BRANCH_IND_JUMP_SHIFT: perf_branch_sample_type_shift = 12;
+ pub const PERF_SAMPLE_BRANCH_CALL_SHIFT: perf_branch_sample_type_shift = 13;
+-pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 14;
++pub const PERF_SAMPLE_BRANCH_NO_FLAGS_SHIFT: perf_branch_sample_type_shift = 14;
++pub const PERF_SAMPLE_BRANCH_NO_CYCLES_SHIFT: perf_branch_sample_type_shift = 15;
++pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 16;
+ pub type perf_branch_sample_type_shift = u32;
+ pub const PERF_SAMPLE_BRANCH_USER: perf_branch_sample_type = 1;
+ pub const PERF_SAMPLE_BRANCH_KERNEL: perf_branch_sample_type = 2;
+@@ -322,7 +324,9 @@
+ pub const PERF_SAMPLE_BRANCH_CALL_STACK: perf_branch_sample_type = 2048;
+ pub const PERF_SAMPLE_BRANCH_IND_JUMP: perf_branch_sample_type = 4096;
+ pub const PERF_SAMPLE_BRANCH_CALL: perf_branch_sample_type = 8192;
+-pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 16384;
++pub const PERF_SAMPLE_BRANCH_NO_FLAGS: perf_branch_sample_type = 16384;
++pub const PERF_SAMPLE_BRANCH_NO_CYCLES: perf_branch_sample_type = 32768;
++pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 65536;
+ pub type perf_branch_sample_type = u32;
+ pub const PERF_SAMPLE_REGS_ABI_NONE: perf_sample_regs_abi = 0;
+ pub const PERF_SAMPLE_REGS_ABI_32: perf_sample_regs_abi = 1;

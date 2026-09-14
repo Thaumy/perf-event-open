@@ -1,0 +1,215 @@
+--- original
++++ modified
+@@ -344,7 +344,8 @@
+ pub const PERF_SAMPLE_REGS_INTR: perf_event_sample_format = 262144;
+ pub const PERF_SAMPLE_PHYS_ADDR: perf_event_sample_format = 524288;
+ pub const PERF_SAMPLE_AUX: perf_event_sample_format = 1048576;
+-pub const PERF_SAMPLE_MAX: perf_event_sample_format = 2097152;
++pub const PERF_SAMPLE_CGROUP: perf_event_sample_format = 2097152;
++pub const PERF_SAMPLE_MAX: perf_event_sample_format = 4194304;
+ pub const __PERF_SAMPLE_CALLCHAIN_EARLY: perf_event_sample_format = 9223372036854775808;
+ pub type perf_event_sample_format = u64;
+ pub const PERF_SAMPLE_BRANCH_USER_SHIFT: perf_branch_sample_type_shift = 0;
+@@ -364,7 +365,8 @@
+ pub const PERF_SAMPLE_BRANCH_NO_FLAGS_SHIFT: perf_branch_sample_type_shift = 14;
+ pub const PERF_SAMPLE_BRANCH_NO_CYCLES_SHIFT: perf_branch_sample_type_shift = 15;
+ pub const PERF_SAMPLE_BRANCH_TYPE_SAVE_SHIFT: perf_branch_sample_type_shift = 16;
+-pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 17;
++pub const PERF_SAMPLE_BRANCH_HW_INDEX_SHIFT: perf_branch_sample_type_shift = 17;
++pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 18;
+ pub type perf_branch_sample_type_shift = u32;
+ pub const PERF_SAMPLE_BRANCH_USER: perf_branch_sample_type = 1;
+ pub const PERF_SAMPLE_BRANCH_KERNEL: perf_branch_sample_type = 2;
+@@ -383,37 +385,38 @@
+ pub const PERF_SAMPLE_BRANCH_NO_FLAGS: perf_branch_sample_type = 16384;
+ pub const PERF_SAMPLE_BRANCH_NO_CYCLES: perf_branch_sample_type = 32768;
+ pub const PERF_SAMPLE_BRANCH_TYPE_SAVE: perf_branch_sample_type = 65536;
+-pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 131072;
++pub const PERF_SAMPLE_BRANCH_HW_INDEX: perf_branch_sample_type = 131072;
++pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 262144;
+ pub type perf_branch_sample_type = u32;
+-pub const PERF_BR_UNKNOWN: _bindgen_ty_7 = 0;
+-pub const PERF_BR_COND: _bindgen_ty_7 = 1;
+-pub const PERF_BR_UNCOND: _bindgen_ty_7 = 2;
+-pub const PERF_BR_IND: _bindgen_ty_7 = 3;
+-pub const PERF_BR_CALL: _bindgen_ty_7 = 4;
+-pub const PERF_BR_IND_CALL: _bindgen_ty_7 = 5;
+-pub const PERF_BR_RET: _bindgen_ty_7 = 6;
+-pub const PERF_BR_SYSCALL: _bindgen_ty_7 = 7;
+-pub const PERF_BR_SYSRET: _bindgen_ty_7 = 8;
+-pub const PERF_BR_COND_CALL: _bindgen_ty_7 = 9;
+-pub const PERF_BR_COND_RET: _bindgen_ty_7 = 10;
+-pub const PERF_BR_MAX: _bindgen_ty_7 = 11;
+-pub type _bindgen_ty_7 = u32;
++pub const PERF_BR_UNKNOWN: _bindgen_ty_29 = 0;
++pub const PERF_BR_COND: _bindgen_ty_29 = 1;
++pub const PERF_BR_UNCOND: _bindgen_ty_29 = 2;
++pub const PERF_BR_IND: _bindgen_ty_29 = 3;
++pub const PERF_BR_CALL: _bindgen_ty_29 = 4;
++pub const PERF_BR_IND_CALL: _bindgen_ty_29 = 5;
++pub const PERF_BR_RET: _bindgen_ty_29 = 6;
++pub const PERF_BR_SYSCALL: _bindgen_ty_29 = 7;
++pub const PERF_BR_SYSRET: _bindgen_ty_29 = 8;
++pub const PERF_BR_COND_CALL: _bindgen_ty_29 = 9;
++pub const PERF_BR_COND_RET: _bindgen_ty_29 = 10;
++pub const PERF_BR_MAX: _bindgen_ty_29 = 11;
++pub type _bindgen_ty_29 = u32;
+ pub const PERF_SAMPLE_REGS_ABI_NONE: perf_sample_regs_abi = 0;
+ pub const PERF_SAMPLE_REGS_ABI_32: perf_sample_regs_abi = 1;
+ pub const PERF_SAMPLE_REGS_ABI_64: perf_sample_regs_abi = 2;
+ pub type perf_sample_regs_abi = u32;
+-pub const PERF_TXN_ELISION: _bindgen_ty_8 = 1;
+-pub const PERF_TXN_TRANSACTION: _bindgen_ty_8 = 2;
+-pub const PERF_TXN_SYNC: _bindgen_ty_8 = 4;
+-pub const PERF_TXN_ASYNC: _bindgen_ty_8 = 8;
+-pub const PERF_TXN_RETRY: _bindgen_ty_8 = 16;
+-pub const PERF_TXN_CONFLICT: _bindgen_ty_8 = 32;
+-pub const PERF_TXN_CAPACITY_WRITE: _bindgen_ty_8 = 64;
+-pub const PERF_TXN_CAPACITY_READ: _bindgen_ty_8 = 128;
+-pub const PERF_TXN_MAX: _bindgen_ty_8 = 256;
+-pub const PERF_TXN_ABORT_MASK: _bindgen_ty_8 = 18446744069414584320;
+-pub const PERF_TXN_ABORT_SHIFT: _bindgen_ty_8 = 32;
+-pub type _bindgen_ty_8 = u64;
++pub const PERF_TXN_ELISION: _bindgen_ty_30 = 1;
++pub const PERF_TXN_TRANSACTION: _bindgen_ty_30 = 2;
++pub const PERF_TXN_SYNC: _bindgen_ty_30 = 4;
++pub const PERF_TXN_ASYNC: _bindgen_ty_30 = 8;
++pub const PERF_TXN_RETRY: _bindgen_ty_30 = 16;
++pub const PERF_TXN_CONFLICT: _bindgen_ty_30 = 32;
++pub const PERF_TXN_CAPACITY_WRITE: _bindgen_ty_30 = 64;
++pub const PERF_TXN_CAPACITY_READ: _bindgen_ty_30 = 128;
++pub const PERF_TXN_MAX: _bindgen_ty_30 = 256;
++pub const PERF_TXN_ABORT_MASK: _bindgen_ty_30 = 18446744069414584320;
++pub const PERF_TXN_ABORT_SHIFT: _bindgen_ty_30 = 32;
++pub type _bindgen_ty_30 = u64;
+ pub const PERF_FORMAT_TOTAL_TIME_ENABLED: perf_event_read_format = 1;
+ pub const PERF_FORMAT_TOTAL_TIME_RUNNING: perf_event_read_format = 2;
+ pub const PERF_FORMAT_ID: perf_event_read_format = 4;
+@@ -1633,14 +1636,47 @@
+         }
+     }
+     #[inline]
++    pub fn cgroup(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(32usize, 1u8) as u64) }
++    }
++    #[inline]
++    pub fn set_cgroup(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set(32usize, 1u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn cgroup_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                32usize,
++                1u8,
++            ) as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_cgroup_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                32usize,
++                1u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
+     pub fn __reserved_1(&self) -> __u64 {
+-        unsafe { ::std::mem::transmute(self._bitfield_1.get(32usize, 32u8) as u64) }
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(33usize, 31u8) as u64) }
+     }
+     #[inline]
+     pub fn set___reserved_1(&mut self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            self._bitfield_1.set(32usize, 32u8, val as u64)
++            self._bitfield_1.set(33usize, 31u8, val as u64)
+         }
+     }
+     #[inline]
+@@ -1648,8 +1684,8 @@
+         unsafe {
+             ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+                 ::std::ptr::addr_of!((*this)._bitfield_1),
+-                32usize,
+-                32u8,
++                33usize,
++                31u8,
+             ) as u64)
+         }
+     }
+@@ -1659,8 +1695,8 @@
+             let val: u64 = ::std::mem::transmute(val);
+             <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+                 ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+-                32usize,
+-                32u8,
++                33usize,
++                31u8,
+                 val as u64,
+             )
+         }
+@@ -1698,6 +1734,7 @@
+         ksymbol: __u64,
+         bpf_event: __u64,
+         aux_output: __u64,
++        cgroup: __u64,
+         __reserved_1: __u64,
+     ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
+         let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+@@ -1827,7 +1864,11 @@
+             let aux_output: u64 = unsafe { ::std::mem::transmute(aux_output) };
+             aux_output as u64
+         });
+-        __bindgen_bitfield_unit.set(32usize, 32u8, {
++        __bindgen_bitfield_unit.set(32usize, 1u8, {
++            let cgroup: u64 = unsafe { ::std::mem::transmute(cgroup) };
++            cgroup as u64
++        });
++        __bindgen_bitfield_unit.set(33usize, 31u8, {
+             let __reserved_1: u64 = unsafe { ::std::mem::transmute(__reserved_1) };
+             __reserved_1 as u64
+         });
+@@ -2246,15 +2287,15 @@
+     ["Offset of field: perf_ns_link_info::ino"]
+         [::std::mem::offset_of!(perf_ns_link_info, ino) - 8usize];
+ };
+-pub const NET_NS_INDEX: _bindgen_ty_9 = 0;
+-pub const UTS_NS_INDEX: _bindgen_ty_9 = 1;
+-pub const IPC_NS_INDEX: _bindgen_ty_9 = 2;
+-pub const PID_NS_INDEX: _bindgen_ty_9 = 3;
+-pub const USER_NS_INDEX: _bindgen_ty_9 = 4;
+-pub const MNT_NS_INDEX: _bindgen_ty_9 = 5;
+-pub const CGROUP_NS_INDEX: _bindgen_ty_9 = 6;
+-pub const NR_NAMESPACES: _bindgen_ty_9 = 7;
+-pub type _bindgen_ty_9 = u32;
++pub const NET_NS_INDEX: _bindgen_ty_31 = 0;
++pub const UTS_NS_INDEX: _bindgen_ty_31 = 1;
++pub const IPC_NS_INDEX: _bindgen_ty_31 = 2;
++pub const PID_NS_INDEX: _bindgen_ty_31 = 3;
++pub const USER_NS_INDEX: _bindgen_ty_31 = 4;
++pub const MNT_NS_INDEX: _bindgen_ty_31 = 5;
++pub const CGROUP_NS_INDEX: _bindgen_ty_31 = 6;
++pub const NR_NAMESPACES: _bindgen_ty_31 = 7;
++pub type _bindgen_ty_31 = u32;
+ pub const PERF_RECORD_MMAP: perf_event_type = 1;
+ pub const PERF_RECORD_LOST: perf_event_type = 2;
+ pub const PERF_RECORD_COMM: perf_event_type = 3;
+@@ -2273,7 +2314,8 @@
+ pub const PERF_RECORD_NAMESPACES: perf_event_type = 16;
+ pub const PERF_RECORD_KSYMBOL: perf_event_type = 17;
+ pub const PERF_RECORD_BPF_EVENT: perf_event_type = 18;
+-pub const PERF_RECORD_MAX: perf_event_type = 19;
++pub const PERF_RECORD_CGROUP: perf_event_type = 19;
++pub const PERF_RECORD_MAX: perf_event_type = 20;
+ pub type perf_event_type = u32;
+ pub const PERF_RECORD_KSYMBOL_TYPE_UNKNOWN: perf_record_ksymbol_type = 0;
+ pub const PERF_RECORD_KSYMBOL_TYPE_BPF: perf_record_ksymbol_type = 1;

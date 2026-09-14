@@ -1,0 +1,247 @@
+--- original
++++ modified
+@@ -155,6 +155,7 @@
+ pub const PERF_ATTR_SIZE_VER2: u32 = 80;
+ pub const PERF_ATTR_SIZE_VER3: u32 = 96;
+ pub const PERF_ATTR_SIZE_VER4: u32 = 104;
++pub const PERF_ATTR_SIZE_VER5: u32 = 112;
+ pub const PERF_RECORD_MISC_CPUMODE_MASK: u32 = 7;
+ pub const PERF_RECORD_MISC_CPUMODE_UNKNOWN: u32 = 0;
+ pub const PERF_RECORD_MISC_KERNEL: u32 = 1;
+@@ -167,6 +168,8 @@
+ pub const PERF_RECORD_MISC_EXACT_IP: u32 = 16384;
+ pub const PERF_RECORD_MISC_EXT_RESERVED: u32 = 32768;
+ pub const PERF_MAX_STACK_DEPTH: u32 = 127;
++pub const PERF_AUX_FLAG_TRUNCATED: u32 = 1;
++pub const PERF_AUX_FLAG_OVERWRITE: u32 = 2;
+ pub const PERF_FLAG_FD_NO_GROUP: u32 = 1;
+ pub const PERF_FLAG_FD_OUTPUT: u32 = 2;
+ pub const PERF_FLAG_PID_CGROUP: u32 = 4;
+@@ -211,6 +214,7 @@
+ pub const PERF_MEM_TLB_SHIFT: u32 = 26;
+ pub type __u8 = ::std::os::raw::c_uchar;
+ pub type __u16 = ::std::os::raw::c_ushort;
++pub type __s32 = ::std::os::raw::c_int;
+ pub type __u32 = ::std::os::raw::c_uint;
+ pub type __s64 = ::std::os::raw::c_longlong;
+ pub type __u64 = ::std::os::raw::c_ulonglong;
+@@ -285,6 +289,20 @@
+ pub const PERF_SAMPLE_REGS_INTR: perf_event_sample_format = 262144;
+ pub const PERF_SAMPLE_MAX: perf_event_sample_format = 524288;
+ pub type perf_event_sample_format = u32;
++pub const PERF_SAMPLE_BRANCH_USER_SHIFT: perf_branch_sample_type_shift = 0;
++pub const PERF_SAMPLE_BRANCH_KERNEL_SHIFT: perf_branch_sample_type_shift = 1;
++pub const PERF_SAMPLE_BRANCH_HV_SHIFT: perf_branch_sample_type_shift = 2;
++pub const PERF_SAMPLE_BRANCH_ANY_SHIFT: perf_branch_sample_type_shift = 3;
++pub const PERF_SAMPLE_BRANCH_ANY_CALL_SHIFT: perf_branch_sample_type_shift = 4;
++pub const PERF_SAMPLE_BRANCH_ANY_RETURN_SHIFT: perf_branch_sample_type_shift = 5;
++pub const PERF_SAMPLE_BRANCH_IND_CALL_SHIFT: perf_branch_sample_type_shift = 6;
++pub const PERF_SAMPLE_BRANCH_ABORT_TX_SHIFT: perf_branch_sample_type_shift = 7;
++pub const PERF_SAMPLE_BRANCH_IN_TX_SHIFT: perf_branch_sample_type_shift = 8;
++pub const PERF_SAMPLE_BRANCH_NO_TX_SHIFT: perf_branch_sample_type_shift = 9;
++pub const PERF_SAMPLE_BRANCH_COND_SHIFT: perf_branch_sample_type_shift = 10;
++pub const PERF_SAMPLE_BRANCH_CALL_STACK_SHIFT: perf_branch_sample_type_shift = 11;
++pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 12;
++pub type perf_branch_sample_type_shift = u32;
+ pub const PERF_SAMPLE_BRANCH_USER: perf_branch_sample_type = 1;
+ pub const PERF_SAMPLE_BRANCH_KERNEL: perf_branch_sample_type = 2;
+ pub const PERF_SAMPLE_BRANCH_HV: perf_branch_sample_type = 4;
+@@ -296,7 +314,8 @@
+ pub const PERF_SAMPLE_BRANCH_IN_TX: perf_branch_sample_type = 256;
+ pub const PERF_SAMPLE_BRANCH_NO_TX: perf_branch_sample_type = 512;
+ pub const PERF_SAMPLE_BRANCH_COND: perf_branch_sample_type = 1024;
+-pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 2048;
++pub const PERF_SAMPLE_BRANCH_CALL_STACK: perf_branch_sample_type = 2048;
++pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 4096;
+ pub type perf_branch_sample_type = u32;
+ pub const PERF_SAMPLE_REGS_ABI_NONE: perf_sample_regs_abi = 0;
+ pub const PERF_SAMPLE_REGS_ABI_32: perf_sample_regs_abi = 1;
+@@ -338,8 +357,10 @@
+     pub branch_sample_type: __u64,
+     pub sample_regs_user: __u64,
+     pub sample_stack_user: __u32,
++    pub clockid: __s32,
++    pub sample_regs_intr: __u64,
++    pub aux_watermark: __u32,
+     pub __reserved_2: __u32,
+-    pub sample_regs_intr: __u64,
+ }
+ #[repr(C)]
+ #[derive(Copy, Clone)]
+@@ -447,7 +468,7 @@
+ }
+ #[allow(clippy::unnecessary_operation, clippy::identity_op)]
+ const _: () = {
+-    ["Size of perf_event_attr"][::std::mem::size_of::<perf_event_attr>() - 104usize];
++    ["Size of perf_event_attr"][::std::mem::size_of::<perf_event_attr>() - 112usize];
+     ["Alignment of perf_event_attr"][::std::mem::align_of::<perf_event_attr>() - 8usize];
+     ["Offset of field: perf_event_attr::type_"]
+         [::std::mem::offset_of!(perf_event_attr, type_) - 0usize];
+@@ -467,10 +488,14 @@
+         [::std::mem::offset_of!(perf_event_attr, sample_regs_user) - 80usize];
+     ["Offset of field: perf_event_attr::sample_stack_user"]
+         [::std::mem::offset_of!(perf_event_attr, sample_stack_user) - 88usize];
+-    ["Offset of field: perf_event_attr::__reserved_2"]
+-        [::std::mem::offset_of!(perf_event_attr, __reserved_2) - 92usize];
++    ["Offset of field: perf_event_attr::clockid"]
++        [::std::mem::offset_of!(perf_event_attr, clockid) - 92usize];
+     ["Offset of field: perf_event_attr::sample_regs_intr"]
+         [::std::mem::offset_of!(perf_event_attr, sample_regs_intr) - 96usize];
++    ["Offset of field: perf_event_attr::aux_watermark"]
++        [::std::mem::offset_of!(perf_event_attr, aux_watermark) - 104usize];
++    ["Offset of field: perf_event_attr::__reserved_2"]
++        [::std::mem::offset_of!(perf_event_attr, __reserved_2) - 108usize];
+ };
+ impl Default for perf_event_attr {
+     fn default() -> Self {
+@@ -1275,14 +1300,47 @@
+         }
+     }
+     #[inline]
++    pub fn use_clockid(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(25usize, 1u8) as u64) }
++    }
++    #[inline]
++    pub fn set_use_clockid(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set(25usize, 1u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn use_clockid_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                25usize,
++                1u8,
++            ) as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_use_clockid_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                25usize,
++                1u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
+     pub fn __reserved_1(&self) -> __u64 {
+-        unsafe { ::std::mem::transmute(self._bitfield_1.get(25usize, 39u8) as u64) }
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(26usize, 38u8) as u64) }
+     }
+     #[inline]
+     pub fn set___reserved_1(&mut self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            self._bitfield_1.set(25usize, 39u8, val as u64)
++            self._bitfield_1.set(26usize, 38u8, val as u64)
+         }
+     }
+     #[inline]
+@@ -1290,8 +1348,8 @@
+         unsafe {
+             ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+                 ::std::ptr::addr_of!((*this)._bitfield_1),
+-                25usize,
+-                39u8,
++                26usize,
++                38u8,
+             ) as u64)
+         }
+     }
+@@ -1301,8 +1359,8 @@
+             let val: u64 = ::std::mem::transmute(val);
+             <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+                 ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+-                25usize,
+-                39u8,
++                26usize,
++                38u8,
+                 val as u64,
+             )
+         }
+@@ -1333,6 +1391,7 @@
+         exclude_callchain_user: __u64,
+         mmap2: __u64,
+         comm_exec: __u64,
++        use_clockid: __u64,
+         __reserved_1: __u64,
+     ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
+         let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+@@ -1434,7 +1493,11 @@
+             let comm_exec: u64 = unsafe { ::std::mem::transmute(comm_exec) };
+             comm_exec as u64
+         });
+-        __bindgen_bitfield_unit.set(25usize, 39u8, {
++        __bindgen_bitfield_unit.set(25usize, 1u8, {
++            let use_clockid: u64 = unsafe { ::std::mem::transmute(use_clockid) };
++            use_clockid as u64
++        });
++        __bindgen_bitfield_unit.set(26usize, 38u8, {
+             let __reserved_1: u64 = unsafe { ::std::mem::transmute(__reserved_1) };
+             __reserved_1 as u64
+         });
+@@ -1463,6 +1526,12 @@
+     pub __reserved: [__u8; 948usize],
+     pub data_head: __u64,
+     pub data_tail: __u64,
++    pub data_offset: __u64,
++    pub data_size: __u64,
++    pub aux_head: __u64,
++    pub aux_tail: __u64,
++    pub aux_offset: __u64,
++    pub aux_size: __u64,
+ }
+ #[repr(C)]
+ #[derive(Copy, Clone)]
+@@ -1740,7 +1809,7 @@
+ }
+ #[allow(clippy::unnecessary_operation, clippy::identity_op)]
+ const _: () = {
+-    ["Size of perf_event_mmap_page"][::std::mem::size_of::<perf_event_mmap_page>() - 1040usize];
++    ["Size of perf_event_mmap_page"][::std::mem::size_of::<perf_event_mmap_page>() - 1088usize];
+     ["Alignment of perf_event_mmap_page"][::std::mem::align_of::<perf_event_mmap_page>() - 8usize];
+     ["Offset of field: perf_event_mmap_page::version"]
+         [::std::mem::offset_of!(perf_event_mmap_page, version) - 0usize];
+@@ -1774,6 +1843,18 @@
+         [::std::mem::offset_of!(perf_event_mmap_page, data_head) - 1024usize];
+     ["Offset of field: perf_event_mmap_page::data_tail"]
+         [::std::mem::offset_of!(perf_event_mmap_page, data_tail) - 1032usize];
++    ["Offset of field: perf_event_mmap_page::data_offset"]
++        [::std::mem::offset_of!(perf_event_mmap_page, data_offset) - 1040usize];
++    ["Offset of field: perf_event_mmap_page::data_size"]
++        [::std::mem::offset_of!(perf_event_mmap_page, data_size) - 1048usize];
++    ["Offset of field: perf_event_mmap_page::aux_head"]
++        [::std::mem::offset_of!(perf_event_mmap_page, aux_head) - 1056usize];
++    ["Offset of field: perf_event_mmap_page::aux_tail"]
++        [::std::mem::offset_of!(perf_event_mmap_page, aux_tail) - 1064usize];
++    ["Offset of field: perf_event_mmap_page::aux_offset"]
++        [::std::mem::offset_of!(perf_event_mmap_page, aux_offset) - 1072usize];
++    ["Offset of field: perf_event_mmap_page::aux_size"]
++        [::std::mem::offset_of!(perf_event_mmap_page, aux_size) - 1080usize];
+ };
+ impl Default for perf_event_mmap_page {
+     fn default() -> Self {
+@@ -1812,7 +1893,9 @@
+ pub const PERF_RECORD_READ: perf_event_type = 8;
+ pub const PERF_RECORD_SAMPLE: perf_event_type = 9;
+ pub const PERF_RECORD_MMAP2: perf_event_type = 10;
+-pub const PERF_RECORD_MAX: perf_event_type = 11;
++pub const PERF_RECORD_AUX: perf_event_type = 11;
++pub const PERF_RECORD_ITRACE_START: perf_event_type = 12;
++pub const PERF_RECORD_MAX: perf_event_type = 13;
+ pub type perf_event_type = u32;
+ pub const PERF_CONTEXT_HV: perf_callchain_context = 18446744073709551584;
+ pub const PERF_CONTEXT_KERNEL: perf_callchain_context = 18446744073709551488;
+@@ -2329,4 +2412,5 @@
+ pub const PERF_IOC_OP_SET_OUTPUT: perf_ioc_ops = 9221;
+ pub const PERF_IOC_OP_SET_FILTER: perf_ioc_ops = 1074275334;
+ pub const PERF_IOC_OP_ID: perf_ioc_ops = 2148017159;
++pub const PERF_IOC_OP_SET_BPF: perf_ioc_ops = 1074013192;
+ pub type perf_ioc_ops = u32;

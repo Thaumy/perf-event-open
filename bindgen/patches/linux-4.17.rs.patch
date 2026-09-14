@@ -1,0 +1,56 @@
+--- original
++++ modified
+@@ -198,6 +198,7 @@
+ pub const PERF_RECORD_MISC_COMM_EXEC: u32 = 8192;
+ pub const PERF_RECORD_MISC_SWITCH_OUT: u32 = 8192;
+ pub const PERF_RECORD_MISC_EXACT_IP: u32 = 16384;
++pub const PERF_RECORD_MISC_SWITCH_OUT_PREEMPT: u32 = 16384;
+ pub const PERF_RECORD_MISC_EXT_RESERVED: u32 = 32768;
+ pub const PERF_MAX_STACK_DEPTH: u32 = 127;
+ pub const PERF_MAX_CONTEXTS_PER_STACK: u32 = 8;
+@@ -493,6 +494,8 @@
+ #[derive(Copy, Clone)]
+ pub union perf_event_attr__bindgen_ty_3 {
+     pub bp_addr: __u64,
++    pub kprobe_func: __u64,
++    pub uprobe_path: __u64,
+     pub config1: __u64,
+ }
+ #[allow(clippy::unnecessary_operation, clippy::identity_op)]
+@@ -503,6 +506,10 @@
+         [::std::mem::align_of::<perf_event_attr__bindgen_ty_3>() - 8usize];
+     ["Offset of field: perf_event_attr__bindgen_ty_3::bp_addr"]
+         [::std::mem::offset_of!(perf_event_attr__bindgen_ty_3, bp_addr) - 0usize];
++    ["Offset of field: perf_event_attr__bindgen_ty_3::kprobe_func"]
++        [::std::mem::offset_of!(perf_event_attr__bindgen_ty_3, kprobe_func) - 0usize];
++    ["Offset of field: perf_event_attr__bindgen_ty_3::uprobe_path"]
++        [::std::mem::offset_of!(perf_event_attr__bindgen_ty_3, uprobe_path) - 0usize];
+     ["Offset of field: perf_event_attr__bindgen_ty_3::config1"]
+         [::std::mem::offset_of!(perf_event_attr__bindgen_ty_3, config1) - 0usize];
+ };
+@@ -519,6 +526,8 @@
+ #[derive(Copy, Clone)]
+ pub union perf_event_attr__bindgen_ty_4 {
+     pub bp_len: __u64,
++    pub kprobe_addr: __u64,
++    pub probe_offset: __u64,
+     pub config2: __u64,
+ }
+ #[allow(clippy::unnecessary_operation, clippy::identity_op)]
+@@ -529,6 +538,10 @@
+         [::std::mem::align_of::<perf_event_attr__bindgen_ty_4>() - 8usize];
+     ["Offset of field: perf_event_attr__bindgen_ty_4::bp_len"]
+         [::std::mem::offset_of!(perf_event_attr__bindgen_ty_4, bp_len) - 0usize];
++    ["Offset of field: perf_event_attr__bindgen_ty_4::kprobe_addr"]
++        [::std::mem::offset_of!(perf_event_attr__bindgen_ty_4, kprobe_addr) - 0usize];
++    ["Offset of field: perf_event_attr__bindgen_ty_4::probe_offset"]
++        [::std::mem::offset_of!(perf_event_attr__bindgen_ty_4, probe_offset) - 0usize];
+     ["Offset of field: perf_event_attr__bindgen_ty_4::config2"]
+         [::std::mem::offset_of!(perf_event_attr__bindgen_ty_4, config2) - 0usize];
+ };
+@@ -2846,4 +2859,5 @@
+ pub const PERF_IOC_OP_SET_BPF: perf_ioc_ops = 1074013192;
+ pub const PERF_IOC_OP_PAUSE_OUTPUT: perf_ioc_ops = 1074013193;
+ pub const PERF_IOC_OP_QUERY_BPF: perf_ioc_ops = 3221758986;
++pub const PERF_IOC_OP_MODIFY_ATTRS: perf_ioc_ops = 1074275339;
+ pub type perf_ioc_ops = u32;

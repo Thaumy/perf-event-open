@@ -1,0 +1,226 @@
+--- original
++++ modified
+@@ -505,7 +505,7 @@
+     pub sample_max_stack: __u16,
+     pub __reserved_2: __u16,
+     pub aux_sample_size: __u32,
+-    pub __reserved_3: __u32,
++    pub __bindgen_anon_5: perf_event_attr__bindgen_ty_5,
+     pub sig_data: __u64,
+     pub config3: __u64,
+ }
+@@ -625,8 +625,205 @@
+         }
+     }
+ }
++#[repr(C)]
++#[derive(Copy, Clone)]
++pub union perf_event_attr__bindgen_ty_5 {
++    pub aux_action: __u32,
++    pub __bindgen_anon_1: perf_event_attr__bindgen_ty_5__bindgen_ty_1,
++}
++#[repr(C)]
++#[derive(Debug, Default, Copy, Clone)]
++pub struct perf_event_attr__bindgen_ty_5__bindgen_ty_1 {
++    pub _bitfield_align_1: [u32; 0],
++    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
++}
+ #[allow(clippy::unnecessary_operation, clippy::identity_op)]
+ const _: () = {
++    ["Size of perf_event_attr__bindgen_ty_5__bindgen_ty_1"]
++        [::std::mem::size_of::<perf_event_attr__bindgen_ty_5__bindgen_ty_1>() - 4usize];
++    ["Alignment of perf_event_attr__bindgen_ty_5__bindgen_ty_1"]
++        [::std::mem::align_of::<perf_event_attr__bindgen_ty_5__bindgen_ty_1>() - 4usize];
++};
++impl perf_event_attr__bindgen_ty_5__bindgen_ty_1 {
++    #[inline]
++    pub fn aux_start_paused(&self) -> __u32 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
++    }
++    #[inline]
++    pub fn set_aux_start_paused(&mut self, val: __u32) {
++        unsafe {
++            let val: u32 = ::std::mem::transmute(val);
++            self._bitfield_1.set(0usize, 1u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn aux_start_paused_raw(this: *const Self) -> __u32 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                0usize,
++                1u8,
++            ) as u32)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_aux_start_paused_raw(this: *mut Self, val: __u32) {
++        unsafe {
++            let val: u32 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                0usize,
++                1u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    pub fn aux_pause(&self) -> __u32 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
++    }
++    #[inline]
++    pub fn set_aux_pause(&mut self, val: __u32) {
++        unsafe {
++            let val: u32 = ::std::mem::transmute(val);
++            self._bitfield_1.set(1usize, 1u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn aux_pause_raw(this: *const Self) -> __u32 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                1usize,
++                1u8,
++            ) as u32)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_aux_pause_raw(this: *mut Self, val: __u32) {
++        unsafe {
++            let val: u32 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                1usize,
++                1u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    pub fn aux_resume(&self) -> __u32 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
++    }
++    #[inline]
++    pub fn set_aux_resume(&mut self, val: __u32) {
++        unsafe {
++            let val: u32 = ::std::mem::transmute(val);
++            self._bitfield_1.set(2usize, 1u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn aux_resume_raw(this: *const Self) -> __u32 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                2usize,
++                1u8,
++            ) as u32)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_aux_resume_raw(this: *mut Self, val: __u32) {
++        unsafe {
++            let val: u32 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                2usize,
++                1u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    pub fn __reserved_3(&self) -> __u32 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(3usize, 29u8) as u32) }
++    }
++    #[inline]
++    pub fn set___reserved_3(&mut self, val: __u32) {
++        unsafe {
++            let val: u32 = ::std::mem::transmute(val);
++            self._bitfield_1.set(3usize, 29u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn __reserved_3_raw(this: *const Self) -> __u32 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                3usize,
++                29u8,
++            ) as u32)
++        }
++    }
++    #[inline]
++    pub unsafe fn set___reserved_3_raw(this: *mut Self, val: __u32) {
++        unsafe {
++            let val: u32 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                3usize,
++                29u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    pub fn new_bitfield_1(
++        aux_start_paused: __u32,
++        aux_pause: __u32,
++        aux_resume: __u32,
++        __reserved_3: __u32,
++    ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
++        let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
++        __bindgen_bitfield_unit.set(0usize, 1u8, {
++            let aux_start_paused: u32 = unsafe { ::std::mem::transmute(aux_start_paused) };
++            aux_start_paused as u64
++        });
++        __bindgen_bitfield_unit.set(1usize, 1u8, {
++            let aux_pause: u32 = unsafe { ::std::mem::transmute(aux_pause) };
++            aux_pause as u64
++        });
++        __bindgen_bitfield_unit.set(2usize, 1u8, {
++            let aux_resume: u32 = unsafe { ::std::mem::transmute(aux_resume) };
++            aux_resume as u64
++        });
++        __bindgen_bitfield_unit.set(3usize, 29u8, {
++            let __reserved_3: u32 = unsafe { ::std::mem::transmute(__reserved_3) };
++            __reserved_3 as u64
++        });
++        __bindgen_bitfield_unit
++    }
++}
++#[allow(clippy::unnecessary_operation, clippy::identity_op)]
++const _: () = {
++    ["Size of perf_event_attr__bindgen_ty_5"]
++        [::std::mem::size_of::<perf_event_attr__bindgen_ty_5>() - 4usize];
++    ["Alignment of perf_event_attr__bindgen_ty_5"]
++        [::std::mem::align_of::<perf_event_attr__bindgen_ty_5>() - 4usize];
++    ["Offset of field: perf_event_attr__bindgen_ty_5::aux_action"]
++        [::std::mem::offset_of!(perf_event_attr__bindgen_ty_5, aux_action) - 0usize];
++};
++impl Default for perf_event_attr__bindgen_ty_5 {
++    fn default() -> Self {
++        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
++        unsafe {
++            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
++            s.assume_init()
++        }
++    }
++}
++#[allow(clippy::unnecessary_operation, clippy::identity_op)]
++const _: () = {
+     ["Size of perf_event_attr"][::std::mem::size_of::<perf_event_attr>() - 136usize];
+     ["Alignment of perf_event_attr"][::std::mem::align_of::<perf_event_attr>() - 8usize];
+     ["Offset of field: perf_event_attr::type_"]
+@@ -659,8 +856,6 @@
+         [::std::mem::offset_of!(perf_event_attr, __reserved_2) - 110usize];
+     ["Offset of field: perf_event_attr::aux_sample_size"]
+         [::std::mem::offset_of!(perf_event_attr, aux_sample_size) - 112usize];
+-    ["Offset of field: perf_event_attr::__reserved_3"]
+-        [::std::mem::offset_of!(perf_event_attr, __reserved_3) - 116usize];
+     ["Offset of field: perf_event_attr::sig_data"]
+         [::std::mem::offset_of!(perf_event_attr, sig_data) - 120usize];
+     ["Offset of field: perf_event_attr::config3"]

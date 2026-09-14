@@ -1,0 +1,36 @@
+--- original
++++ modified
+@@ -190,6 +190,7 @@
+ pub const PERF_ATTR_SIZE_VER5: u32 = 112;
+ pub const PERF_ATTR_SIZE_VER6: u32 = 120;
+ pub const PERF_ATTR_SIZE_VER7: u32 = 128;
++pub const PERF_ATTR_SIZE_VER8: u32 = 136;
+ pub const PERF_RECORD_MISC_CPUMODE_MASK: u32 = 7;
+ pub const PERF_RECORD_MISC_CPUMODE_UNKNOWN: u32 = 0;
+ pub const PERF_RECORD_MISC_KERNEL: u32 = 1;
+@@ -500,6 +501,7 @@
+     pub aux_sample_size: __u32,
+     pub __reserved_3: __u32,
+     pub sig_data: __u64,
++    pub config3: __u64,
+ }
+ #[repr(C)]
+ #[derive(Copy, Clone)]
+@@ -619,7 +621,7 @@
+ }
+ #[allow(clippy::unnecessary_operation, clippy::identity_op)]
+ const _: () = {
+-    ["Size of perf_event_attr"][::std::mem::size_of::<perf_event_attr>() - 128usize];
++    ["Size of perf_event_attr"][::std::mem::size_of::<perf_event_attr>() - 136usize];
+     ["Alignment of perf_event_attr"][::std::mem::align_of::<perf_event_attr>() - 8usize];
+     ["Offset of field: perf_event_attr::type_"]
+         [::std::mem::offset_of!(perf_event_attr, type_) - 0usize];
+@@ -655,6 +657,8 @@
+         [::std::mem::offset_of!(perf_event_attr, __reserved_3) - 116usize];
+     ["Offset of field: perf_event_attr::sig_data"]
+         [::std::mem::offset_of!(perf_event_attr, sig_data) - 120usize];
++    ["Offset of field: perf_event_attr::config3"]
++        [::std::mem::offset_of!(perf_event_attr, config3) - 128usize];
+ };
+ impl Default for perf_event_attr {
+     fn default() -> Self {

@@ -1,0 +1,136 @@
+--- original
++++ modified
+@@ -253,6 +253,7 @@
+ pub const PERF_MEM_LVLNUM_L4: u32 = 4;
+ pub const PERF_MEM_LVLNUM_L2_MHB: u32 = 5;
+ pub const PERF_MEM_LVLNUM_MSC: u32 = 6;
++pub const PERF_MEM_LVLNUM_L0: u32 = 7;
+ pub const PERF_MEM_LVLNUM_UNC: u32 = 8;
+ pub const PERF_MEM_LVLNUM_CXL: u32 = 9;
+ pub const PERF_MEM_LVLNUM_IO: u32 = 10;
+@@ -291,6 +292,23 @@
+ pub const PERF_MEM_HOPS_2: u32 = 3;
+ pub const PERF_MEM_HOPS_3: u32 = 4;
+ pub const PERF_MEM_HOPS_SHIFT: u32 = 43;
++pub const PERF_MEM_REGION_NA: u32 = 0;
++pub const PERF_MEM_REGION_RSVD: u32 = 1;
++pub const PERF_MEM_REGION_L_SHARE: u32 = 2;
++pub const PERF_MEM_REGION_L_NON_SHARE: u32 = 3;
++pub const PERF_MEM_REGION_O_IO: u32 = 4;
++pub const PERF_MEM_REGION_O_SHARE: u32 = 5;
++pub const PERF_MEM_REGION_O_NON_SHARE: u32 = 6;
++pub const PERF_MEM_REGION_MMIO: u32 = 7;
++pub const PERF_MEM_REGION_MEM0: u32 = 8;
++pub const PERF_MEM_REGION_MEM1: u32 = 9;
++pub const PERF_MEM_REGION_MEM2: u32 = 10;
++pub const PERF_MEM_REGION_MEM3: u32 = 11;
++pub const PERF_MEM_REGION_MEM4: u32 = 12;
++pub const PERF_MEM_REGION_MEM5: u32 = 13;
++pub const PERF_MEM_REGION_MEM6: u32 = 14;
++pub const PERF_MEM_REGION_MEM7: u32 = 15;
++pub const PERF_MEM_REGION_SHIFT: u32 = 46;
+ pub const PERF_BRANCH_ENTRY_INFO_BITS_MAX: u32 = 33;
+ pub const BPF_TAG_SIZE: u32 = 8;
+ pub type __u8 = ::std::os::raw::c_uchar;
+@@ -2927,7 +2945,7 @@
+ #[repr(align(8))]
+ #[derive(Debug, Default, Copy, Clone)]
+ pub struct perf_mem_data_src__bindgen_ty_1 {
+-    pub _bitfield_align_1: [u32; 0],
++    pub _bitfield_align_1: [u16; 0],
+     pub _bitfield_1: __BindgenBitfieldUnit<[u8; 8usize]>,
+ }
+ #[allow(clippy::unnecessary_operation, clippy::identity_op)]
+@@ -3269,14 +3287,47 @@
+         }
+     }
+     #[inline]
++    pub fn mem_region(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(46usize, 5u8) as u64) }
++    }
++    #[inline]
++    pub fn set_mem_region(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set(46usize, 5u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn mem_region_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                46usize,
++                5u8,
++            ) as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_mem_region_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                46usize,
++                5u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
+     pub fn mem_rsvd(&self) -> __u64 {
+-        unsafe { ::std::mem::transmute(self._bitfield_1.get(46usize, 18u8) as u64) }
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(51usize, 13u8) as u64) }
+     }
+     #[inline]
+     pub fn set_mem_rsvd(&mut self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            self._bitfield_1.set(46usize, 18u8, val as u64)
++            self._bitfield_1.set(51usize, 13u8, val as u64)
+         }
+     }
+     #[inline]
+@@ -3284,8 +3335,8 @@
+         unsafe {
+             ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+                 ::std::ptr::addr_of!((*this)._bitfield_1),
+-                46usize,
+-                18u8,
++                51usize,
++                13u8,
+             ) as u64)
+         }
+     }
+@@ -3295,8 +3346,8 @@
+             let val: u64 = ::std::mem::transmute(val);
+             <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+                 ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+-                46usize,
+-                18u8,
++                51usize,
++                13u8,
+                 val as u64,
+             )
+         }
+@@ -3313,6 +3364,7 @@
+         mem_snoopx: __u64,
+         mem_blk: __u64,
+         mem_hops: __u64,
++        mem_region: __u64,
+         mem_rsvd: __u64,
+     ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
+         let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+@@ -3356,7 +3408,11 @@
+             let mem_hops: u64 = unsafe { ::std::mem::transmute(mem_hops) };
+             mem_hops as u64
+         });
+-        __bindgen_bitfield_unit.set(46usize, 18u8, {
++        __bindgen_bitfield_unit.set(46usize, 5u8, {
++            let mem_region: u64 = unsafe { ::std::mem::transmute(mem_region) };
++            mem_region as u64
++        });
++        __bindgen_bitfield_unit.set(51usize, 13u8, {
+             let mem_rsvd: u64 = unsafe { ::std::mem::transmute(mem_rsvd) };
+             mem_rsvd as u64
+         });

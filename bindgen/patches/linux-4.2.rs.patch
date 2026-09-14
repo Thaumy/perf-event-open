@@ -1,0 +1,40 @@
+--- original
++++ modified
+@@ -163,6 +163,7 @@
+ pub const PERF_RECORD_MISC_HYPERVISOR: u32 = 3;
+ pub const PERF_RECORD_MISC_GUEST_KERNEL: u32 = 4;
+ pub const PERF_RECORD_MISC_GUEST_USER: u32 = 5;
++pub const PERF_RECORD_MISC_PROC_MAP_PARSE_TIMEOUT: u32 = 4096;
+ pub const PERF_RECORD_MISC_MMAP_DATA: u32 = 8192;
+ pub const PERF_RECORD_MISC_COMM_EXEC: u32 = 8192;
+ pub const PERF_RECORD_MISC_EXACT_IP: u32 = 16384;
+@@ -301,7 +302,8 @@
+ pub const PERF_SAMPLE_BRANCH_NO_TX_SHIFT: perf_branch_sample_type_shift = 9;
+ pub const PERF_SAMPLE_BRANCH_COND_SHIFT: perf_branch_sample_type_shift = 10;
+ pub const PERF_SAMPLE_BRANCH_CALL_STACK_SHIFT: perf_branch_sample_type_shift = 11;
+-pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 12;
++pub const PERF_SAMPLE_BRANCH_IND_JUMP_SHIFT: perf_branch_sample_type_shift = 12;
++pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 13;
+ pub type perf_branch_sample_type_shift = u32;
+ pub const PERF_SAMPLE_BRANCH_USER: perf_branch_sample_type = 1;
+ pub const PERF_SAMPLE_BRANCH_KERNEL: perf_branch_sample_type = 2;
+@@ -315,7 +317,8 @@
+ pub const PERF_SAMPLE_BRANCH_NO_TX: perf_branch_sample_type = 512;
+ pub const PERF_SAMPLE_BRANCH_COND: perf_branch_sample_type = 1024;
+ pub const PERF_SAMPLE_BRANCH_CALL_STACK: perf_branch_sample_type = 2048;
+-pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 4096;
++pub const PERF_SAMPLE_BRANCH_IND_JUMP: perf_branch_sample_type = 4096;
++pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 8192;
+ pub type perf_branch_sample_type = u32;
+ pub const PERF_SAMPLE_REGS_ABI_NONE: perf_sample_regs_abi = 0;
+ pub const PERF_SAMPLE_REGS_ABI_32: perf_sample_regs_abi = 1;
+@@ -1895,7 +1898,8 @@
+ pub const PERF_RECORD_MMAP2: perf_event_type = 10;
+ pub const PERF_RECORD_AUX: perf_event_type = 11;
+ pub const PERF_RECORD_ITRACE_START: perf_event_type = 12;
+-pub const PERF_RECORD_MAX: perf_event_type = 13;
++pub const PERF_RECORD_LOST_SAMPLES: perf_event_type = 13;
++pub const PERF_RECORD_MAX: perf_event_type = 14;
+ pub type perf_event_type = u32;
+ pub const PERF_CONTEXT_HV: perf_callchain_context = 18446744073709551584;
+ pub const PERF_CONTEXT_KERNEL: perf_callchain_context = 18446744073709551488;

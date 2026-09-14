@@ -1,0 +1,207 @@
+--- original
++++ modified
+@@ -166,6 +166,7 @@
+ pub const PERF_RECORD_MISC_PROC_MAP_PARSE_TIMEOUT: u32 = 4096;
+ pub const PERF_RECORD_MISC_MMAP_DATA: u32 = 8192;
+ pub const PERF_RECORD_MISC_COMM_EXEC: u32 = 8192;
++pub const PERF_RECORD_MISC_SWITCH_OUT: u32 = 8192;
+ pub const PERF_RECORD_MISC_EXACT_IP: u32 = 16384;
+ pub const PERF_RECORD_MISC_EXT_RESERVED: u32 = 32768;
+ pub const PERF_MAX_STACK_DEPTH: u32 = 127;
+@@ -1336,14 +1337,47 @@
+         }
+     }
+     #[inline]
++    pub fn context_switch(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(26usize, 1u8) as u64) }
++    }
++    #[inline]
++    pub fn set_context_switch(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set(26usize, 1u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn context_switch_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                26usize,
++                1u8,
++            ) as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_context_switch_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                26usize,
++                1u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
+     pub fn __reserved_1(&self) -> __u64 {
+-        unsafe { ::std::mem::transmute(self._bitfield_1.get(26usize, 38u8) as u64) }
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(27usize, 37u8) as u64) }
+     }
+     #[inline]
+     pub fn set___reserved_1(&mut self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            self._bitfield_1.set(26usize, 38u8, val as u64)
++            self._bitfield_1.set(27usize, 37u8, val as u64)
+         }
+     }
+     #[inline]
+@@ -1351,8 +1385,8 @@
+         unsafe {
+             ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+                 ::std::ptr::addr_of!((*this)._bitfield_1),
+-                26usize,
+-                38u8,
++                27usize,
++                37u8,
+             ) as u64)
+         }
+     }
+@@ -1362,8 +1396,8 @@
+             let val: u64 = ::std::mem::transmute(val);
+             <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+                 ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+-                26usize,
+-                38u8,
++                27usize,
++                37u8,
+                 val as u64,
+             )
+         }
+@@ -1395,6 +1429,7 @@
+         mmap2: __u64,
+         comm_exec: __u64,
+         use_clockid: __u64,
++        context_switch: __u64,
+         __reserved_1: __u64,
+     ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
+         let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+@@ -1500,7 +1535,11 @@
+             let use_clockid: u64 = unsafe { ::std::mem::transmute(use_clockid) };
+             use_clockid as u64
+         });
+-        __bindgen_bitfield_unit.set(26usize, 38u8, {
++        __bindgen_bitfield_unit.set(26usize, 1u8, {
++            let context_switch: u64 = unsafe { ::std::mem::transmute(context_switch) };
++            context_switch as u64
++        });
++        __bindgen_bitfield_unit.set(27usize, 37u8, {
+             let __reserved_1: u64 = unsafe { ::std::mem::transmute(__reserved_1) };
+             __reserved_1 as u64
+         });
+@@ -1899,7 +1938,9 @@
+ pub const PERF_RECORD_AUX: perf_event_type = 11;
+ pub const PERF_RECORD_ITRACE_START: perf_event_type = 12;
+ pub const PERF_RECORD_LOST_SAMPLES: perf_event_type = 13;
+-pub const PERF_RECORD_MAX: perf_event_type = 14;
++pub const PERF_RECORD_SWITCH: perf_event_type = 14;
++pub const PERF_RECORD_SWITCH_CPU_WIDE: perf_event_type = 15;
++pub const PERF_RECORD_MAX: perf_event_type = 16;
+ pub type perf_event_type = u32;
+ pub const PERF_CONTEXT_HV: perf_callchain_context = 18446744073709551584;
+ pub const PERF_CONTEXT_KERNEL: perf_callchain_context = 18446744073709551488;
+@@ -2332,14 +2373,47 @@
+         }
+     }
+     #[inline]
++    pub fn cycles(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(4usize, 16u8) as u64) }
++    }
++    #[inline]
++    pub fn set_cycles(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set(4usize, 16u8, val as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn cycles_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
++                ::std::ptr::addr_of!((*this)._bitfield_1),
++                4usize,
++                16u8,
++            ) as u64)
++        }
++    }
++    #[inline]
++    pub unsafe fn set_cycles_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                4usize,
++                16u8,
++                val as u64,
++            )
++        }
++    }
++    #[inline]
+     pub fn reserved(&self) -> __u64 {
+-        unsafe { ::std::mem::transmute(self._bitfield_1.get(4usize, 60u8) as u64) }
++        unsafe { ::std::mem::transmute(self._bitfield_1.get(20usize, 44u8) as u64) }
+     }
+     #[inline]
+     pub fn set_reserved(&mut self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            self._bitfield_1.set(4usize, 60u8, val as u64)
++            self._bitfield_1.set(20usize, 44u8, val as u64)
+         }
+     }
+     #[inline]
+@@ -2347,8 +2421,8 @@
+         unsafe {
+             ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+                 ::std::ptr::addr_of!((*this)._bitfield_1),
+-                4usize,
+-                60u8,
++                20usize,
++                44u8,
+             ) as u64)
+         }
+     }
+@@ -2358,8 +2432,8 @@
+             let val: u64 = ::std::mem::transmute(val);
+             <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+                 ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+-                4usize,
+-                60u8,
++                20usize,
++                44u8,
+                 val as u64,
+             )
+         }
+@@ -2370,6 +2444,7 @@
+         predicted: __u64,
+         in_tx: __u64,
+         abort: __u64,
++        cycles: __u64,
+         reserved: __u64,
+     ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
+         let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+@@ -2389,7 +2464,11 @@
+             let abort: u64 = unsafe { ::std::mem::transmute(abort) };
+             abort as u64
+         });
+-        __bindgen_bitfield_unit.set(4usize, 60u8, {
++        __bindgen_bitfield_unit.set(4usize, 16u8, {
++            let cycles: u64 = unsafe { ::std::mem::transmute(cycles) };
++            cycles as u64
++        });
++        __bindgen_bitfield_unit.set(20usize, 44u8, {
+             let reserved: u64 = unsafe { ::std::mem::transmute(reserved) };
+             reserved as u64
+         });
