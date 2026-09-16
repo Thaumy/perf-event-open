@@ -14,7 +14,7 @@ pub const IOC_OPS: [(Version, &str); 4] = [
     (v!(4,17), "PERF_IOC_OP_MODIFY_ATTRS = PERF_EVENT_IOC_MODIFY_ATTRIBUTES,"),
 ];
 
-pub fn bindgen<P>(version: &Version, headers_dir: P, to: P) -> Result<()>
+pub fn bindgen<P>(version: &Version, headers_dir: P) -> Result<String>
 where
     P: AsRef<Path>,
 {
@@ -48,7 +48,7 @@ where
         bpf_h, enabled_ioctls,
     );
 
-    bindgen::Builder::default()
+    Ok(bindgen::Builder::default()
         .rust_target(env!("CARGO_PKG_RUST_VERSION").parse::<RustTarget>()?)
         .disable_header_comment()
         .derive_default(true)
@@ -70,8 +70,5 @@ where
         .allowlist_item("BPF_TAG_SIZE")
         .generate()
         .context("failed to generate bindings")?
-        .write_to_file(to)
-        .context("failed to write generated bindings to file")?;
-
-    Ok(())
+        .to_string())
 }

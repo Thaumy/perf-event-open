@@ -12,7 +12,7 @@ pub struct Version {
 }
 
 impl Version {
-    pub fn from_headers<P>(dir: P) -> Result<Version>
+    pub fn from_include<P>(dir: P) -> Result<Version>
     where
         P: AsRef<Path>,
     {
