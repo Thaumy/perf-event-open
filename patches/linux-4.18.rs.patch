@@ -1,0 +1,12 @@
+--- original
++++ modified
+@@ -695,7 +695,8 @@
+ pub const PERF_SAMPLE_REGS_INTR: perf_event_sample_format = 262144;
+ pub const PERF_SAMPLE_PHYS_ADDR: perf_event_sample_format = 524288;
+ pub const PERF_SAMPLE_MAX: perf_event_sample_format = 1048576;
+-pub type perf_event_sample_format = u32;
++pub const __PERF_SAMPLE_CALLCHAIN_EARLY: perf_event_sample_format = 9223372036854775808;
++pub type perf_event_sample_format = u64;
+ pub const PERF_SAMPLE_BRANCH_USER_SHIFT: perf_branch_sample_type_shift = 0;
+ pub const PERF_SAMPLE_BRANCH_KERNEL_SHIFT: perf_branch_sample_type_shift = 1;
+ pub const PERF_SAMPLE_BRANCH_HV_SHIFT: perf_branch_sample_type_shift = 2;

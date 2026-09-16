@@ -1,0 +1,24 @@
+--- original
++++ modified
+@@ -726,7 +726,8 @@
+     pub clockid: __s32,
+     pub sample_regs_intr: __u64,
+     pub aux_watermark: __u32,
+-    pub __reserved_2: __u32,
++    pub sample_max_stack: __u16,
++    pub __reserved_2: __u16,
+ }
+ #[repr(C)]
+ #[derive(Copy, Clone)]
+@@ -860,8 +861,10 @@
+         [::std::mem::offset_of!(perf_event_attr, sample_regs_intr) - 96usize];
+     ["Offset of field: perf_event_attr::aux_watermark"]
+         [::std::mem::offset_of!(perf_event_attr, aux_watermark) - 104usize];
++    ["Offset of field: perf_event_attr::sample_max_stack"]
++        [::std::mem::offset_of!(perf_event_attr, sample_max_stack) - 108usize];
+     ["Offset of field: perf_event_attr::__reserved_2"]
+-        [::std::mem::offset_of!(perf_event_attr, __reserved_2) - 108usize];
++        [::std::mem::offset_of!(perf_event_attr, __reserved_2) - 110usize];
+ };
+ impl Default for perf_event_attr {
+     fn default() -> Self {

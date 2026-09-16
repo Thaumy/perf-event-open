@@ -1,0 +1,332 @@
+--- original
++++ modified
+@@ -602,6 +602,8 @@
+ pub const PERF_MEM_LVLNUM_L2: u32 = 2;
+ pub const PERF_MEM_LVLNUM_L3: u32 = 3;
+ pub const PERF_MEM_LVLNUM_L4: u32 = 4;
++pub const PERF_MEM_LVLNUM_CXL: u32 = 9;
++pub const PERF_MEM_LVLNUM_IO: u32 = 10;
+ pub const PERF_MEM_LVLNUM_ANY_CACHE: u32 = 11;
+ pub const PERF_MEM_LVLNUM_LFB: u32 = 12;
+ pub const PERF_MEM_LVLNUM_RAM: u32 = 13;
+@@ -615,6 +617,7 @@
+ pub const PERF_MEM_SNOOP_HITM: u32 = 16;
+ pub const PERF_MEM_SNOOP_SHIFT: u32 = 19;
+ pub const PERF_MEM_SNOOPX_FWD: u32 = 1;
++pub const PERF_MEM_SNOOPX_PEER: u32 = 2;
+ pub const PERF_MEM_SNOOPX_SHIFT: u32 = 38;
+ pub const PERF_MEM_LOCK_NA: u32 = 1;
+ pub const PERF_MEM_LOCK_LOCKED: u32 = 2;
+@@ -721,8 +724,7 @@
+ pub const PERF_SAMPLE_CODE_PAGE_SIZE: perf_event_sample_format = 8388608;
+ pub const PERF_SAMPLE_WEIGHT_STRUCT: perf_event_sample_format = 16777216;
+ pub const PERF_SAMPLE_MAX: perf_event_sample_format = 33554432;
+-pub const __PERF_SAMPLE_CALLCHAIN_EARLY: perf_event_sample_format = 9223372036854775808;
+-pub type perf_event_sample_format = u64;
++pub type perf_event_sample_format = u32;
+ pub const PERF_SAMPLE_BRANCH_USER_SHIFT: perf_branch_sample_type_shift = 0;
+ pub const PERF_SAMPLE_BRANCH_KERNEL_SHIFT: perf_branch_sample_type_shift = 1;
+ pub const PERF_SAMPLE_BRANCH_HV_SHIFT: perf_branch_sample_type_shift = 2;
+@@ -741,7 +743,8 @@
+ pub const PERF_SAMPLE_BRANCH_NO_CYCLES_SHIFT: perf_branch_sample_type_shift = 15;
+ pub const PERF_SAMPLE_BRANCH_TYPE_SAVE_SHIFT: perf_branch_sample_type_shift = 16;
+ pub const PERF_SAMPLE_BRANCH_HW_INDEX_SHIFT: perf_branch_sample_type_shift = 17;
+-pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 18;
++pub const PERF_SAMPLE_BRANCH_PRIV_SAVE_SHIFT: perf_branch_sample_type_shift = 18;
++pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 19;
+ pub type perf_branch_sample_type_shift = u32;
+ pub const PERF_SAMPLE_BRANCH_USER: perf_branch_sample_type = 1;
+ pub const PERF_SAMPLE_BRANCH_KERNEL: perf_branch_sample_type = 2;
+@@ -761,39 +764,64 @@
+ pub const PERF_SAMPLE_BRANCH_NO_CYCLES: perf_branch_sample_type = 32768;
+ pub const PERF_SAMPLE_BRANCH_TYPE_SAVE: perf_branch_sample_type = 65536;
+ pub const PERF_SAMPLE_BRANCH_HW_INDEX: perf_branch_sample_type = 131072;
+-pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 262144;
++pub const PERF_SAMPLE_BRANCH_PRIV_SAVE: perf_branch_sample_type = 262144;
++pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 524288;
+ pub type perf_branch_sample_type = u32;
+-pub const PERF_BR_UNKNOWN: _bindgen_ty_40 = 0;
+-pub const PERF_BR_COND: _bindgen_ty_40 = 1;
+-pub const PERF_BR_UNCOND: _bindgen_ty_40 = 2;
+-pub const PERF_BR_IND: _bindgen_ty_40 = 3;
+-pub const PERF_BR_CALL: _bindgen_ty_40 = 4;
+-pub const PERF_BR_IND_CALL: _bindgen_ty_40 = 5;
+-pub const PERF_BR_RET: _bindgen_ty_40 = 6;
+-pub const PERF_BR_SYSCALL: _bindgen_ty_40 = 7;
+-pub const PERF_BR_SYSRET: _bindgen_ty_40 = 8;
+-pub const PERF_BR_COND_CALL: _bindgen_ty_40 = 9;
+-pub const PERF_BR_COND_RET: _bindgen_ty_40 = 10;
+-pub const PERF_BR_ERET: _bindgen_ty_40 = 11;
+-pub const PERF_BR_IRQ: _bindgen_ty_40 = 12;
+-pub const PERF_BR_MAX: _bindgen_ty_40 = 13;
+-pub type _bindgen_ty_40 = u32;
++pub const PERF_BR_UNKNOWN: _bindgen_ty_41 = 0;
++pub const PERF_BR_COND: _bindgen_ty_41 = 1;
++pub const PERF_BR_UNCOND: _bindgen_ty_41 = 2;
++pub const PERF_BR_IND: _bindgen_ty_41 = 3;
++pub const PERF_BR_CALL: _bindgen_ty_41 = 4;
++pub const PERF_BR_IND_CALL: _bindgen_ty_41 = 5;
++pub const PERF_BR_RET: _bindgen_ty_41 = 6;
++pub const PERF_BR_SYSCALL: _bindgen_ty_41 = 7;
++pub const PERF_BR_SYSRET: _bindgen_ty_41 = 8;
++pub const PERF_BR_COND_CALL: _bindgen_ty_41 = 9;
++pub const PERF_BR_COND_RET: _bindgen_ty_41 = 10;
++pub const PERF_BR_ERET: _bindgen_ty_41 = 11;
++pub const PERF_BR_IRQ: _bindgen_ty_41 = 12;
++pub const PERF_BR_SERROR: _bindgen_ty_41 = 13;
++pub const PERF_BR_NO_TX: _bindgen_ty_41 = 14;
++pub const PERF_BR_EXTEND_ABI: _bindgen_ty_41 = 15;
++pub const PERF_BR_MAX: _bindgen_ty_41 = 16;
++pub type _bindgen_ty_41 = u32;
++pub const PERF_BR_SPEC_NA: _bindgen_ty_42 = 0;
++pub const PERF_BR_SPEC_WRONG_PATH: _bindgen_ty_42 = 1;
++pub const PERF_BR_NON_SPEC_CORRECT_PATH: _bindgen_ty_42 = 2;
++pub const PERF_BR_SPEC_CORRECT_PATH: _bindgen_ty_42 = 3;
++pub const PERF_BR_SPEC_MAX: _bindgen_ty_42 = 4;
++pub type _bindgen_ty_42 = u32;
++pub const PERF_BR_NEW_FAULT_ALGN: _bindgen_ty_43 = 0;
++pub const PERF_BR_NEW_FAULT_DATA: _bindgen_ty_43 = 1;
++pub const PERF_BR_NEW_FAULT_INST: _bindgen_ty_43 = 2;
++pub const PERF_BR_NEW_ARCH_1: _bindgen_ty_43 = 3;
++pub const PERF_BR_NEW_ARCH_2: _bindgen_ty_43 = 4;
++pub const PERF_BR_NEW_ARCH_3: _bindgen_ty_43 = 5;
++pub const PERF_BR_NEW_ARCH_4: _bindgen_ty_43 = 6;
++pub const PERF_BR_NEW_ARCH_5: _bindgen_ty_43 = 7;
++pub const PERF_BR_NEW_MAX: _bindgen_ty_43 = 8;
++pub type _bindgen_ty_43 = u32;
++pub const PERF_BR_PRIV_UNKNOWN: _bindgen_ty_44 = 0;
++pub const PERF_BR_PRIV_USER: _bindgen_ty_44 = 1;
++pub const PERF_BR_PRIV_KERNEL: _bindgen_ty_44 = 2;
++pub const PERF_BR_PRIV_HV: _bindgen_ty_44 = 3;
++pub type _bindgen_ty_44 = u32;
+ pub const PERF_SAMPLE_REGS_ABI_NONE: perf_sample_regs_abi = 0;
+ pub const PERF_SAMPLE_REGS_ABI_32: perf_sample_regs_abi = 1;
+ pub const PERF_SAMPLE_REGS_ABI_64: perf_sample_regs_abi = 2;
+ pub type perf_sample_regs_abi = u32;
+-pub const PERF_TXN_ELISION: _bindgen_ty_41 = 1;
+-pub const PERF_TXN_TRANSACTION: _bindgen_ty_41 = 2;
+-pub const PERF_TXN_SYNC: _bindgen_ty_41 = 4;
+-pub const PERF_TXN_ASYNC: _bindgen_ty_41 = 8;
+-pub const PERF_TXN_RETRY: _bindgen_ty_41 = 16;
+-pub const PERF_TXN_CONFLICT: _bindgen_ty_41 = 32;
+-pub const PERF_TXN_CAPACITY_WRITE: _bindgen_ty_41 = 64;
+-pub const PERF_TXN_CAPACITY_READ: _bindgen_ty_41 = 128;
+-pub const PERF_TXN_MAX: _bindgen_ty_41 = 256;
+-pub const PERF_TXN_ABORT_MASK: _bindgen_ty_41 = 18446744069414584320;
+-pub const PERF_TXN_ABORT_SHIFT: _bindgen_ty_41 = 32;
+-pub type _bindgen_ty_41 = u64;
++pub const PERF_TXN_ELISION: _bindgen_ty_45 = 1;
++pub const PERF_TXN_TRANSACTION: _bindgen_ty_45 = 2;
++pub const PERF_TXN_SYNC: _bindgen_ty_45 = 4;
++pub const PERF_TXN_ASYNC: _bindgen_ty_45 = 8;
++pub const PERF_TXN_RETRY: _bindgen_ty_45 = 16;
++pub const PERF_TXN_CONFLICT: _bindgen_ty_45 = 32;
++pub const PERF_TXN_CAPACITY_WRITE: _bindgen_ty_45 = 64;
++pub const PERF_TXN_CAPACITY_READ: _bindgen_ty_45 = 128;
++pub const PERF_TXN_MAX: _bindgen_ty_45 = 256;
++pub const PERF_TXN_ABORT_MASK: _bindgen_ty_45 = 18446744069414584320;
++pub const PERF_TXN_ABORT_SHIFT: _bindgen_ty_45 = 32;
++pub type _bindgen_ty_45 = u64;
+ pub const PERF_FORMAT_TOTAL_TIME_ENABLED: perf_event_read_format = 1;
+ pub const PERF_FORMAT_TOTAL_TIME_RUNNING: perf_event_read_format = 2;
+ pub const PERF_FORMAT_ID: perf_event_read_format = 4;
+@@ -2996,15 +3024,15 @@
+     ["Offset of field: perf_ns_link_info::ino"]
+         [::std::mem::offset_of!(perf_ns_link_info, ino) - 8usize];
+ };
+-pub const NET_NS_INDEX: _bindgen_ty_42 = 0;
+-pub const UTS_NS_INDEX: _bindgen_ty_42 = 1;
+-pub const IPC_NS_INDEX: _bindgen_ty_42 = 2;
+-pub const PID_NS_INDEX: _bindgen_ty_42 = 3;
+-pub const USER_NS_INDEX: _bindgen_ty_42 = 4;
+-pub const MNT_NS_INDEX: _bindgen_ty_42 = 5;
+-pub const CGROUP_NS_INDEX: _bindgen_ty_42 = 6;
+-pub const NR_NAMESPACES: _bindgen_ty_42 = 7;
+-pub type _bindgen_ty_42 = u32;
++pub const NET_NS_INDEX: _bindgen_ty_46 = 0;
++pub const UTS_NS_INDEX: _bindgen_ty_46 = 1;
++pub const IPC_NS_INDEX: _bindgen_ty_46 = 2;
++pub const PID_NS_INDEX: _bindgen_ty_46 = 3;
++pub const USER_NS_INDEX: _bindgen_ty_46 = 4;
++pub const MNT_NS_INDEX: _bindgen_ty_46 = 5;
++pub const CGROUP_NS_INDEX: _bindgen_ty_46 = 6;
++pub const NR_NAMESPACES: _bindgen_ty_46 = 7;
++pub type _bindgen_ty_46 = u32;
+ pub const PERF_RECORD_MMAP: perf_event_type = 1;
+ pub const PERF_RECORD_LOST: perf_event_type = 2;
+ pub const PERF_RECORD_COMM: perf_event_type = 3;
+@@ -3759,8 +3787,113 @@
+     }
+     #[inline]
+     #[allow(unnecessary_transmutes)]
++    pub fn spec(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<24usize, 2u8>() as u64) }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub fn set_spec(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set_const::<24usize, 2u8>(val as u64)
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn spec_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(
++                <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get_const::<24usize, 2u8>(
++                    ::std::ptr::addr_of!((*this)._bitfield_1),
++                ) as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn set_spec_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<24usize, 2u8>(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub fn new_type(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<26usize, 4u8>() as u64) }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub fn set_new_type(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set_const::<26usize, 4u8>(val as u64)
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn new_type_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(
++                <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get_const::<26usize, 4u8>(
++                    ::std::ptr::addr_of!((*this)._bitfield_1),
++                ) as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn set_new_type_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<26usize, 4u8>(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub fn priv_(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<30usize, 3u8>() as u64) }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub fn set_priv(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set_const::<30usize, 3u8>(val as u64)
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn priv__raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(
++                <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get_const::<30usize, 3u8>(
++                    ::std::ptr::addr_of!((*this)._bitfield_1),
++                ) as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn set_priv_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<30usize, 3u8>(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
+     pub fn reserved(&self) -> __u64 {
+-        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<24usize, 40u8>() as u64) }
++        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<33usize, 31u8>() as u64) }
+     }
+     #[inline]
+     #[allow(unnecessary_transmutes)]
+@@ -3767,7 +3900,7 @@
+     pub fn set_reserved(&mut self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            self._bitfield_1.set_const::<24usize, 40u8>(val as u64)
++            self._bitfield_1.set_const::<33usize, 31u8>(val as u64)
+         }
+     }
+     #[inline]
+@@ -3775,8 +3908,8 @@
+     pub unsafe fn reserved_raw(this: *const Self) -> __u64 {
+         unsafe {
+             ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get_const::<
+-                24usize,
+-                40u8,
++                33usize,
++                31u8,
+             >(::std::ptr::addr_of!((*this)._bitfield_1))
+                 as u64)
+         }
+@@ -3786,7 +3919,7 @@
+     pub unsafe fn set_reserved_raw(this: *mut Self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<24usize, 40u8>(
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<33usize, 31u8>(
+                 ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+                 val as u64,
+             )
+@@ -3801,6 +3934,9 @@
+         abort: __u64,
+         cycles: __u64,
+         type_: __u64,
++        spec: __u64,
++        new_type: __u64,
++        priv_: __u64,
+         reserved: __u64,
+     ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
+         let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+@@ -3828,7 +3964,19 @@
+             let type_: u64 = unsafe { ::std::mem::transmute(type_) };
+             type_ as u64
+         });
+-        __bindgen_bitfield_unit.set_const::<24usize, 40u8>({
++        __bindgen_bitfield_unit.set_const::<24usize, 2u8>({
++            let spec: u64 = unsafe { ::std::mem::transmute(spec) };
++            spec as u64
++        });
++        __bindgen_bitfield_unit.set_const::<26usize, 4u8>({
++            let new_type: u64 = unsafe { ::std::mem::transmute(new_type) };
++            new_type as u64
++        });
++        __bindgen_bitfield_unit.set_const::<30usize, 3u8>({
++            let priv_: u64 = unsafe { ::std::mem::transmute(priv_) };
++            priv_ as u64
++        });
++        __bindgen_bitfield_unit.set_const::<33usize, 31u8>({
+             let reserved: u64 = unsafe { ::std::mem::transmute(reserved) };
+             reserved as u64
+         });

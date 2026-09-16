@@ -1,0 +1,260 @@
+--- original
++++ modified
+@@ -556,6 +556,7 @@
+ pub const PERF_RECORD_MISC_EXACT_IP: u32 = 16384;
+ pub const PERF_RECORD_MISC_SWITCH_OUT_PREEMPT: u32 = 16384;
+ pub const PERF_RECORD_MISC_EXT_RESERVED: u32 = 32768;
++pub const PERF_RECORD_KSYMBOL_FLAGS_UNREGISTER: u32 = 1;
+ pub const PERF_MAX_STACK_DEPTH: u32 = 127;
+ pub const PERF_MAX_CONTEXTS_PER_STACK: u32 = 8;
+ pub const PERF_AUX_FLAG_TRUNCATED: u32 = 1;
+@@ -618,6 +619,7 @@
+ pub const PERF_MEM_TLB_WK: u32 = 32;
+ pub const PERF_MEM_TLB_OS: u32 = 64;
+ pub const PERF_MEM_TLB_SHIFT: u32 = 26;
++pub const BPF_TAG_SIZE: u32 = 8;
+ pub type __u8 = ::std::os::raw::c_uchar;
+ pub type __u16 = ::std::os::raw::c_ushort;
+ pub type __s32 = ::std::os::raw::c_int;
+@@ -736,35 +738,35 @@
+ pub const PERF_SAMPLE_BRANCH_TYPE_SAVE: perf_branch_sample_type = 65536;
+ pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 131072;
+ pub type perf_branch_sample_type = u32;
+-pub const PERF_BR_UNKNOWN: _bindgen_ty_3 = 0;
+-pub const PERF_BR_COND: _bindgen_ty_3 = 1;
+-pub const PERF_BR_UNCOND: _bindgen_ty_3 = 2;
+-pub const PERF_BR_IND: _bindgen_ty_3 = 3;
+-pub const PERF_BR_CALL: _bindgen_ty_3 = 4;
+-pub const PERF_BR_IND_CALL: _bindgen_ty_3 = 5;
+-pub const PERF_BR_RET: _bindgen_ty_3 = 6;
+-pub const PERF_BR_SYSCALL: _bindgen_ty_3 = 7;
+-pub const PERF_BR_SYSRET: _bindgen_ty_3 = 8;
+-pub const PERF_BR_COND_CALL: _bindgen_ty_3 = 9;
+-pub const PERF_BR_COND_RET: _bindgen_ty_3 = 10;
+-pub const PERF_BR_MAX: _bindgen_ty_3 = 11;
+-pub type _bindgen_ty_3 = u32;
++pub const PERF_BR_UNKNOWN: _bindgen_ty_7 = 0;
++pub const PERF_BR_COND: _bindgen_ty_7 = 1;
++pub const PERF_BR_UNCOND: _bindgen_ty_7 = 2;
++pub const PERF_BR_IND: _bindgen_ty_7 = 3;
++pub const PERF_BR_CALL: _bindgen_ty_7 = 4;
++pub const PERF_BR_IND_CALL: _bindgen_ty_7 = 5;
++pub const PERF_BR_RET: _bindgen_ty_7 = 6;
++pub const PERF_BR_SYSCALL: _bindgen_ty_7 = 7;
++pub const PERF_BR_SYSRET: _bindgen_ty_7 = 8;
++pub const PERF_BR_COND_CALL: _bindgen_ty_7 = 9;
++pub const PERF_BR_COND_RET: _bindgen_ty_7 = 10;
++pub const PERF_BR_MAX: _bindgen_ty_7 = 11;
++pub type _bindgen_ty_7 = u32;
+ pub const PERF_SAMPLE_REGS_ABI_NONE: perf_sample_regs_abi = 0;
+ pub const PERF_SAMPLE_REGS_ABI_32: perf_sample_regs_abi = 1;
+ pub const PERF_SAMPLE_REGS_ABI_64: perf_sample_regs_abi = 2;
+ pub type perf_sample_regs_abi = u32;
+-pub const PERF_TXN_ELISION: _bindgen_ty_4 = 1;
+-pub const PERF_TXN_TRANSACTION: _bindgen_ty_4 = 2;
+-pub const PERF_TXN_SYNC: _bindgen_ty_4 = 4;
+-pub const PERF_TXN_ASYNC: _bindgen_ty_4 = 8;
+-pub const PERF_TXN_RETRY: _bindgen_ty_4 = 16;
+-pub const PERF_TXN_CONFLICT: _bindgen_ty_4 = 32;
+-pub const PERF_TXN_CAPACITY_WRITE: _bindgen_ty_4 = 64;
+-pub const PERF_TXN_CAPACITY_READ: _bindgen_ty_4 = 128;
+-pub const PERF_TXN_MAX: _bindgen_ty_4 = 256;
+-pub const PERF_TXN_ABORT_MASK: _bindgen_ty_4 = 18446744069414584320;
+-pub const PERF_TXN_ABORT_SHIFT: _bindgen_ty_4 = 32;
+-pub type _bindgen_ty_4 = u64;
++pub const PERF_TXN_ELISION: _bindgen_ty_8 = 1;
++pub const PERF_TXN_TRANSACTION: _bindgen_ty_8 = 2;
++pub const PERF_TXN_SYNC: _bindgen_ty_8 = 4;
++pub const PERF_TXN_ASYNC: _bindgen_ty_8 = 8;
++pub const PERF_TXN_RETRY: _bindgen_ty_8 = 16;
++pub const PERF_TXN_CONFLICT: _bindgen_ty_8 = 32;
++pub const PERF_TXN_CAPACITY_WRITE: _bindgen_ty_8 = 64;
++pub const PERF_TXN_CAPACITY_READ: _bindgen_ty_8 = 128;
++pub const PERF_TXN_MAX: _bindgen_ty_8 = 256;
++pub const PERF_TXN_ABORT_MASK: _bindgen_ty_8 = 18446744069414584320;
++pub const PERF_TXN_ABORT_SHIFT: _bindgen_ty_8 = 32;
++pub type _bindgen_ty_8 = u64;
+ pub const PERF_FORMAT_TOTAL_TIME_ENABLED: perf_event_read_format = 1;
+ pub const PERF_FORMAT_TOTAL_TIME_RUNNING: perf_event_read_format = 2;
+ pub const PERF_FORMAT_ID: perf_event_read_format = 4;
+@@ -1935,8 +1937,78 @@
+     }
+     #[inline]
+     #[allow(unnecessary_transmutes)]
++    pub fn ksymbol(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<29usize, 1u8>() as u64) }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub fn set_ksymbol(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set_const::<29usize, 1u8>(val as u64)
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn ksymbol_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(
++                <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get_const::<29usize, 1u8>(
++                    ::std::ptr::addr_of!((*this)._bitfield_1),
++                ) as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn set_ksymbol_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<29usize, 1u8>(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub fn bpf_event(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<30usize, 1u8>() as u64) }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub fn set_bpf_event(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set_const::<30usize, 1u8>(val as u64)
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn bpf_event_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(
++                <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get_const::<30usize, 1u8>(
++                    ::std::ptr::addr_of!((*this)._bitfield_1),
++                ) as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn set_bpf_event_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<30usize, 1u8>(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
+     pub fn __reserved_1(&self) -> __u64 {
+-        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<29usize, 35u8>() as u64) }
++        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<31usize, 33u8>() as u64) }
+     }
+     #[inline]
+     #[allow(unnecessary_transmutes)]
+@@ -1943,7 +2015,7 @@
+     pub fn set___reserved_1(&mut self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            self._bitfield_1.set_const::<29usize, 35u8>(val as u64)
++            self._bitfield_1.set_const::<31usize, 33u8>(val as u64)
+         }
+     }
+     #[inline]
+@@ -1951,8 +2023,8 @@
+     pub unsafe fn __reserved_1_raw(this: *const Self) -> __u64 {
+         unsafe {
+             ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get_const::<
+-                29usize,
+-                35u8,
++                31usize,
++                33u8,
+             >(::std::ptr::addr_of!((*this)._bitfield_1))
+                 as u64)
+         }
+@@ -1962,7 +2034,7 @@
+     pub unsafe fn set___reserved_1_raw(this: *mut Self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<29usize, 35u8>(
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<31usize, 33u8>(
+                 ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+                 val as u64,
+             )
+@@ -1999,6 +2071,8 @@
+         context_switch: __u64,
+         write_backward: __u64,
+         namespaces: __u64,
++        ksymbol: __u64,
++        bpf_event: __u64,
+         __reserved_1: __u64,
+     ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
+         let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+@@ -2116,7 +2190,15 @@
+             let namespaces: u64 = unsafe { ::std::mem::transmute(namespaces) };
+             namespaces as u64
+         });
+-        __bindgen_bitfield_unit.set_const::<29usize, 35u8>({
++        __bindgen_bitfield_unit.set_const::<29usize, 1u8>({
++            let ksymbol: u64 = unsafe { ::std::mem::transmute(ksymbol) };
++            ksymbol as u64
++        });
++        __bindgen_bitfield_unit.set_const::<30usize, 1u8>({
++            let bpf_event: u64 = unsafe { ::std::mem::transmute(bpf_event) };
++            bpf_event as u64
++        });
++        __bindgen_bitfield_unit.set_const::<31usize, 33u8>({
+             let __reserved_1: u64 = unsafe { ::std::mem::transmute(__reserved_1) };
+             __reserved_1 as u64
+         });
+@@ -2548,15 +2630,15 @@
+     ["Offset of field: perf_ns_link_info::ino"]
+         [::std::mem::offset_of!(perf_ns_link_info, ino) - 8usize];
+ };
+-pub const NET_NS_INDEX: _bindgen_ty_5 = 0;
+-pub const UTS_NS_INDEX: _bindgen_ty_5 = 1;
+-pub const IPC_NS_INDEX: _bindgen_ty_5 = 2;
+-pub const PID_NS_INDEX: _bindgen_ty_5 = 3;
+-pub const USER_NS_INDEX: _bindgen_ty_5 = 4;
+-pub const MNT_NS_INDEX: _bindgen_ty_5 = 5;
+-pub const CGROUP_NS_INDEX: _bindgen_ty_5 = 6;
+-pub const NR_NAMESPACES: _bindgen_ty_5 = 7;
+-pub type _bindgen_ty_5 = u32;
++pub const NET_NS_INDEX: _bindgen_ty_9 = 0;
++pub const UTS_NS_INDEX: _bindgen_ty_9 = 1;
++pub const IPC_NS_INDEX: _bindgen_ty_9 = 2;
++pub const PID_NS_INDEX: _bindgen_ty_9 = 3;
++pub const USER_NS_INDEX: _bindgen_ty_9 = 4;
++pub const MNT_NS_INDEX: _bindgen_ty_9 = 5;
++pub const CGROUP_NS_INDEX: _bindgen_ty_9 = 6;
++pub const NR_NAMESPACES: _bindgen_ty_9 = 7;
++pub type _bindgen_ty_9 = u32;
+ pub const PERF_RECORD_MMAP: perf_event_type = 1;
+ pub const PERF_RECORD_LOST: perf_event_type = 2;
+ pub const PERF_RECORD_COMM: perf_event_type = 3;
+@@ -2573,8 +2655,19 @@
+ pub const PERF_RECORD_SWITCH: perf_event_type = 14;
+ pub const PERF_RECORD_SWITCH_CPU_WIDE: perf_event_type = 15;
+ pub const PERF_RECORD_NAMESPACES: perf_event_type = 16;
+-pub const PERF_RECORD_MAX: perf_event_type = 17;
++pub const PERF_RECORD_KSYMBOL: perf_event_type = 17;
++pub const PERF_RECORD_BPF_EVENT: perf_event_type = 18;
++pub const PERF_RECORD_MAX: perf_event_type = 19;
+ pub type perf_event_type = u32;
++pub const PERF_RECORD_KSYMBOL_TYPE_UNKNOWN: perf_record_ksymbol_type = 0;
++pub const PERF_RECORD_KSYMBOL_TYPE_BPF: perf_record_ksymbol_type = 1;
++pub const PERF_RECORD_KSYMBOL_TYPE_MAX: perf_record_ksymbol_type = 2;
++pub type perf_record_ksymbol_type = u32;
++pub const PERF_BPF_EVENT_UNKNOWN: perf_bpf_event_type = 0;
++pub const PERF_BPF_EVENT_PROG_LOAD: perf_bpf_event_type = 1;
++pub const PERF_BPF_EVENT_PROG_UNLOAD: perf_bpf_event_type = 2;
++pub const PERF_BPF_EVENT_MAX: perf_bpf_event_type = 3;
++pub type perf_bpf_event_type = u32;
+ pub const PERF_CONTEXT_HV: perf_callchain_context = 18446744073709551584;
+ pub const PERF_CONTEXT_KERNEL: perf_callchain_context = 18446744073709551488;
+ pub const PERF_CONTEXT_USER: perf_callchain_context = 18446744073709551104;

@@ -1,0 +1,70 @@
+--- original
++++ modified
+@@ -493,6 +493,36 @@
+         }
+     }
+ }
++#[repr(C)]
++#[derive(Default)]
++pub struct __IncompleteArrayField<T>(::std::marker::PhantomData<T>, [T; 0]);
++impl<T> __IncompleteArrayField<T> {
++    #[inline]
++    pub const fn new() -> Self {
++        __IncompleteArrayField(::std::marker::PhantomData, [])
++    }
++    #[inline]
++    pub fn as_ptr(&self) -> *const T {
++        self as *const _ as *const T
++    }
++    #[inline]
++    pub fn as_mut_ptr(&mut self) -> *mut T {
++        self as *mut _ as *mut T
++    }
++    #[inline]
++    pub unsafe fn as_slice(&self, len: usize) -> &[T] {
++        ::std::slice::from_raw_parts(self.as_ptr(), len)
++    }
++    #[inline]
++    pub unsafe fn as_mut_slice(&mut self, len: usize) -> &mut [T] {
++        ::std::slice::from_raw_parts_mut(self.as_mut_ptr(), len)
++    }
++}
++impl<T> ::std::fmt::Debug for __IncompleteArrayField<T> {
++    fn fmt(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
++        fmt.write_str("__IncompleteArrayField")
++    }
++}
+ pub const CLOCK_REALTIME: u32 = 0;
+ pub const CLOCK_MONOTONIC: u32 = 1;
+ pub const CLOCK_PROCESS_CPUTIME_ID: u32 = 2;
+@@ -2078,6 +2108,24 @@
+         __bindgen_bitfield_unit
+     }
+ }
++#[repr(C)]
++#[derive(Debug, Default)]
++pub struct perf_event_query_bpf {
++    pub ids_len: __u32,
++    pub prog_cnt: __u32,
++    pub ids: __IncompleteArrayField<__u32>,
++}
++#[allow(clippy::unnecessary_operation, clippy::identity_op)]
++const _: () = {
++    ["Size of perf_event_query_bpf"][::std::mem::size_of::<perf_event_query_bpf>() - 8usize];
++    ["Alignment of perf_event_query_bpf"][::std::mem::align_of::<perf_event_query_bpf>() - 4usize];
++    ["Offset of field: perf_event_query_bpf::ids_len"]
++        [::std::mem::offset_of!(perf_event_query_bpf, ids_len) - 0usize];
++    ["Offset of field: perf_event_query_bpf::prog_cnt"]
++        [::std::mem::offset_of!(perf_event_query_bpf, prog_cnt) - 4usize];
++    ["Offset of field: perf_event_query_bpf::ids"]
++        [::std::mem::offset_of!(perf_event_query_bpf, ids) - 8usize];
++};
+ pub const PERF_IOC_FLAG_GROUP: perf_event_ioc_flags = 1;
+ pub type perf_event_ioc_flags = u32;
+ #[repr(C)]
+@@ -3255,4 +3303,5 @@
+ pub const PERF_IOC_OP_ID: perf_ioc_ops = 2148017159;
+ pub const PERF_IOC_OP_SET_BPF: perf_ioc_ops = 1074013192;
+ pub const PERF_IOC_OP_PAUSE_OUTPUT: perf_ioc_ops = 1074013193;
++pub const PERF_IOC_OP_QUERY_BPF: perf_ioc_ops = 3221758986;
+ pub type perf_ioc_ops = u32;

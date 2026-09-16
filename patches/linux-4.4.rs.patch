@@ -1,0 +1,32 @@
+--- original
++++ modified
+@@ -623,7 +623,8 @@
+ pub const PERF_COUNT_SW_ALIGNMENT_FAULTS: perf_sw_ids = 7;
+ pub const PERF_COUNT_SW_EMULATION_FAULTS: perf_sw_ids = 8;
+ pub const PERF_COUNT_SW_DUMMY: perf_sw_ids = 9;
+-pub const PERF_COUNT_SW_MAX: perf_sw_ids = 10;
++pub const PERF_COUNT_SW_BPF_OUTPUT: perf_sw_ids = 10;
++pub const PERF_COUNT_SW_MAX: perf_sw_ids = 11;
+ pub type perf_sw_ids = u32;
+ pub const PERF_SAMPLE_IP: perf_event_sample_format = 1;
+ pub const PERF_SAMPLE_TID: perf_event_sample_format = 2;
+@@ -659,7 +660,8 @@
+ pub const PERF_SAMPLE_BRANCH_COND_SHIFT: perf_branch_sample_type_shift = 10;
+ pub const PERF_SAMPLE_BRANCH_CALL_STACK_SHIFT: perf_branch_sample_type_shift = 11;
+ pub const PERF_SAMPLE_BRANCH_IND_JUMP_SHIFT: perf_branch_sample_type_shift = 12;
+-pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 13;
++pub const PERF_SAMPLE_BRANCH_CALL_SHIFT: perf_branch_sample_type_shift = 13;
++pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 14;
+ pub type perf_branch_sample_type_shift = u32;
+ pub const PERF_SAMPLE_BRANCH_USER: perf_branch_sample_type = 1;
+ pub const PERF_SAMPLE_BRANCH_KERNEL: perf_branch_sample_type = 2;
+@@ -674,7 +676,8 @@
+ pub const PERF_SAMPLE_BRANCH_COND: perf_branch_sample_type = 1024;
+ pub const PERF_SAMPLE_BRANCH_CALL_STACK: perf_branch_sample_type = 2048;
+ pub const PERF_SAMPLE_BRANCH_IND_JUMP: perf_branch_sample_type = 4096;
+-pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 8192;
++pub const PERF_SAMPLE_BRANCH_CALL: perf_branch_sample_type = 8192;
++pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 16384;
+ pub type perf_branch_sample_type = u32;
+ pub const PERF_SAMPLE_REGS_ABI_NONE: perf_sample_regs_abi = 0;
+ pub const PERF_SAMPLE_REGS_ABI_32: perf_sample_regs_abi = 1;

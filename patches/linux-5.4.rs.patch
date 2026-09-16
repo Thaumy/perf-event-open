@@ -1,0 +1,97 @@
+--- original
++++ modified
+@@ -2007,8 +2007,43 @@
+     }
+     #[inline]
+     #[allow(unnecessary_transmutes)]
++    pub fn aux_output(&self) -> __u64 {
++        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<31usize, 1u8>() as u64) }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub fn set_aux_output(&mut self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            self._bitfield_1.set_const::<31usize, 1u8>(val as u64)
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn aux_output_raw(this: *const Self) -> __u64 {
++        unsafe {
++            ::std::mem::transmute(
++                <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get_const::<31usize, 1u8>(
++                    ::std::ptr::addr_of!((*this)._bitfield_1),
++                ) as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
++    pub unsafe fn set_aux_output_raw(this: *mut Self, val: __u64) {
++        unsafe {
++            let val: u64 = ::std::mem::transmute(val);
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<31usize, 1u8>(
++                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
++                val as u64,
++            )
++        }
++    }
++    #[inline]
++    #[allow(unnecessary_transmutes)]
+     pub fn __reserved_1(&self) -> __u64 {
+-        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<31usize, 33u8>() as u64) }
++        unsafe { ::std::mem::transmute(self._bitfield_1.get_const::<32usize, 32u8>() as u64) }
+     }
+     #[inline]
+     #[allow(unnecessary_transmutes)]
+@@ -2015,7 +2050,7 @@
+     pub fn set___reserved_1(&mut self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            self._bitfield_1.set_const::<31usize, 33u8>(val as u64)
++            self._bitfield_1.set_const::<32usize, 32u8>(val as u64)
+         }
+     }
+     #[inline]
+@@ -2023,8 +2058,8 @@
+     pub unsafe fn __reserved_1_raw(this: *const Self) -> __u64 {
+         unsafe {
+             ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get_const::<
+-                31usize,
+-                33u8,
++                32usize,
++                32u8,
+             >(::std::ptr::addr_of!((*this)._bitfield_1))
+                 as u64)
+         }
+@@ -2034,7 +2069,7 @@
+     pub unsafe fn set___reserved_1_raw(this: *mut Self, val: __u64) {
+         unsafe {
+             let val: u64 = ::std::mem::transmute(val);
+-            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<31usize, 33u8>(
++            <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set_const::<32usize, 32u8>(
+                 ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+                 val as u64,
+             )
+@@ -2073,6 +2108,7 @@
+         namespaces: __u64,
+         ksymbol: __u64,
+         bpf_event: __u64,
++        aux_output: __u64,
+         __reserved_1: __u64,
+     ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
+         let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+@@ -2198,7 +2234,11 @@
+             let bpf_event: u64 = unsafe { ::std::mem::transmute(bpf_event) };
+             bpf_event as u64
+         });
+-        __bindgen_bitfield_unit.set_const::<31usize, 33u8>({
++        __bindgen_bitfield_unit.set_const::<31usize, 1u8>({
++            let aux_output: u64 = unsafe { ::std::mem::transmute(aux_output) };
++            aux_output as u64
++        });
++        __bindgen_bitfield_unit.set_const::<32usize, 32u8>({
+             let __reserved_1: u64 = unsafe { ::std::mem::transmute(__reserved_1) };
+             __reserved_1 as u64
+         });

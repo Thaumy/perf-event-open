@@ -1,0 +1,30 @@
+--- original
++++ modified
+@@ -641,6 +641,7 @@
+ pub const PERF_MEM_HOPS_2: u32 = 3;
+ pub const PERF_MEM_HOPS_3: u32 = 4;
+ pub const PERF_MEM_HOPS_SHIFT: u32 = 43;
++pub const PERF_BRANCH_ENTRY_INFO_BITS_MAX: u32 = 33;
+ pub const BPF_TAG_SIZE: u32 = 8;
+ pub type __u8 = ::std::os::raw::c_uchar;
+ pub type __u16 = ::std::os::raw::c_ushort;
+@@ -746,7 +747,8 @@
+ pub const PERF_SAMPLE_BRANCH_TYPE_SAVE_SHIFT: perf_branch_sample_type_shift = 16;
+ pub const PERF_SAMPLE_BRANCH_HW_INDEX_SHIFT: perf_branch_sample_type_shift = 17;
+ pub const PERF_SAMPLE_BRANCH_PRIV_SAVE_SHIFT: perf_branch_sample_type_shift = 18;
+-pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 19;
++pub const PERF_SAMPLE_BRANCH_COUNTERS_SHIFT: perf_branch_sample_type_shift = 19;
++pub const PERF_SAMPLE_BRANCH_MAX_SHIFT: perf_branch_sample_type_shift = 20;
+ pub type perf_branch_sample_type_shift = u32;
+ pub const PERF_SAMPLE_BRANCH_USER: perf_branch_sample_type = 1;
+ pub const PERF_SAMPLE_BRANCH_KERNEL: perf_branch_sample_type = 2;
+@@ -767,7 +769,8 @@
+ pub const PERF_SAMPLE_BRANCH_TYPE_SAVE: perf_branch_sample_type = 65536;
+ pub const PERF_SAMPLE_BRANCH_HW_INDEX: perf_branch_sample_type = 131072;
+ pub const PERF_SAMPLE_BRANCH_PRIV_SAVE: perf_branch_sample_type = 262144;
+-pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 524288;
++pub const PERF_SAMPLE_BRANCH_COUNTERS: perf_branch_sample_type = 524288;
++pub const PERF_SAMPLE_BRANCH_MAX: perf_branch_sample_type = 1048576;
+ pub type perf_branch_sample_type = u32;
+ pub const PERF_BR_UNKNOWN: _bindgen_ty_44 = 0;
+ pub const PERF_BR_COND: _bindgen_ty_44 = 1;
