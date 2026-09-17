@@ -1008,7 +1008,6 @@ EventConfig::config          u64 config
 SampleOn                     u64 __bindgen_anon_1    sample method union
 {Sample, RecordId}Format     u64 sample_type
 Opts::stat_format            u64 read_format
--                            ZST _bitfield_align_1
 (See below)                  u64 _bitfield_1         option bits
 WakeUpOn                     u32 __bindgen_anon_2    wakeup on union
 Breakpoint::ty               u32 bp_type
