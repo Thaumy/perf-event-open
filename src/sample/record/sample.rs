@@ -1,4 +1,3 @@
-use std::iter::Peekable;
 use std::slice;
 
 use super::{RecordId, Task};
@@ -356,51 +355,49 @@ unsafe fn parse_call_chain(ptr: &mut *const u8) -> Vec<CallChain> {
         return vec![];
     }
 
-    let slice = slice::from_raw_parts(*ptr as *const u64, len);
-    let mut iter = slice.iter().cloned().peekable();
-    let iter = &mut iter;
+    let mut left = slice::from_raw_parts(*ptr as *const u64, len);
 
-    fn take_ips<I>(iter: &mut Peekable<I>) -> Vec<u64>
-    where
-        I: Iterator<Item = u64>,
-    {
-        let mut ips = vec![];
-        while let Some(ip) = iter.peek().cloned() {
+    fn collect_ips(left: &mut &[u64]) -> Vec<u64> {
+        let mut i = 0;
+        while i < left.len() {
             // marker range: [-4095, -1]
-            if ip.wrapping_add(4095) < 4095 {
+            if left[i].wrapping_add(4095) < 4095 {
                 break;
             }
-            ips.push(ip);
-            iter.next();
+            i += 1;
         }
+        let ips = left[..i].to_vec();
+        *left = &left[i..];
         ips
     }
 
     let mut call_chains = vec![];
+    while let Some((marker, tail)) = left.split_first() {
+        left = tail;
 
-    while let Some(marker) = iter.next() {
         // Each call chain begins with a marker that indicates the context type.
         // See: https://github.com/torvalds/linux/commit/f9188e023c248d73f5b4a589b480e065c1864068
-        let call_chain = match marker {
-            b::PERF_CONTEXT_USER => CallChain::User(take_ips(iter)),
+        let call_chain = match *marker {
+            b::PERF_CONTEXT_USER => CallChain::User(collect_ips(&mut left)),
             #[cfg(feature = "linux-6.19")]
             b::PERF_CONTEXT_USER_DEFERRED => {
-                // If we reached perf_event_max_contexts_per_stack, the
-                // following cookie will be unavailable. We discard the
-                // PERF_CONTEXT_USER_DEFERRED in this case.
-                // See: https://github.com/torvalds/linux/blob/v6.19/include/linux/perf_event.h#L1750
-                match iter.next() {
-                    Some(cookie) => CallChain::UserDeferred { cookie },
-                    None => break,
-                }
+                let Some((cookie, tail)) = left.split_first() else {
+                    // If we reached perf_event_max_contexts_per_stack, the
+                    // following cookie will be unavailable. We discard the
+                    // PERF_CONTEXT_USER_DEFERRED in this case.
+                    // See: https://github.com/torvalds/linux/blob/v6.19/include/linux/perf_event.h#L1750
+                    break;
+                };
+                left = tail;
+                CallChain::UserDeferred { cookie: *cookie }
             }
-            b::PERF_CONTEXT_KERNEL => CallChain::Kernel(take_ips(iter)),
-            b::PERF_CONTEXT_HV => CallChain::Hv(take_ips(iter)),
-            b::PERF_CONTEXT_GUEST => CallChain::Guest(take_ips(iter)),
-            b::PERF_CONTEXT_GUEST_USER => CallChain::GuestUser(take_ips(iter)),
-            b::PERF_CONTEXT_GUEST_KERNEL => CallChain::GuestKernel(take_ips(iter)),
+            b::PERF_CONTEXT_KERNEL => CallChain::Kernel(collect_ips(&mut left)),
+            b::PERF_CONTEXT_HV => CallChain::Hv(collect_ips(&mut left)),
+            b::PERF_CONTEXT_GUEST => CallChain::Guest(collect_ips(&mut left)),
+            b::PERF_CONTEXT_GUEST_USER => CallChain::GuestUser(collect_ips(&mut left)),
+            b::PERF_CONTEXT_GUEST_KERNEL => CallChain::GuestKernel(collect_ips(&mut left)),
             // For compatibility, not ABI.
-            _ => CallChain::Unknown(take_ips(iter)),
+            _ => CallChain::Unknown(collect_ips(&mut left)),
         };
         call_chains.push(call_chain);
     }
