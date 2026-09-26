@@ -89,10 +89,11 @@ impl ItraceStart {
         // };
 
         let task = Task {
-            pid: deref_offset(&mut ptr),
-            tid: deref_offset(&mut ptr),
+            pid: unsafe { deref_offset(&mut ptr) },
+            tid: unsafe { deref_offset(&mut ptr) },
         };
-        let record_id = sample_id_all.map(|super::SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let record_id =
+            sample_id_all.map(|super::SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self { record_id, task }
     }

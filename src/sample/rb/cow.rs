@@ -22,7 +22,7 @@ impl CowChunk<'_> {
 
     pub(in crate::sample) unsafe fn owned(ptr: *mut u8, layout: Layout) -> CowChunk<'static> {
         CowChunk(Inner::Owned(Chunk {
-            ptr: NonNull::new_unchecked(ptr),
+            ptr: unsafe { NonNull::new_unchecked(ptr) },
             layout,
         }))
     }

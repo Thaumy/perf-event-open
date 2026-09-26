@@ -50,7 +50,7 @@ pub unsafe fn mmap(
     offset: i64,
 ) -> Result<NonNull<()>> {
     let fd = file.as_raw_fd();
-    let ptr = libc::mmap(ptr as _, len, prot, flags, fd, offset);
+    let ptr = unsafe { libc::mmap(ptr as _, len, prot, flags, fd, offset) };
     if ptr != libc::MAP_FAILED {
         Ok(unsafe { NonNull::new_unchecked(ptr as _) })
     } else {
@@ -59,7 +59,7 @@ pub unsafe fn mmap(
 }
 
 pub unsafe fn munmap(ptr: *mut (), len: usize) -> Result<()> {
-    let result = libc::munmap(ptr as _, len);
+    let result = unsafe { libc::munmap(ptr as _, len) };
     if result != -1 {
         Ok(())
     } else {

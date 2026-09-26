@@ -79,9 +79,9 @@ impl LostRecords {
         //     struct sample_id sample_id;
         // };
 
-        let id = deref_offset(&mut ptr);
-        let lost_records = deref_offset(&mut ptr);
-        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let id = unsafe { deref_offset(&mut ptr) };
+        let lost_records = unsafe { deref_offset(&mut ptr) };
+        let record_id = sample_id_all.map(|SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self {
             record_id,
@@ -125,8 +125,8 @@ impl LostSamples {
         //     struct sample_id sample_id;
         // };
 
-        let lost_samples = deref_offset(&mut ptr);
-        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let lost_samples = unsafe { deref_offset(&mut ptr) };
+        let record_id = sample_id_all.map(|SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self {
             record_id,

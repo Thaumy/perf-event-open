@@ -107,10 +107,10 @@ impl Aux {
         //     struct sample_id sample_id;
         // };
 
-        let offset = deref_offset(&mut ptr);
-        let size = deref_offset(&mut ptr);
+        let offset = unsafe { deref_offset(&mut ptr) };
+        let size = unsafe { deref_offset(&mut ptr) };
 
-        let flags: u64 = deref_offset(&mut ptr);
+        let flags: u64 = unsafe { deref_offset(&mut ptr) };
         macro_rules! when {
             ($($feature:literal,)? $flag:ident) => {{
                 $(#[cfg(feature = $feature)])?
@@ -134,7 +134,8 @@ impl Aux {
         #[cfg(not(feature = "linux-5.13"))]
         let pmu_format_type = 0;
 
-        let record_id = sample_id_all.map(|super::SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let record_id =
+            sample_id_all.map(|super::SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self {
             record_id,
@@ -196,8 +197,9 @@ impl AuxOutputHwId {
         //     struct sample_id sample_id;
         // };
 
-        let hw_id = deref_offset(&mut ptr);
-        let record_id = sample_id_all.map(|super::SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let hw_id = unsafe { deref_offset(&mut ptr) };
+        let record_id =
+            sample_id_all.map(|super::SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self { record_id, hw_id }
     }

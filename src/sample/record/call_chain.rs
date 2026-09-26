@@ -108,13 +108,13 @@ impl CallChainDeferred {
         //     struct sample_id sample_id;
         // };
 
-        let cookie = deref_offset(&mut ptr);
+        let cookie = unsafe { deref_offset(&mut ptr) };
 
-        let len = deref_offset::<u64>(&mut ptr) as usize;
-        let call_chain = slice::from_raw_parts(ptr as *const u64, len).to_vec();
-        ptr = ptr.add(len * size_of::<u64>());
+        let len = unsafe { deref_offset::<u64>(&mut ptr) } as usize;
+        let call_chain = unsafe { slice::from_raw_parts(ptr as *const u64, len) }.to_vec();
+        ptr = unsafe { ptr.add(len * size_of::<u64>()) };
 
-        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let record_id = sample_id_all.map(|SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self {
             record_id,

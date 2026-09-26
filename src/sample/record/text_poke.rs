@@ -76,15 +76,15 @@ impl TextPoke {
         //     struct sample_id sample_id;
         // };
 
-        let addr = deref_offset(&mut ptr);
-        let old_len = deref_offset::<u16>(&mut ptr) as usize;
-        let new_len = deref_offset::<u16>(&mut ptr) as usize;
-        let bytes = slice::from_raw_parts(ptr, old_len + new_len);
+        let addr = unsafe { deref_offset(&mut ptr) };
+        let old_len = unsafe { deref_offset::<u16>(&mut ptr) } as usize;
+        let new_len = unsafe { deref_offset::<u16>(&mut ptr) } as usize;
+        let bytes = unsafe { slice::from_raw_parts(ptr, old_len + new_len) };
         let record_id = sample_id_all.map(|SampleType(ty)| {
-            ptr = ptr.add(bytes.len());
+            ptr = unsafe { ptr.add(bytes.len()) };
             // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L9604
-            ptr = ptr.add(ptr.align_offset(align_of::<u64>()));
-            RecordId::from_ptr(ptr, ty)
+            ptr = unsafe { ptr.add(ptr.align_offset(align_of::<u64>())) };
+            unsafe { RecordId::from_ptr(ptr, ty) }
         });
 
         let old_bytes = bytes[..old_len].to_vec();

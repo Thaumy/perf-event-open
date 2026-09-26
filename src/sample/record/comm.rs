@@ -66,15 +66,15 @@ impl Comm {
         // };
 
         let task = Task {
-            pid: deref_offset(&mut ptr),
-            tid: deref_offset(&mut ptr),
+            pid: unsafe { deref_offset(&mut ptr) },
+            tid: unsafe { deref_offset(&mut ptr) },
         };
-        let comm = CStr::from_ptr(ptr as _).to_owned();
+        let comm = unsafe { CStr::from_ptr(ptr as _) }.to_owned();
         let record_id = sample_id_all.map(|SampleType(ty)| {
-            ptr = ptr.add(comm.as_bytes_with_nul().len());
+            ptr = unsafe { ptr.add(comm.as_bytes_with_nul().len()) };
             // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8540
-            ptr = ptr.add(ptr.align_offset(align_of::<u64>()));
-            RecordId::from_ptr(ptr, ty)
+            ptr = unsafe { ptr.add(ptr.align_offset(align_of::<u64>())) };
+            unsafe { RecordId::from_ptr(ptr, ty) }
         });
 
         let by_execve = misc & b::PERF_RECORD_MISC_COMM_EXEC as u16 > 0;

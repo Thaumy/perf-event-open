@@ -32,10 +32,10 @@ impl Throttle {
         //     struct sample_id sample_id;
         // };
 
-        let time = deref_offset(&mut ptr);
-        let id = deref_offset(&mut ptr);
-        let stream_id = deref_offset(&mut ptr);
-        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let time = unsafe { deref_offset(&mut ptr) };
+        let id = unsafe { deref_offset(&mut ptr) };
+        let stream_id = unsafe { deref_offset(&mut ptr) };
+        let record_id = sample_id_all.map(|SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self {
             record_id,
@@ -73,7 +73,7 @@ pub struct Unthrottle {
 impl Unthrottle {
     pub(crate) unsafe fn from_ptr(ptr: *const u8, sample_id_all: Option<SampleType>) -> Self {
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L9332
-        let layout = Throttle::from_ptr(ptr, sample_id_all);
+        let layout = unsafe { Throttle::from_ptr(ptr, sample_id_all) };
 
         Self {
             record_id: layout.record_id,

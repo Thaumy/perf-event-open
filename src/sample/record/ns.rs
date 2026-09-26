@@ -77,11 +77,11 @@ impl Namespaces {
         // }
 
         let task = Task {
-            pid: deref_offset(&mut ptr),
-            tid: deref_offset(&mut ptr),
+            pid: unsafe { deref_offset(&mut ptr) },
+            tid: unsafe { deref_offset(&mut ptr) },
         };
 
-        let nr_namespaces: u64 = deref_offset(&mut ptr);
+        let nr_namespaces: u64 = unsafe { deref_offset(&mut ptr) };
 
         #[repr(C)]
         #[derive(Copy, Clone)]
@@ -97,10 +97,10 @@ impl Namespaces {
                 }
             }
         }
-        let nss: &[Layout] = slice::from_raw_parts(ptr as _, nr_namespaces as _);
-        ptr = ptr.add(nr_namespaces as usize * size_of::<Layout>());
+        let nss: &[Layout] = unsafe { slice::from_raw_parts(ptr as _, nr_namespaces as _) };
+        ptr = unsafe { ptr.add(nr_namespaces as usize * size_of::<Layout>()) };
 
-        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let record_id = sample_id_all.map(|SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self {
             record_id,

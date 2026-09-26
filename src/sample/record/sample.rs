@@ -164,28 +164,26 @@ impl Sample {
         intr_regs: usize,
         branch_sample_type: u64,
     ) -> Self {
-        macro_rules! when {
-            ($($feature:literal,)? $flag:ident, $ty:ty) => {{
-                $(#[cfg(feature = $feature)])?
-                let val = (sample_type & (b::$flag as u64) > 0).then(|| deref_offset::<$ty>(&mut ptr));
-                $(
+        macro_rules! since {
+            ($feature:literal, $then:expr) => {{
+                #[cfg(feature = $feature)]
+                let val = $then;
                 #[cfg(not(feature = $feature))]
                 let val = None;
-                )?
                 val
             }};
+        }
+
+        macro_rules! when {
+            ($flag:ident, $ty:ty) => {
+                (sample_type & (b::$flag as u64) > 0).then(|| deref_offset::<$ty>(&mut ptr))
+            };
             ($flag:ident) => {
                 sample_type & (b::$flag as u64) > 0
             };
-            ($($feature:literal,)? $flag:ident, $then:expr) => {{
-                $(#[cfg(feature = $feature)])?
-                let val = (sample_type & (b::$flag as u64) > 0).then(|| $then);
-                $(
-                #[cfg(not(feature = $feature))]
-                let val = None;
-                )?
-                val
-            }};
+            ($flag:ident, $then:expr) => {
+                (sample_type & (b::$flag as u64) > 0).then(|| $then)
+            };
         }
 
         // About `PERF_SAMPLE_IDENTIFIER`
@@ -205,90 +203,109 @@ impl Sample {
 
         let code_addr = when!(PERF_SAMPLE_IP, {
             (
-                deref_offset(&mut ptr),
+                unsafe { deref_offset(&mut ptr) },
                 misc as u32 & b::PERF_RECORD_MISC_EXACT_IP > 0,
             )
         });
         let task = when!(
             PERF_SAMPLE_TID,
             Task {
-                pid: deref_offset(&mut ptr),
-                tid: deref_offset(&mut ptr),
+                pid: unsafe { deref_offset(&mut ptr) },
+                tid: unsafe { deref_offset(&mut ptr) },
             }
         );
-        let time = when!(PERF_SAMPLE_TIME, u64);
-        let data_addr = when!(PERF_SAMPLE_ADDR, u64);
-        let id = when!(PERF_SAMPLE_ID, u64);
-        let stream_id = when!(PERF_SAMPLE_STREAM_ID, u64);
+        let time = unsafe { when!(PERF_SAMPLE_TIME, u64) };
+        let data_addr = unsafe { when!(PERF_SAMPLE_ADDR, u64) };
+        let id = unsafe { when!(PERF_SAMPLE_ID, u64) };
+        let stream_id = unsafe { when!(PERF_SAMPLE_STREAM_ID, u64) };
         let cpu = when!(PERF_SAMPLE_CPU, {
-            let val = deref_offset(&mut ptr);
-            ptr = ptr.add(size_of::<u32>());
+            let val = unsafe { deref_offset(&mut ptr) };
+            ptr = unsafe { ptr.add(size_of::<u32>()) };
             val
         });
-        let period = when!(PERF_SAMPLE_PERIOD, u64);
+        let period = unsafe { when!(PERF_SAMPLE_PERIOD, u64) };
         let stat = when!(PERF_SAMPLE_READ, {
-            Stat::from_ptr_offset(&mut ptr, read_format)
+            unsafe { Stat::from_ptr_offset(&mut ptr, read_format) }
         });
-        let call_chain = when!(PERF_SAMPLE_CALLCHAIN, { parse_call_chain(&mut ptr) });
+        let call_chain = when!(PERF_SAMPLE_CALLCHAIN, {
+            unsafe { parse_call_chain(&mut ptr) }
+        });
         let raw = when!(PERF_SAMPLE_RAW, {
-            let len = deref_offset::<u32>(&mut ptr) as usize;
-            let bytes = slice::from_raw_parts(ptr, len);
-            ptr = ptr.add(len);
+            let len = unsafe { deref_offset::<u32>(&mut ptr) } as usize;
+            let bytes = unsafe { slice::from_raw_parts(ptr, len) };
+            ptr = unsafe { ptr.add(len) };
             // https://github.com/torvalds/linux/blob/v6.13/include/linux/perf_event.h#L1303
-            ptr = ptr.add(ptr.align_offset(align_of::<u64>()));
+            ptr = unsafe { ptr.add(ptr.align_offset(align_of::<u64>())) };
             bytes.to_vec()
         });
         let lbr = when!(PERF_SAMPLE_BRANCH_STACK, {
-            parse_lbr(&mut ptr, branch_sample_type)
+            unsafe { parse_lbr(&mut ptr, branch_sample_type) }
         })
         .flatten();
-        let user_regs = when!(PERF_SAMPLE_REGS_USER, { parse_regs(&mut ptr, user_regs) }).flatten();
+        let user_regs = when!(PERF_SAMPLE_REGS_USER, {
+            unsafe { parse_regs(&mut ptr, user_regs) }
+        })
+        .flatten();
         let user_stack = when!(PERF_SAMPLE_STACK_USER, {
-            let len = deref_offset::<u64>(&mut ptr) as usize;
-            let bytes = slice::from_raw_parts(ptr, len);
-            ptr = ptr.add(len);
+            let len = unsafe { deref_offset::<u64>(&mut ptr) } as usize;
+            let bytes = unsafe { slice::from_raw_parts(ptr, len) };
+            ptr = unsafe { ptr.add(len) };
             let dyn_len = if len > 0 {
-                deref_offset::<u64>(&mut ptr) as usize
+                unsafe { deref_offset::<u64>(&mut ptr) }
             } else {
                 0
             };
-            bytes[..dyn_len].to_vec()
+            bytes[..dyn_len as _].to_vec()
         });
         #[cfg(feature = "linux-5.12")]
         let weight = if when!(PERF_SAMPLE_WEIGHT) {
-            let full = Weight::Full(deref_offset(&mut ptr));
+            let full = Weight::Full(unsafe { deref_offset(&mut ptr) });
             Some(full)
         } else if when!(PERF_SAMPLE_WEIGHT_STRUCT) {
             #[cfg(target_endian = "little")]
             let vars = Weight::Vars {
-                var1: deref_offset(&mut ptr),
-                var2: deref_offset(&mut ptr),
-                var3: deref_offset(&mut ptr),
+                var1: unsafe { deref_offset(&mut ptr) },
+                var2: unsafe { deref_offset(&mut ptr) },
+                var3: unsafe { deref_offset(&mut ptr) },
             };
             #[cfg(target_endian = "big")]
             let vars = Weight::Vars {
-                var3: deref_offset(&mut ptr),
-                var2: deref_offset(&mut ptr),
-                var1: deref_offset(&mut ptr),
+                var3: unsafe { deref_offset(&mut ptr) },
+                var2: unsafe { deref_offset(&mut ptr) },
+                var1: unsafe { deref_offset(&mut ptr) },
             };
             Some(vars)
         } else {
             None
         };
         #[cfg(not(feature = "linux-5.12"))]
-        let weight = when!(PERF_SAMPLE_WEIGHT, { Weight::Full(deref_offset(&mut ptr)) });
-        let data_source = when!(PERF_SAMPLE_DATA_SRC, { parse_data_source(&mut ptr) });
-        let txn = when!(PERF_SAMPLE_TRANSACTION, { parse_txn(&mut ptr) });
-        let intr_regs = when!(PERF_SAMPLE_REGS_INTR, { parse_regs(&mut ptr, intr_regs) }).flatten();
-        let data_phys_addr = when!("linux-4.14", PERF_SAMPLE_PHYS_ADDR, u64);
-        let cgroup = when!("linux-5.7", PERF_SAMPLE_CGROUP, u64);
-        let data_page_size = when!("linux-5.11", PERF_SAMPLE_DATA_PAGE_SIZE, u64);
-        let code_page_size = when!("linux-5.11", PERF_SAMPLE_CODE_PAGE_SIZE, u64);
-        let aux = when!("linux-5.5", PERF_SAMPLE_AUX, {
-            let len = deref_offset::<u64>(&mut ptr) as usize;
-            let bytes = slice::from_raw_parts(ptr, len as _);
-            bytes.to_vec()
+        let weight = when!(PERF_SAMPLE_WEIGHT, {
+            Weight::Full(unsafe { deref_offset(&mut ptr) })
         });
+        let data_source = when!(PERF_SAMPLE_DATA_SRC, {
+            unsafe { parse_data_source(&mut ptr) }
+        });
+        let txn = when!(PERF_SAMPLE_TRANSACTION, { unsafe { parse_txn(&mut ptr) } });
+        let intr_regs = when!(PERF_SAMPLE_REGS_INTR, {
+            unsafe { parse_regs(&mut ptr, intr_regs) }
+        })
+        .flatten();
+        let data_phys_addr = since!("linux-4.14", unsafe { when!(PERF_SAMPLE_PHYS_ADDR, u64) });
+        let cgroup = since!("linux-5.7", unsafe { when!(PERF_SAMPLE_CGROUP, u64) });
+        let data_page_size = since!("linux-5.11", unsafe {
+            when!(PERF_SAMPLE_DATA_PAGE_SIZE, u64)
+        });
+        let code_page_size = since!("linux-5.11", unsafe {
+            when!(PERF_SAMPLE_CODE_PAGE_SIZE, u64)
+        });
+        let aux = since!(
+            "linux-5.5",
+            when!(PERF_SAMPLE_AUX, {
+                let len = unsafe { deref_offset::<u64>(&mut ptr) } as usize;
+                let bytes = unsafe { slice::from_raw_parts(ptr, len as _) };
+                bytes.to_vec()
+            })
+        );
 
         Self {
             record_id: RecordId {
@@ -350,12 +367,12 @@ super::debug!(Sample {
 });
 
 unsafe fn parse_call_chain(ptr: &mut *const u8) -> Vec<CallChain> {
-    let len = deref_offset::<u64>(ptr) as usize;
+    let len = unsafe { deref_offset::<u64>(ptr) } as usize;
     if len == 0 {
         return vec![];
     }
 
-    let mut left = slice::from_raw_parts(*ptr as *const u64, len);
+    let mut left = unsafe { slice::from_raw_parts(*ptr as *const u64, len) };
 
     fn collect_ips(left: &mut &[u64]) -> Vec<u64> {
         let mut i = 0;
@@ -402,13 +419,13 @@ unsafe fn parse_call_chain(ptr: &mut *const u8) -> Vec<CallChain> {
         call_chains.push(call_chain);
     }
 
-    *ptr = ptr.add(len * size_of::<u64>());
+    *ptr = unsafe { ptr.add(len * size_of::<u64>()) };
 
     call_chains
 }
 
 unsafe fn parse_regs(ptr: &mut *const u8, len: usize) -> Option<(Vec<u64>, Abi)> {
-    let abi = deref_offset::<u64>(ptr) as u32;
+    let abi = unsafe { deref_offset::<u64>(ptr) } as u32;
 
     // PERF_SAMPLE_REGS_USER: https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7589
     // PERF_SAMPLE_REGS_INTR: https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7620
@@ -416,8 +433,8 @@ unsafe fn parse_regs(ptr: &mut *const u8, len: usize) -> Option<(Vec<u64>, Abi)>
         return None;
     }
 
-    let regs = slice::from_raw_parts(*ptr as *const u64, len);
-    *ptr = ptr.add(len * size_of::<u64>());
+    let regs = unsafe { slice::from_raw_parts(*ptr as *const u64, len) };
+    *ptr = unsafe { ptr.add(len * size_of::<u64>()) };
     let abi = match abi {
         b::PERF_SAMPLE_REGS_ABI_32 => Abi::_32,
         b::PERF_SAMPLE_REGS_ABI_64 => Abi::_64,
@@ -428,7 +445,7 @@ unsafe fn parse_regs(ptr: &mut *const u8, len: usize) -> Option<(Vec<u64>, Abi)>
 }
 
 unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr> {
-    let len = deref_offset::<u64>(ptr) as usize;
+    let len = unsafe { deref_offset::<u64>(ptr) } as usize;
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7575
     if len == 0 {
         return None;
@@ -436,8 +453,8 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
 
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7560
     #[cfg(feature = "linux-5.7")]
-    let hw_index =
-        (branch_sample_type & b::PERF_SAMPLE_BRANCH_HW_INDEX as u64 > 0).then(|| deref_offset(ptr));
+    let hw_index = (branch_sample_type & b::PERF_SAMPLE_BRANCH_HW_INDEX as u64 > 0)
+        .then(|| unsafe { deref_offset(ptr) });
     #[cfg(not(feature = "linux-5.7"))]
     let _ = branch_sample_type;
     #[cfg(not(feature = "linux-5.7"))]
@@ -543,8 +560,8 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
         }
     }
 
-    let layouts = slice::from_raw_parts(*ptr as *const Layout, len).iter();
-    *ptr = ptr.add(len * size_of::<Layout>());
+    let layouts = unsafe { slice::from_raw_parts(*ptr as *const Layout, len) }.iter();
+    *ptr = unsafe { ptr.add(len * size_of::<Layout>()) };
 
     // https://github.com/torvalds/linux/commit/571d91dcadfa3cef499010b4eddb9b58b0da4d24
     #[cfg(feature = "linux-6.8")]
@@ -553,7 +570,7 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
     let has_counters = false;
     let entries = if has_counters {
         layouts
-            .map(|it| to_entry(it, Some(deref_offset(ptr))))
+            .map(|it| to_entry(it, Some(unsafe { deref_offset(ptr) })))
             .collect()
     } else {
         layouts.map(|it| to_entry(it, None)).collect()
@@ -563,7 +580,7 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
 }
 
 unsafe fn parse_txn(ptr: &mut *const u8) -> Txn {
-    let bits: u64 = deref_offset(ptr);
+    let bits: u64 = unsafe { deref_offset(ptr) };
     let code = ((bits & b::PERF_TXN_ABORT_MASK) >> b::PERF_TXN_ABORT_SHIFT) as u32;
     macro_rules! when {
         ($flag:ident) => {
@@ -584,7 +601,7 @@ unsafe fn parse_txn(ptr: &mut *const u8) -> Txn {
 }
 
 unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
-    let bits: u64 = deref_offset(ptr);
+    let bits: u64 = unsafe { deref_offset(ptr) };
 
     // u64 (little-endian):
     // mem_op        0-4  5 bits, type of opcode

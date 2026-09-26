@@ -261,14 +261,14 @@ impl RecordId {
         }
 
         let task = when!(PERF_SAMPLE_TID, {
-            let pid = deref_offset(&mut ptr);
-            let tid = deref_offset(&mut ptr);
+            let pid = unsafe { deref_offset(&mut ptr) };
+            let tid = unsafe { deref_offset(&mut ptr) };
             Task { pid, tid }
         });
-        let time = when!(PERF_SAMPLE_TIME, u64);
-        let id = when!(PERF_SAMPLE_ID, u64);
-        let stream_id = when!(PERF_SAMPLE_STREAM_ID, u64);
-        let cpu = when!(PERF_SAMPLE_CPU, u32);
+        let time = unsafe { when!(PERF_SAMPLE_TIME, u64) };
+        let id = unsafe { when!(PERF_SAMPLE_ID, u64) };
+        let stream_id = unsafe { when!(PERF_SAMPLE_STREAM_ID, u64) };
+        let cpu = unsafe { when!(PERF_SAMPLE_CPU, u32) };
 
         // About `PERF_SAMPLE_IDENTIFIER`
         //
@@ -433,10 +433,10 @@ impl UnsafeParser {
         //     u16 size;
         // };
 
-        let ty: u32 = deref_offset(ptr);
-        let misc: u16 = deref_offset(ptr);
+        let ty: u32 = unsafe { deref_offset(ptr) };
+        let misc: u16 = unsafe { deref_offset(ptr) };
         let record_priv = Priv::from_misc(misc);
-        let size: u16 = deref_offset(ptr);
+        let size: u16 = unsafe { deref_offset(ptr) };
 
         let ptr = *ptr;
         let sample_id_all = self.sample_id_all.then_some(SampleType(self.sample_type));
@@ -449,51 +449,63 @@ impl UnsafeParser {
         }
 
         let record = match ty {
-            b::PERF_RECORD_SAMPLE => from(Sample::from_ptr(
-                ptr,
-                misc,
-                self.read_format,
-                self.sample_type,
-                self.user_regs,
-                self.intr_regs,
-                self.branch_sample_type,
-            )),
-            b::PERF_RECORD_MMAP => from(Mmap::from_ptr(ptr, misc, false, sample_id_all)),
-            b::PERF_RECORD_MMAP2 => from(Mmap::from_ptr(ptr, misc, true, sample_id_all)),
-            b::PERF_RECORD_READ => from(Read::from_ptr(ptr, self.read_format, sample_id_all)),
+            b::PERF_RECORD_SAMPLE => from(unsafe {
+                Sample::from_ptr(
+                    ptr,
+                    misc,
+                    self.read_format,
+                    self.sample_type,
+                    self.user_regs,
+                    self.intr_regs,
+                    self.branch_sample_type,
+                )
+            }),
+            b::PERF_RECORD_MMAP => from(unsafe { Mmap::from_ptr(ptr, misc, false, sample_id_all) }),
+            b::PERF_RECORD_MMAP2 => from(unsafe { Mmap::from_ptr(ptr, misc, true, sample_id_all) }),
+            b::PERF_RECORD_READ => {
+                from(unsafe { Read::from_ptr(ptr, self.read_format, sample_id_all) })
+            }
             #[cfg(feature = "linux-5.7")]
-            b::PERF_RECORD_CGROUP => from(Cgroup::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_CGROUP => from(unsafe { Cgroup::from_ptr(ptr, sample_id_all) }),
             #[cfg(feature = "linux-5.1")]
-            b::PERF_RECORD_KSYMBOL => from(Ksymbol::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_KSYMBOL => from(unsafe { Ksymbol::from_ptr(ptr, sample_id_all) }),
             #[cfg(feature = "linux-5.9")]
-            b::PERF_RECORD_TEXT_POKE => from(TextPoke::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_TEXT_POKE => from(unsafe { TextPoke::from_ptr(ptr, sample_id_all) }),
             #[cfg(feature = "linux-5.1")]
-            b::PERF_RECORD_BPF_EVENT => from(BpfEvent::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_BPF_EVENT => from(unsafe { BpfEvent::from_ptr(ptr, sample_id_all) }),
             #[cfg(feature = "linux-4.3")]
-            b::PERF_RECORD_SWITCH => from(CtxSwitch::from_ptr(ptr, false, misc, sample_id_all)),
+            b::PERF_RECORD_SWITCH => {
+                from(unsafe { CtxSwitch::from_ptr(ptr, false, misc, sample_id_all) })
+            }
             #[cfg(feature = "linux-4.3")]
             b::PERF_RECORD_SWITCH_CPU_WIDE => {
-                from(CtxSwitch::from_ptr(ptr, true, misc, sample_id_all))
+                from(unsafe { CtxSwitch::from_ptr(ptr, true, misc, sample_id_all) })
             }
             #[cfg(feature = "linux-4.12")]
-            b::PERF_RECORD_NAMESPACES => from(Namespaces::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_NAMESPACES => from(unsafe { Namespaces::from_ptr(ptr, sample_id_all) }),
             #[cfg(feature = "linux-4.1")]
-            b::PERF_RECORD_ITRACE_START => from(ItraceStart::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_ITRACE_START => {
+                from(unsafe { ItraceStart::from_ptr(ptr, sample_id_all) })
+            }
             #[cfg(feature = "linux-4.1")]
-            b::PERF_RECORD_AUX => from(Aux::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_AUX => from(unsafe { Aux::from_ptr(ptr, sample_id_all) }),
             #[cfg(feature = "linux-5.16")]
-            b::PERF_RECORD_AUX_OUTPUT_HW_ID => from(AuxOutputHwId::from_ptr(ptr, sample_id_all)),
-            b::PERF_RECORD_COMM => from(Comm::from_ptr(ptr, misc, sample_id_all)),
-            b::PERF_RECORD_EXIT => from(Exit::from_ptr(ptr, sample_id_all)),
-            b::PERF_RECORD_FORK => from(Fork::from_ptr(ptr, sample_id_all)),
-            b::PERF_RECORD_THROTTLE => from(Throttle::from_ptr(ptr, sample_id_all)),
-            b::PERF_RECORD_UNTHROTTLE => from(Unthrottle::from_ptr(ptr, sample_id_all)),
-            b::PERF_RECORD_LOST => from(LostRecords::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_AUX_OUTPUT_HW_ID => {
+                from(unsafe { AuxOutputHwId::from_ptr(ptr, sample_id_all) })
+            }
+            b::PERF_RECORD_COMM => from(unsafe { Comm::from_ptr(ptr, misc, sample_id_all) }),
+            b::PERF_RECORD_EXIT => from(unsafe { Exit::from_ptr(ptr, sample_id_all) }),
+            b::PERF_RECORD_FORK => from(unsafe { Fork::from_ptr(ptr, sample_id_all) }),
+            b::PERF_RECORD_THROTTLE => from(unsafe { Throttle::from_ptr(ptr, sample_id_all) }),
+            b::PERF_RECORD_UNTHROTTLE => from(unsafe { Unthrottle::from_ptr(ptr, sample_id_all) }),
+            b::PERF_RECORD_LOST => from(unsafe { LostRecords::from_ptr(ptr, sample_id_all) }),
             #[cfg(feature = "linux-4.2")]
-            b::PERF_RECORD_LOST_SAMPLES => from(LostSamples::from_ptr(ptr, sample_id_all)),
+            b::PERF_RECORD_LOST_SAMPLES => {
+                from(unsafe { LostSamples::from_ptr(ptr, sample_id_all) })
+            }
             #[cfg(feature = "linux-6.19")]
             b::PERF_RECORD_CALLCHAIN_DEFERRED => {
-                from(CallChainDeferred::from_ptr(ptr, sample_id_all))
+                from(unsafe { CallChainDeferred::from_ptr(ptr, sample_id_all) })
             }
             _ => Record::Unknown(bytes.to_vec()), // For compatibility, not ABI.
         };

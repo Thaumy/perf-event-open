@@ -74,14 +74,14 @@ impl Exit {
         //     struct sample_id sample_id;
         // };
 
-        let pid = deref_offset(&mut ptr);
-        let ppid = deref_offset(&mut ptr);
-        let tid = deref_offset(&mut ptr);
-        let ptid = deref_offset(&mut ptr);
+        let pid = unsafe { deref_offset(&mut ptr) };
+        let ppid = unsafe { deref_offset(&mut ptr) };
+        let tid = unsafe { deref_offset(&mut ptr) };
+        let ptid = unsafe { deref_offset(&mut ptr) };
 
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8428
-        let time = deref_offset(&mut ptr);
-        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let time = unsafe { deref_offset(&mut ptr) };
+        let record_id = sample_id_all.map(|SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         let task = Task { pid, tid };
         let parent_task = Task {
@@ -129,7 +129,7 @@ pub struct Fork {
 impl Fork {
     pub(crate) unsafe fn from_ptr(ptr: *const u8, sample_id_all: Option<SampleType>) -> Self {
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8423
-        let layout = Exit::from_ptr(ptr, sample_id_all);
+        let layout = unsafe { Exit::from_ptr(ptr, sample_id_all) };
 
         Self {
             record_id: layout.record_id,

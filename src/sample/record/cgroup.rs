@@ -78,13 +78,13 @@ impl Cgroup {
         //     struct sample_id sample_id;
         // };
 
-        let id = deref_offset(&mut ptr);
-        let path = CStr::from_ptr(ptr as _).to_owned();
+        let id = unsafe { deref_offset(&mut ptr) };
+        let path = unsafe { CStr::from_ptr(ptr as _) }.to_owned();
         let record_id = sample_id_all.map(|SampleType(ty)| {
-            ptr = ptr.add(path.as_bytes_with_nul().len());
+            ptr = unsafe { ptr.add(path.as_bytes_with_nul().len()) };
             // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8791
-            ptr = ptr.add(ptr.align_offset(align_of::<u64>()));
-            RecordId::from_ptr(ptr, ty)
+            ptr = unsafe { ptr.add(ptr.align_offset(align_of::<u64>())) };
+            unsafe { RecordId::from_ptr(ptr, ty) }
         });
 
         Self {

@@ -87,8 +87,8 @@ impl CtxSwitch {
         // };
 
         let task = cpu_wide.then(|| Task {
-            pid: deref_offset(&mut ptr),
-            tid: deref_offset(&mut ptr),
+            pid: unsafe { deref_offset(&mut ptr) },
+            tid: unsafe { deref_offset(&mut ptr) },
         });
         let info = if misc as u32 & b::PERF_RECORD_MISC_SWITCH_OUT > 0 {
             #[cfg(feature = "linux-4.17")]
@@ -99,7 +99,7 @@ impl CtxSwitch {
         } else {
             Switch::InFrom(task)
         };
-        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let record_id = sample_id_all.map(|SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self { record_id, info }
     }

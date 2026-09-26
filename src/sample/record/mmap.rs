@@ -165,52 +165,52 @@ impl Mmap {
         sample_id_all: Option<SampleType>,
     ) -> Self {
         let task = Task {
-            pid: deref_offset(&mut ptr),
-            tid: deref_offset(&mut ptr),
+            pid: unsafe { deref_offset(&mut ptr) },
+            tid: unsafe { deref_offset(&mut ptr) },
         };
-        let addr = deref_offset(&mut ptr);
-        let len = deref_offset(&mut ptr);
-        let page_offset = deref_offset(&mut ptr);
+        let addr = unsafe { deref_offset(&mut ptr) };
+        let len = unsafe { deref_offset(&mut ptr) };
+        let page_offset = unsafe { deref_offset(&mut ptr) };
 
         let ext = v2.then(|| {
             #[cfg(feature = "linux-5.12")]
             let info = if misc as u32 & b::PERF_RECORD_MISC_MMAP_BUILD_ID > 0 {
-                let len = deref_offset::<u8>(&mut ptr) as usize;
-                ptr = ptr.add(3); // Skip reserved bits.
+                let len = unsafe { deref_offset::<u8>(&mut ptr) } as usize;
+                ptr = unsafe { ptr.add(3) }; // Skip reserved bits.
                 let build_id = {
-                    let slice = std::slice::from_raw_parts(ptr, len);
+                    let slice = unsafe { std::slice::from_raw_parts(ptr, len) };
                     let result = ArrayVec::try_from(slice);
                     // len <= BUILD_ID_SIZE_MAX
                     unsafe { result.unwrap_unchecked() }
                 };
-                ptr = ptr.add(BUILD_ID_SIZE_MAX);
+                ptr = unsafe { ptr.add(BUILD_ID_SIZE_MAX) };
                 Info::BuildId(build_id)
             } else {
                 Info::Device {
-                    major: deref_offset(&mut ptr),
-                    minor: deref_offset(&mut ptr),
-                    inode: deref_offset(&mut ptr),
-                    inode_gen: deref_offset(&mut ptr),
+                    major: unsafe { deref_offset(&mut ptr) },
+                    minor: unsafe { deref_offset(&mut ptr) },
+                    inode: unsafe { deref_offset(&mut ptr) },
+                    inode_gen: unsafe { deref_offset(&mut ptr) },
                 }
             };
             #[cfg(not(feature = "linux-5.12"))]
             let info = Info::Device {
-                major: deref_offset(&mut ptr),
-                minor: deref_offset(&mut ptr),
-                inode: deref_offset(&mut ptr),
-                inode_gen: deref_offset(&mut ptr),
+                major: unsafe { deref_offset(&mut ptr) },
+                minor: unsafe { deref_offset(&mut ptr) },
+                inode: unsafe { deref_offset(&mut ptr) },
+                inode_gen: unsafe { deref_offset(&mut ptr) },
             };
-            let prot = deref_offset(&mut ptr);
-            let flags = deref_offset(&mut ptr);
+            let prot = unsafe { deref_offset(&mut ptr) };
+            let flags = unsafe { deref_offset(&mut ptr) };
             Ext { prot, flags, info }
         });
 
-        let file = CStr::from_ptr(ptr as _).to_owned();
+        let file = unsafe { CStr::from_ptr(ptr as _) }.to_owned();
         let record_id = sample_id_all.map(|SampleType(ty)| {
-            ptr = ptr.add(file.as_bytes_with_nul().len());
+            ptr = unsafe { ptr.add(file.as_bytes_with_nul().len()) };
             // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L8992
-            ptr = ptr.add(ptr.align_offset(align_of::<u64>()));
-            RecordId::from_ptr(ptr, ty)
+            ptr = unsafe { ptr.add(ptr.align_offset(align_of::<u64>())) };
+            unsafe { RecordId::from_ptr(ptr, ty) }
         });
 
         let executable = misc as u32 & b::PERF_RECORD_MISC_MMAP_DATA == 0;

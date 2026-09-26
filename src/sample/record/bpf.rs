@@ -95,16 +95,16 @@ impl BpfEvent {
         //     struct sample_id sample_id;
         // };
 
-        let ty = match deref_offset::<u16>(&mut ptr) as _ {
+        let ty = match unsafe { deref_offset::<u16>(&mut ptr) } as _ {
             b::PERF_BPF_EVENT_PROG_LOAD => Type::ProgLoad,
             b::PERF_BPF_EVENT_PROG_UNLOAD => Type::ProgUnload,
             b::PERF_BPF_EVENT_UNKNOWN => Type::Unknown,
             _ => Type::Unknown, // For compatibility, not ABI.
         };
-        let flags = deref_offset(&mut ptr);
-        let id = deref_offset(&mut ptr);
-        let tag = deref_offset(&mut ptr);
-        let record_id = sample_id_all.map(|SampleType(ty)| RecordId::from_ptr(ptr, ty));
+        let flags = unsafe { deref_offset(&mut ptr) };
+        let id = unsafe { deref_offset(&mut ptr) };
+        let tag = unsafe { deref_offset(&mut ptr) };
+        let record_id = sample_id_all.map(|SampleType(ty)| unsafe { RecordId::from_ptr(ptr, ty) });
 
         Self {
             record_id,

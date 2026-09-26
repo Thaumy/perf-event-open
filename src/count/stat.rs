@@ -67,12 +67,12 @@ impl Stat {
         }
 
         if read_format & b::PERF_FORMAT_GROUP as u64 == 0 {
-            let count = deref_offset(ptr);
-            let time_enabled = when!(PERF_FORMAT_TOTAL_TIME_ENABLED, u64);
-            let time_running = when!(PERF_FORMAT_TOTAL_TIME_RUNNING, u64);
-            let id = when!(PERF_FORMAT_ID, u64);
+            let count = unsafe { deref_offset(ptr) };
+            let time_enabled = unsafe { when!(PERF_FORMAT_TOTAL_TIME_ENABLED, u64) };
+            let time_running = unsafe { when!(PERF_FORMAT_TOTAL_TIME_RUNNING, u64) };
+            let id = unsafe { when!(PERF_FORMAT_ID, u64) };
             #[cfg(feature = "linux-6.0")]
-            let lost_records = when!(PERF_FORMAT_LOST, u64);
+            let lost_records = unsafe { when!(PERF_FORMAT_LOST, u64) };
             #[cfg(not(feature = "linux-6.0"))]
             let lost_records = None;
 
@@ -85,23 +85,23 @@ impl Stat {
                 siblings: vec![],
             }
         } else {
-            let nr: u64 = deref_offset(ptr);
-            let time_enabled = when!(PERF_FORMAT_TOTAL_TIME_ENABLED, u64);
-            let time_running = when!(PERF_FORMAT_TOTAL_TIME_RUNNING, u64);
+            let nr: u64 = unsafe { deref_offset(ptr) };
+            let time_enabled = unsafe { when!(PERF_FORMAT_TOTAL_TIME_ENABLED, u64) };
+            let time_running = unsafe { when!(PERF_FORMAT_TOTAL_TIME_RUNNING, u64) };
 
-            let count = deref_offset(ptr);
-            let id = when!(PERF_FORMAT_ID, u64);
+            let count = unsafe { deref_offset(ptr) };
+            let id = unsafe { when!(PERF_FORMAT_ID, u64) };
             #[cfg(feature = "linux-6.0")]
-            let lost_records = when!(PERF_FORMAT_LOST, u64);
+            let lost_records = unsafe { when!(PERF_FORMAT_LOST, u64) };
             #[cfg(not(feature = "linux-6.0"))]
             let lost_records = None;
 
             let siblings = (1..nr)
                 .map(|_| {
-                    let count = deref_offset(ptr);
-                    let id = when!(PERF_FORMAT_ID, u64);
+                    let count = unsafe { deref_offset(ptr) };
+                    let id = unsafe { when!(PERF_FORMAT_ID, u64) };
                     #[cfg(feature = "linux-6.0")]
-                    let lost_records = when!(PERF_FORMAT_LOST, u64);
+                    let lost_records = unsafe { when!(PERF_FORMAT_LOST, u64) };
                     #[cfg(not(feature = "linux-6.0"))]
                     let lost_records = None;
 
@@ -125,7 +125,7 @@ impl Stat {
     }
 
     pub(crate) unsafe fn from_ptr(mut ptr: *const u8, read_format: u64) -> Self {
-        Self::from_ptr_offset(&mut ptr, read_format)
+        unsafe { Self::from_ptr_offset(&mut ptr, read_format) }
     }
 
     pub(crate) fn read_buf_size(group_size: usize, read_format: u64) -> usize {
