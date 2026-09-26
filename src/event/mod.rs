@@ -22,7 +22,7 @@ pub(super) struct EventConfig {
 }
 
 macro_rules! try_from {
-    ($ty:ty, $value:ident, $impl: expr) => {
+    ($ty:ty, $value:ident, $impl:expr) => {
         impl TryFrom<&$ty> for crate::event::Event {
             type Error = std::io::Error;
 

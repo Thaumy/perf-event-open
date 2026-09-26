@@ -165,7 +165,7 @@ impl Sample {
         branch_sample_type: u64,
     ) -> Self {
         macro_rules! when {
-            ($($feature: literal,)? $flag:ident, $ty:ty) => {{
+            ($($feature:literal,)? $flag:ident, $ty:ty) => {{
                 $(#[cfg(feature = $feature)])?
                 let val = (sample_type & (b::$flag as u64) > 0).then(|| deref_offset::<$ty>(&mut ptr));
                 $(
@@ -177,7 +177,7 @@ impl Sample {
             ($flag:ident) => {
                 sample_type & (b::$flag as u64) > 0
             };
-            ($($feature: literal,)? $flag:ident, $then:expr) => {{
+            ($($feature:literal,)? $flag:ident, $then:expr) => {{
                 $(#[cfg(feature = $feature)])?
                 let val = (sample_type & (b::$flag as u64) > 0).then(|| $then);
                 $(

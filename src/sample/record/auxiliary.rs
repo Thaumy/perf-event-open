@@ -112,7 +112,7 @@ impl Aux {
 
         let flags: u64 = deref_offset(&mut ptr);
         macro_rules! when {
-            ($($feature: literal,)? $flag:ident) => {{
+            ($($feature:literal,)? $flag:ident) => {{
                 $(#[cfg(feature = $feature)])?
                 let val = flags & b::$flag as u64 > 0;
                 $(

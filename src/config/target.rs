@@ -72,7 +72,7 @@ pub struct Target {
 }
 
 macro_rules! into_target {
-    ($ty: ty, $destruct: tt, $pid: expr, $cpu: expr, $flags: expr) => {
+    ($ty:ty, $destruct:tt, $pid:expr, $cpu:expr, $flags:expr) => {
         impl From<$ty> for Target {
             fn from($destruct: $ty) -> Self {
                 Target {
