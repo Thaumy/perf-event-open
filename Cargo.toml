@@ -1,14 +1,14 @@
 [package]
 name = "perf-event-open"
 version = "0.7.0"
-edition = "2021"
+edition = "2024"
 license = "MIT"
 homepage = "https://github.com/Thaumy/perf-event-open"
 keywords = ["perf_event_open", "performance", "linux", "perf"]
 repository = "https://github.com/Thaumy/perf-event-open"
 description = "Full-featured support for the perf_event_open syscall."
 documentation = "https://docs.rs/perf-event-open"
-rust-version = "1.80.0"
+rust-version = "1.98.1"
 
 [features]
 "serde" = ["dep:serde", "arrayvec/serde"]
