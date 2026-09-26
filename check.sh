@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 export RUSTFLAGS='-D warnings'
 export RUSTDOCFLAGS='-D warnings'
