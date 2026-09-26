@@ -1,4 +1,4 @@
-use std::alloc::{dealloc, Layout};
+use std::alloc::{Layout, dealloc};
 use std::borrow::Borrow;
 use std::ops::Deref;
 use std::ptr::NonNull;

@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::{env, fs, io};
 
 use anyhow::{Context, Result};
-use diffy::{apply, Patch};
+use diffy::{Patch, apply};
 
 const PATCHES_DIR: &str = "patches";
 

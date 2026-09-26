@@ -4,7 +4,7 @@ mod test;
 use std::ffi::CStr;
 use std::io::Result;
 
-use super::{get_retprobe_bit, get_type, DynamicPmu, Error};
+use super::{DynamicPmu, Error, get_retprobe_bit, get_type};
 use crate::event::Event;
 
 const TYPE_PATH: &str = "/sys/bus/event_source/devices/uprobe/type";

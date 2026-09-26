@@ -2,8 +2,8 @@ use std::cell::UnsafeCell;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Result};
 use std::ptr::addr_of_mut;
-use std::sync::atomic::{compiler_fence, AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, AtomicU64, Ordering, compiler_fence};
 use std::{hint, ptr, slice};
 
 use auxiliary::AuxTracer;
@@ -12,7 +12,7 @@ use mmap::Mmap;
 use rb::RingBuf;
 use record::{Parser, UnsafeParser};
 
-use crate::ffi::{bindings as b, syscall, Attr, Metadata, PAGE_SIZE};
+use crate::ffi::{Attr, Metadata, PAGE_SIZE, bindings as b, syscall};
 
 pub mod auxiliary;
 pub mod iter;

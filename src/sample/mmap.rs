@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::Result;
-use std::ptr::{null_mut, NonNull};
+use std::ptr::{NonNull, null_mut};
 
 use crate::ffi::syscall;
 

@@ -10,7 +10,7 @@ use super::sample::Sampler;
 use crate::config::attr::from;
 use crate::config::{Opts, Target};
 use crate::event::Event;
-use crate::ffi::{bindings as b, syscall, Attr};
+use crate::ffi::{Attr, bindings as b, syscall};
 
 pub mod group;
 mod stat;
@@ -283,7 +283,7 @@ impl Counter {
     pub fn query_bpf(&self, buf_len: u32) -> Result<(Vec<u32>, Option<u32>)> {
         #[cfg(feature = "linux-4.16")]
         return {
-            use std::mem::{transmute, MaybeUninit};
+            use std::mem::{MaybeUninit, transmute};
 
             // struct perf_event_query_bpf {
             //     u32 ids_len;

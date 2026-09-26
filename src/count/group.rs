@@ -7,8 +7,8 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use super::{Counter, Stat};
-use crate::config::sibling::attr::from;
 use crate::config::sibling::Opts;
+use crate::config::sibling::attr::from;
 use crate::event::Event;
 use crate::ffi::{bindings as b, syscall};
 

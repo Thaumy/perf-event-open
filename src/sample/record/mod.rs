@@ -20,7 +20,7 @@ use text_poke::TextPoke;
 use throttle::{Throttle, Unthrottle};
 
 use super::rb::CowChunk;
-use crate::ffi::{bindings as b, deref_offset, Attr};
+use crate::ffi::{Attr, bindings as b, deref_offset};
 
 pub mod auxiliary;
 pub mod bpf;

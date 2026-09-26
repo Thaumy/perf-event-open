@@ -1,4 +1,4 @@
-use std::alloc::{alloc, handle_alloc_error, Layout};
+use std::alloc::{Layout, alloc, handle_alloc_error};
 use std::cell::UnsafeCell;
 use std::cmp::Ordering as Ord;
 use std::ptr::copy_nonoverlapping;

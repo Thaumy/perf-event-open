@@ -3,7 +3,7 @@ use std::io::Result;
 use super::{Opts, SampleOn};
 use crate::config::{Inherit, OnExecve, Repr, UseBuildId, WakeUpOn};
 use crate::event::EventConfig;
-use crate::ffi::{bindings as b, Attr};
+use crate::ffi::{Attr, bindings as b};
 
 pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> Result<Attr> {
     let mut attr = Attr {
