@@ -69,7 +69,7 @@ impl<'a> RingBuf<'a> {
 
                 unsafe {
                     let hi_part_ptr = rb_ptr.add(tail as _);
-                    let hi_part_len = (chunk_len + d as u64) as _;
+                    let hi_part_len = size - tail as usize;
                     copy_nonoverlapping(hi_part_ptr, buf_ptr, hi_part_len);
 
                     let lo_part_ptr = rb_ptr;
