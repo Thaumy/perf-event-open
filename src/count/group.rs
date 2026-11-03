@@ -124,9 +124,14 @@ impl CounterGroup {
             group_fd,
             flags
         )?;
-        // `group::StatFormat` has no `PERF_FORMAT_GROUP` for sibling events, so
-        // setting `group_size` to 1 is safe.
-        let read_buf = vec![0; Stat::read_buf_size(1, attr.read_format)];
+
+        let read_buf = {
+            // `group::StatFormat` has no `PERF_FORMAT_GROUP` for sibling events, so
+            // setting `group_size` to 1 is safe.
+            let size = Stat::read_buf_size(1, attr.read_format);
+            // `size` must be a multiple of 8 bytes; otherwise, `div_ceil` must be used.
+            vec![0; size / size_of::<u64>()].into_boxed_slice()
+        };
 
         let sibling = Rc::new(Counter {
             target: leader.target.clone(),
@@ -140,7 +145,9 @@ impl CounterGroup {
         // We only change the attr fields related to event config, there is
         // nothing about `read_format`.
         let leader_read_format = unsafe { &*leader.attr.get() }.read_format;
-        let new_len = Stat::read_buf_size(self.siblings.len() + 1, leader_read_format);
+        let new_size = Stat::read_buf_size(self.siblings.len() + 1, leader_read_format);
+        // `new_size` must be a multiple of 8 bytes; otherwise, `div_ceil` must be used.
+        let new_len = new_size / size_of::<u64>();
         // Counter group and group leader always lives in the same thread,
         // there could be at most one reference to `read_buf` simultaneously.
         let old = unsafe { &mut *leader.read_buf.get() };
@@ -151,7 +158,7 @@ impl CounterGroup {
             // Because `vec![0; n]` is optimized to use `calloc`, the real
             // allocation will happen in the `Counter::stat` call, so there is
             // no overhead in calling `add` multiple times.
-            let new = vec![0; new_len];
+            let new = vec![0; new_len].into_boxed_slice();
             let _ = mem::replace(old, new);
         }
 
