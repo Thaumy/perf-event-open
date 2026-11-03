@@ -3,8 +3,8 @@ use std::cell::UnsafeCell;
 use std::ffi::CStr;
 use std::fs::File;
 use std::io::{self, Error, ErrorKind, Result};
-use std::ptr;
 use std::sync::Arc;
+use std::{ptr, slice};
 
 use super::sample::Sampler;
 use crate::config::attr::from;
@@ -74,7 +74,7 @@ pub struct Counter {
     pub(crate) target: Target,
     pub(crate) attr: UnsafeCell<Attr>,
     pub(crate) perf: Arc<File>,
-    pub(crate) read_buf: UnsafeCell<Vec<u8>>,
+    pub(crate) read_buf: UnsafeCell<Box<[u64]>>,
 }
 
 impl Counter {
@@ -88,10 +88,15 @@ impl Counter {
         let attr = from(event.try_into()?.0, opts.borrow())?;
         let flags = target.flags | b::PERF_FLAG_FD_CLOEXEC as u64;
         let perf = syscall!(perf_event_open, &attr, target.pid, target.cpu, -1, flags)?;
-        // Now there is only one event in the group, if in the future this counter
-        // becomes the group leader, `CounterGroup::add` will allocate a new
-        // buffer if `PERF_FORMAT_GROUP` is enabled.
-        let read_buf = vec![0; Stat::read_buf_size(1, attr.read_format)];
+
+        let read_buf = {
+            // Now there is only one event in the group, if in the future this counter
+            // becomes the group leader, `CounterGroup::add` will allocate a new
+            // buffer if `PERF_FORMAT_GROUP` is enabled.
+            let size = Stat::read_buf_size(1, attr.read_format);
+            // `size` must be a multiple of 8 bytes; otherwise, `div_ceil` must be used.
+            vec![0; size / size_of::<u64>()].into_boxed_slice()
+        };
 
         Ok(Self {
             target,
@@ -227,9 +232,14 @@ impl Counter {
     /// if the event is in an error state, for example a pinned event
     /// that could not be scheduled onto the CPU.
     pub fn stat(&self) -> Result<Stat> {
-        // There could be at most one reference to `read_buf` simultaneously,
-        // because `Counter` is not `Sync`.
-        let buf = unsafe { &mut *self.read_buf.get() };
+        let buf = {
+            // There could be at most one reference to `read_buf` simultaneously,
+            // because `Counter` is not `Sync`.
+            let buf = unsafe { &mut *self.read_buf.get() };
+            let buf_ptr = buf.as_mut_ptr() as *mut _;
+            let buf_size = size_of_val(buf.as_ref());
+            unsafe { slice::from_raw_parts_mut(buf_ptr, buf_size) }
+        };
 
         let n: Result<usize> = syscall!(read, &self.perf, buf);
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L5799
