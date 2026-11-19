@@ -62,7 +62,7 @@ impl Stat {
     pub(crate) unsafe fn from_ptr_offset(ptr: &mut *const u8, read_format: u64) -> Self {
         macro_rules! when {
             ($flag:ident, $ty:ty) => {
-                (read_format & (b::$flag as u64) > 0).then(|| deref_offset::<$ty>(ptr))
+                (read_format & (b::$flag as u64) != 0).then(|| deref_offset::<$ty>(ptr))
             };
         }
 
@@ -133,7 +133,7 @@ impl Stat {
 
         macro_rules! when {
             ($flag:ident, $size:expr) => {
-                if read_format & b::$flag as u64 > 0 {
+                if read_format & b::$flag as u64 != 0 {
                     size += $size;
                 }
             };

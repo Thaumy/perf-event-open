@@ -112,7 +112,7 @@ impl Ksymbol {
         });
 
         // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L9413
-        let state = if flags as u32 & b::PERF_RECORD_KSYMBOL_FLAGS_UNREGISTER > 0 {
+        let state = if flags as u32 & b::PERF_RECORD_KSYMBOL_FLAGS_UNREGISTER != 0 {
             State::Unreg
         } else {
             State::Reg

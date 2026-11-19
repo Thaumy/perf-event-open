@@ -90,9 +90,9 @@ impl CtxSwitch {
             pid: unsafe { deref_offset(&mut ptr) },
             tid: unsafe { deref_offset(&mut ptr) },
         });
-        let info = if misc as u32 & b::PERF_RECORD_MISC_SWITCH_OUT > 0 {
+        let info = if misc as u32 & b::PERF_RECORD_MISC_SWITCH_OUT != 0 {
             #[cfg(feature = "linux-4.17")]
-            let preempt = misc as u32 & b::PERF_RECORD_MISC_SWITCH_OUT_PREEMPT > 0;
+            let preempt = misc as u32 & b::PERF_RECORD_MISC_SWITCH_OUT_PREEMPT != 0;
             #[cfg(not(feature = "linux-4.17"))]
             let preempt = false;
             Switch::OutTo { task, preempt }

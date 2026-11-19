@@ -174,7 +174,7 @@ impl Mmap {
 
         let ext = v2.then(|| {
             #[cfg(feature = "linux-5.12")]
-            let info = if misc as u32 & b::PERF_RECORD_MISC_MMAP_BUILD_ID > 0 {
+            let info = if misc as u32 & b::PERF_RECORD_MISC_MMAP_BUILD_ID != 0 {
                 let len = unsafe { deref_offset::<u8>(&mut ptr) } as usize;
                 ptr = unsafe { ptr.add(3) }; // Skip reserved bits.
                 let build_id = {

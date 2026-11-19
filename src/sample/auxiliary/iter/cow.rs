@@ -78,12 +78,12 @@ impl<'a> CowIter<'a> {
                         if event.u64 == 1 {
                             break; // Async iter was dropped.
                         }
-                        if event.events & (libc::EPOLLHUP | libc::EPOLLERR) as u32 > 0 {
+                        if event.events & (libc::EPOLLHUP | libc::EPOLLERR) as u32 != 0 {
                             wait.state.store(Wait::STATE_HANG, Ordering::Relaxed);
                             wait.waker.wake();
                             break;
                         }
-                        if event.events & libc::EPOLLIN as u32 > 0 {
+                        if event.events & libc::EPOLLIN as u32 != 0 {
                             wait.state.store(Wait::STATE_WAKE, Ordering::Relaxed);
                             wait.waker.wake();
                         }

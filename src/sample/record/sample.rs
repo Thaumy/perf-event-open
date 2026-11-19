@@ -176,13 +176,13 @@ impl Sample {
 
         macro_rules! when {
             ($flag:ident, $ty:ty) => {
-                (sample_type & (b::$flag as u64) > 0).then(|| deref_offset::<$ty>(&mut ptr))
+                (sample_type & (b::$flag as u64) != 0).then(|| deref_offset::<$ty>(&mut ptr))
             };
             ($flag:ident) => {
-                sample_type & (b::$flag as u64) > 0
+                sample_type & (b::$flag as u64) != 0
             };
             ($flag:ident, $then:expr) => {
-                (sample_type & (b::$flag as u64) > 0).then(|| $then)
+                (sample_type & (b::$flag as u64) != 0).then(|| $then)
             };
         }
 
@@ -204,7 +204,7 @@ impl Sample {
         let code_addr = when!(PERF_SAMPLE_IP, {
             (
                 unsafe { deref_offset(&mut ptr) },
-                misc as u32 & b::PERF_RECORD_MISC_EXACT_IP > 0,
+                misc as u32 & b::PERF_RECORD_MISC_EXACT_IP != 0,
             )
         });
         let task = when!(
@@ -449,7 +449,7 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
 
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7560
     #[cfg(feature = "linux-5.7")]
-    let hw_index = (branch_sample_type & b::PERF_SAMPLE_BRANCH_HW_INDEX as u64 > 0)
+    let hw_index = (branch_sample_type & b::PERF_SAMPLE_BRANCH_HW_INDEX as u64 != 0)
         .then(|| unsafe { deref_offset(ptr) });
 
     if len == 0 {
@@ -472,7 +472,7 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
 
         macro_rules! when {
             ($flag:expr) => {
-                bits & $flag > 0
+                bits & $flag != 0
             };
         }
 
@@ -566,7 +566,7 @@ unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr>
 
     // https://github.com/torvalds/linux/commit/571d91dcadfa3cef499010b4eddb9b58b0da4d24
     #[cfg(feature = "linux-6.8")]
-    let has_counters = branch_sample_type & b::PERF_SAMPLE_BRANCH_COUNTERS as u64 > 0;
+    let has_counters = branch_sample_type & b::PERF_SAMPLE_BRANCH_COUNTERS as u64 != 0;
     #[cfg(not(feature = "linux-6.8"))]
     let has_counters = false;
     let entries = if has_counters {
@@ -585,7 +585,7 @@ unsafe fn parse_txn(ptr: &mut *const u8) -> Txn {
     let code = ((bits & b::PERF_TXN_ABORT_MASK) >> b::PERF_TXN_ABORT_SHIFT) as u32;
     macro_rules! when {
         ($flag:ident) => {
-            bits & b::$flag > 0
+            bits & b::$flag != 0
         };
     }
     Txn {
@@ -620,7 +620,7 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
 
     macro_rules! when {
         ($shifted:expr, $flag:ident) => {
-            $shifted & (b::$flag as u64) > 0
+            $shifted & (b::$flag as u64) != 0
         };
     }
 
@@ -718,7 +718,7 @@ unsafe fn parse_data_source(ptr: &mut *const u8) -> DataSource {
     let level2 = MemLevel2::Unknown;
 
     #[cfg(feature = "linux-4.14")]
-    let remote = (bits >> b::PERF_MEM_REMOTE_SHIFT) & 1 > 0;
+    let remote = (bits >> b::PERF_MEM_REMOTE_SHIFT) & 1 != 0;
     #[cfg(not(feature = "linux-4.14"))]
     let remote = false;
 

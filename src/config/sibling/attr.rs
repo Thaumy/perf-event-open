@@ -20,7 +20,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     #[cfg(feature = "linux-6.3")]
     (attr.config3 = event_cfg.config3);
     #[cfg(not(feature = "linux-6.3"))]
-    crate::config::unsupported!(event_cfg.config3 > 0);
+    crate::config::unsupported!(event_cfg.config3 != 0);
     attr.bp_type = event_cfg.bp_type;
 
     // count config:
@@ -133,7 +133,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
         #[cfg(feature = "linux-4.8")]
         (attr.sample_max_stack = it.max_stack_frames);
         #[cfg(not(feature = "linux-4.8"))]
-        crate::config::unsupported!(it.max_stack_frames > 0);
+        crate::config::unsupported!(it.max_stack_frames != 0);
         sample_type |= b::PERF_SAMPLE_CALLCHAIN;
     });
     when!(data_addr, PERF_SAMPLE_ADDR);
@@ -300,7 +300,7 @@ pub(crate) fn from(event_cfg: EventConfig, opts: &Opts, leader_attr: &Attr) -> R
     #[cfg(feature = "linux-4.1")]
     (attr.aux_watermark = opts.wake_up.on_aux_bytes);
     #[cfg(not(feature = "linux-4.1"))]
-    crate::config::unsupported!(opts.wake_up.on_aux_bytes > 0);
+    crate::config::unsupported!(opts.wake_up.on_aux_bytes != 0);
 
     #[cfg(feature = "linux-4.1")]
     {

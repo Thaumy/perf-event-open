@@ -77,7 +77,7 @@ impl Comm {
             unsafe { RecordId::from_ptr(ptr, ty) }
         });
 
-        let by_execve = misc & b::PERF_RECORD_MISC_COMM_EXEC as u16 > 0;
+        let by_execve = misc & b::PERF_RECORD_MISC_COMM_EXEC as u16 != 0;
 
         Self {
             record_id,

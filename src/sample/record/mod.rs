@@ -253,10 +253,10 @@ impl RecordId {
 
         macro_rules! when {
             ($flag:ident, $ty:ty) => {
-                (sample_type & (b::$flag as u64) > 0).then(|| deref_offset::<$ty>(&mut ptr))
+                (sample_type & (b::$flag as u64) != 0).then(|| deref_offset::<$ty>(&mut ptr))
             };
             ($flag:ident, $then:expr) => {
-                (sample_type & (b::$flag as u64) > 0).then(|| $then)
+                (sample_type & (b::$flag as u64) != 0).then(|| $then)
             };
         }
 
@@ -392,7 +392,7 @@ pub struct Parser {
 impl Parser {
     pub(crate) fn from_attr(attr: &Attr) -> Self {
         Self {
-            sample_id_all: attr.sample_id_all() > 0,
+            sample_id_all: attr.sample_id_all() != 0,
             sample_type: attr.sample_type,
             user_regs: attr.sample_regs_user.count_ones() as _,
             intr_regs: attr.sample_regs_intr.count_ones() as _,

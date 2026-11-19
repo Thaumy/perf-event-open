@@ -80,7 +80,7 @@ where
 
     let mut acc = Vec::with_capacity(1);
     let mut buf = [0];
-    while file.read(&mut buf)? > 0 {
+    while file.read(&mut buf)? != 0 {
         if buf[0] == b'\n' {
             break;
         }
@@ -102,7 +102,7 @@ where
 
     let mut acc = Vec::with_capacity(1);
     let mut buf = [0];
-    while file.read(&mut buf)? > 0 {
+    while file.read(&mut buf)? != 0 {
         if buf[0] == b'\n' {
             break;
         }

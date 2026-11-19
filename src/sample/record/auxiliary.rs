@@ -116,7 +116,7 @@ impl Aux {
         macro_rules! when {
             ($($feature:literal,)? $flag:ident) => {{
                 $(#[cfg(feature = $feature)])?
-                let val = flags & b::$flag as u64 > 0;
+                let val = flags & b::$flag as u64 != 0;
                 $(
                 #[cfg(not(feature = $feature))]
                 let val = false;
