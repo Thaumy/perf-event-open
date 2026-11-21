@@ -446,15 +446,16 @@ unsafe fn parse_regs(ptr: &mut *const u8, len: usize) -> Option<(Vec<u64>, Abi)>
 
 unsafe fn parse_lbr(ptr: &mut *const u8, branch_sample_type: u64) -> Option<Lbr> {
     let len = unsafe { deref_offset::<u64>(ptr) } as usize;
-    // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7575
-    if len == 0 {
-        return None;
-    }
 
     // https://github.com/torvalds/linux/blob/v6.13/kernel/events/core.c#L7560
     #[cfg(feature = "linux-5.7")]
     let hw_index = (branch_sample_type & b::PERF_SAMPLE_BRANCH_HW_INDEX as u64 > 0)
         .then(|| unsafe { deref_offset(ptr) });
+
+    if len == 0 {
+        return None;
+    }
+
     #[cfg(not(feature = "linux-5.7"))]
     let _ = branch_sample_type;
     #[cfg(not(feature = "linux-5.7"))]
